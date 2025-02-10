@@ -36,7 +36,7 @@ In this post, I'll explain more about how BAML, a domain-specific language for h
 AI engineers the necessary building blocks to create more composable, testable and robust LLM and agentic workflows.
 If you've never heard of BAML, check out my [previous post](/posts/baml-and-future-agentic-workflows) that introduces its fundamentals.
 
-## Structured outputs are more useful than you might think
+## Structured outputs are worth more you might think
 
 Although we primarily use LLMs to output a continuous stream of tokens (text, pixels, audio, etc.), in many scenarios, it can be very useful to
 have additional metadata associated with the response. For example, in a chatbot, you may want to know the sentiment of the user's message,
@@ -108,8 +108,8 @@ BAML focuses a model's reasoning capabilities in understanding the data and the 
 
 ### Modularity
 
-With the base layer (structured outputs) in place, AI engineers can build more modular agents, each of which perform a simple task well.
-This aligns the AI system design with software engineering best practices, where developers write functions with unit tests.
+With the base tier (structured outputs) in place, AI engineers can build modular agents, each of which perform a simple task well.
+This aligns the AI system design with software engineering best practices, allowing developers to write functions with unit tests.
 
 {% note() %}
 All prompts are functions in BAML. Every prompt is testable, even before a line of application code is written in the client language.
@@ -156,9 +156,9 @@ up entirely new AI use cases in organizations that don't have a Python-based tec
 
 ## Why invent new syntax?
 
-A common pushback to BAML from developers is that it may require more cognitive load because it introduces new syntax.
-Why not use existing languages and frameworks? After all, pretty much all the well-known frameworks
-for building LLM workflows use Python, and Python is the most widely used programming language for AI.
+A common pushback to BAML is that it might impose more of a cognitive load than existing frameworks do,
+because it introduces new syntax. After all, pretty much all the well-known frameworks and libraries
+for building LLM workflows are Python-based, and Python is by far the most widely used programming language for AI.
 
 As stated above, many large enterprises have senior engineers who are already experts at building deterministic software,
 using tools and frameworks that are independent of the Python ecosystem. As a result, the latest developments
