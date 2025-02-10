@@ -421,7 +421,7 @@ widespread adoption in 2025.
 
 A whole host of AI applications that were stuck at the proof-of-concept stage could benefit from the
 tiered functionality provided by BAML, because when applied together, they greatly improve developer productivity
-and the speed of iterating on new ideas. BAML brings some refreshing clarity that make the process of building
+and the speed of iterating on new ideas. BAML brings some refreshing clarity that makes the process of building
 LLM-driven workflows incredibly fun:
 - Prompts are functions (they totally transparent and immediately testable)
 - Schemas are classes (that empower tool usage downstream)
