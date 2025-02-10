@@ -209,7 +209,7 @@ while having faith that the LLM will produce outputs of a desired structure.
 
 Schemas are defined using the `class` keyword in BAML. Here's an example of a BAML schema that
 classifies mergers & acquisitions texts into structured data.
-The task is to have an LLM classify a given text into one of two catetories: "merger" and "acquisition",
+The task is to have an LLM classify a given text into one of two categories: "merger" and "acquisition",
 while also attaching useful metadata to the output, such as the amount, currency and companies involved.
 
 ```rs
@@ -220,14 +220,14 @@ class DealAnalysis {
   companies string[] @description("Names of companies involved")
 }
 ```
-As a developer, the data types and structure of the output is immediately clear (no matter what language you're coming from).
+To a developer, the data types and structure of the output are immediately apparent (no matter what language they might be coming from).
 
-BAML schemas provides the ability to define attributes (indicated by the `@` symbol) -- these 
-provide additional metadata or behavior to fields and types. Attributes can be applied at different levels,
-such as field-level or block-level, and are used to assist the LLM in better understanding the user's intent.
+BAML schemas also provide the ability to define attributes (indicated by the `@` symbol) -- these 
+attach additional metadata or behaviour to fields and types. Attributes can be applied at different levels,
+(field-level or block-level), and are used to assist the LLM in better understanding the user's intent.
 
-{% warning() %}
-Tool-calling is a common use case for tasks that aren't a good fit for an LLM's capabilities,
+{% warning(header="Note on tool calling") %}
+Tool calling is a common use case for tasks that aren't a good fit for an LLM's capabilities,
 such as calculations on numbers, and providing current facts about the world. Through its schema definition,
 BAML allows developers to easily define tool-calling functionality at the application layer in their
 client code. In such cases, tools are essentially just functions that return data via an underlying BAML
@@ -237,14 +237,16 @@ schema. More on this in a future post!
 ### Prompts
 
 Prompts are first-class citizens in BAML. Every prompt is a function that can be tested in isolation
-before being used in a workflow. Every function has an associated `client`, which is a wrapper around an LLM.
-This makes it straightforward to use any LLM for a subtask in the workflow.
+before being used in a workflow, and includes an associated `client`, which is a wrapper around an LLM.
+This makes it very clear which LLM is being used for a given subtask, and helps developers easily swap
+out LLMs with their own custom retry logic.
 
 For the above example with the M&A text classifier, we can write a prompt
 that uses the `DealAnalysis` schema and the `CustomGoogleGemini2Flash` LLM defined above with its specific parameters
 and retry policy. The system prompt is concise, to the point, and less verbose than you may be used to from
-other frameworks. In BAML, you don't waste words explaining the desired output to the LLM -- this is provided via the
-schema!
+other frameworks. In BAML, you don't waste words explaining the desired output to the LLM -- this is present
+in the prompt as a data model or sorts. It turns out that LLMs are actually quite good at respecting
+the output schema when it's provided as a data model, who'd have thought!
 
 ```rs
 function ClassifyDeal(text: string) -> DealAnalysis {
@@ -259,8 +261,9 @@ function ClassifyDeal(text: string) -> DealAnalysis {
   "#
 }
 ```
-The full prompt, including the output structure, is formulated by BAML via the `{{ ctx.output_format }}` macro
-because it is aware of the schema beforehand. The user prompt provides the text to the LLM, which is passed in as a string.
+The full prompt, including the output structure, is constructed by BAML via the `{{ ctx.output_format }}` macro
+because it is aware of the schema beforehand. The final prompt is fully transparent and easy to access.
+User prompts allow you to pass in custom data as a string.
 
 ```baml
 Answer in JSON using this schema:
@@ -279,7 +282,7 @@ Answer in JSON using this schema:
   companies: string[],
 }
 ```
-Note how the schema information is being formatted in the actual prompt being sent to the LLM. There are no extraneous
+Note how the schema information is being presented in the prompt to the LLM. There are no extraneous
 characters like double-quotes. String arrays are requested using a concise syntax that LLMs understand well (`string[]`).
 And there are helpful comments that utilize the `@description` annotations to better inform the LLM about
 gotchas, such as the currency code `$` meaning USD rather than another country's dollar.
@@ -293,7 +296,7 @@ developers to test prompts _even before writing a line of application code_.
 In fact, the BAML client won't even compile until the user writes at least
 one unit test for the prompt they just defined.
 
-We'll write two tests in BAML to demonstrate this: We have two pairs of gold mining companies,
+We'll write two tests in BAML to demonstrate this: There are two pairs of gold mining companies,
 the first of which is an acquisition, and the second a merger.
 
 ```rs
@@ -410,7 +413,7 @@ What might this mean for today's popular agentic frameworks?
 ## Key takeaways
 
 By first solving the hard problem of fast, cost-effective methods to obtain
-structured outputs from LLMs, BoundaryML (the makers of BAML) have paved the way for AI engineers to build
+structured outputs from LLMs, [BoundaryML](https://www.boundaryml.com/) (the makers of BAML) have paved the way for AI engineers to build
 more modular, composable and testable workflows in a language-agnostic manner. This can prove to be a boon for
 organizations that want to leverage large teams of existing software engineers who are not as proficient in
 Python as they are in other languages. By providing the right abstraction level and useful primitives
