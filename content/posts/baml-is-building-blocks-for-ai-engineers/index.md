@@ -154,7 +154,7 @@ BAML brings the capabilities of any of the latest LLMs to developers coming from
 up entirely new AI use cases in organizations that don't have a Python-based tech stack.
 {% end %}
 
-{{ figure(src="baml-languages.png" alt="BAML: Function calling for all LLMs from any language. Source: <a>boundaryml.com</a>") }}
+{{ figure(src="baml-languages.png" alt="BAML: Function calling for all LLMs from any language. Source: <a href='https://www.boundaryml.com/'>boundaryml.com</a>") }}
 
 ## Why invent new syntax?
 
