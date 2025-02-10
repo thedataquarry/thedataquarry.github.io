@@ -246,9 +246,9 @@ out LLMs with their own custom retry logic.
 For the above example with the M&A text classifier, we can write a prompt
 that uses the `DealAnalysis` schema and the `CustomGoogleGemini2Flash` LLM defined above with its specific parameters
 and retry policy. The system prompt is concise, to the point, and less verbose than you may be used to from
-other frameworks. In BAML, you don't waste words explaining the desired output to the LLM -- this is present
-in the prompt as a data model or sorts. It turns out that LLMs are actually quite good at respecting
-the output schema when it's provided as a data model, who'd have thought!
+other frameworks. In BAML, you don't waste words explaining your desired output format to the LLM -- instead, it's
+presented to the LLM as a _data model_. It turns out that LLMs are actually quite good at respecting
+the output schema when it's provided in the prompt this way, who'd have thought!
 
 ```rs
 function ClassifyDeal(text: string) -> DealAnalysis {
