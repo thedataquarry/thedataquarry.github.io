@@ -14,9 +14,9 @@ comment = true
 +++
 
 The AI agents market is poised for 10x growth by 2030[^1]. With a whole new wave of
-upcoming systems that can assess their environments, make decisions and take actions, it's worth thinking
-more about this important question: How will AI engineers of the future build, test and deploy these systems?
-How will organizations achieve enough trust in the these systems to use them widely in production?
+upcoming systems built on top of agents that can assess their environments, make decisions and take actions, it's worth thinking
+more about this important question: How will AI engineers of the future build, test and deploy these agents?
+How will organizations achieve enough trust in the their overall systems to use them widely in production?
 
 It's early 2025 as I write this, and it almost seems like everywhere you look these days, there's a new "low-code" agentic workflow tool coming out.
 These tools allow you to quickly chain together LLM prompts with tools and data sources, either through a text-based UI or
