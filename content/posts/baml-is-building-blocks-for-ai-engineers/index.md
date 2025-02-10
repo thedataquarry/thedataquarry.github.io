@@ -436,8 +436,10 @@ with developer-friendly tooling, full transparency in the prompting logic, and t
 workflows through better testing and validation, BAML could evolve into a powerful base-level ecosystem
 that empowers teams to build robust agentic workflows into their products and applications.
 
-Thanks for reading this far! In upcoming posts, I'll be writing more about how I use BAML in a new "Build with BAML" series, so stay tuned!
-
+Thanks for reading this far! To experiment with BAML for your own use cases, check out the following
+resources:
+- [Prompt playground](https://www.promptfiddle.com/): Write your own prompts and schemas and test them out
+- [BAML AI Chat](https://dashboard.boundaryml.com/chat): Have an LLM write BAML code for you
 
 
 
