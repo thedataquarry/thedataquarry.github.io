@@ -74,7 +74,7 @@ export const theme: ThemeUserConfig = {
     blogPageSize: 8,
     externalLinkArrow: true, // show external link arrow
     // Currently support weibo, x, bluesky
-    share: ['weibo', 'x', 'bluesky']
+    share: ['x', 'bluesky']
   }
 }
 
@@ -125,7 +125,7 @@ export const integ: IntegrationUserConfig = {
   },
   // Comment system
   waline: {
-    enable: true,
+    enable: false,
     // Server service link
     server: 'https://astro-theme-pure-waline.arthals.ink/',
     // Refer https://waline.js.org/en/guide/features/emoji.html

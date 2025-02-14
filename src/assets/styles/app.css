@@ -1,13 +1,19 @@
 /* Font */
 @font-face {
-  font-family: 'Satoshi';
-  src: url('/fonts/Satoshi-Variable.ttf');
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-Regular.woff2');
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Satoshi';
-  src: url('/fonts/Satoshi-VariableItalic.ttf');
+  font-family: 'Inter';
+  src: url('Inter_18pt-Bold.woff2');
+  font-style: bold;
+  font-display: swap;
+  }
+@font-face {
+  font-family: 'Inter';
+  src: url('Inter_18pt-Italic.woff2');
   font-style: italic;
   font-display: swap;
 }
