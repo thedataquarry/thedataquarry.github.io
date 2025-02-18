@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 
-import { Quote } from 'astro-pure/advanced'
+// import { Quote } from 'astro-pure/advanced'
 import { PostPreview } from 'astro-pure/components/pages'
 import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
 import { Button, Card, Icon, Label } from 'astro-pure/user'
@@ -28,7 +28,7 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
         src={avatar}
         alt='profile'
         class='h-28 w-auto rounded-full border p-1'
-        loading='eager'
+        ='eager'
       />
 
       <div class='flex flex-col items-center gap-y-4'>
@@ -52,7 +52,7 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
       <Section title='About'>
         <p class='text-muted-foreground'>AI Engineer</p>
         <p class='text-muted-foreground'>
-          I’m an AI engineer with a passion for building intelligent, automated applications using
+          I'm an AI engineer with a passion for building intelligent, automated applications using
           a range of databases, tools and frameworks. My primary interests include data modelling,
           knowledge graphs, Natural Language Processing (NLP), database systems and machine learning.
         </p>
@@ -104,54 +104,19 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
       }
       <Section title='Education'>
         <Card
-          as='a'
-          heading='Lorem ipsum'
-          subheading='Lorem ipsum dolor sit amet, vidit suscipit at mei.'
-          date='August 2021 - July 2025'
-          href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+          heading='Simon Fraser University'
+          subheading='MSc., Computer Science (Big Data)'
         >
-          {
-            /* <ul class='ms-4 list-disc text-muted-foreground'>
-          <li>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore debitis recusandae, ut
-            molestiae laboriosam pariatur!
-          </li>
-          <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, pariatur!</li>
-        </ul> */
-          }
+        </Card>
+        <Card
+          heading='University of Michigan'
+          subheading='MS, Aerospace Engineering'
+        >
         </Card>
       </Section>
 
-      <Section title='Website List'>
-        <div class='grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          <ProjectCard
-            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            heading='Lorem ipsum'
-            subheading='dolor sit amet, oratio ornatus explicari pro ex'
-            imagePath='/src/assets/projects/alex-tyson-2BAXJ7ha74s-unsplash.jpg'
-          />
-          <ProjectCard
-            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            heading='Lorem ipsum'
-            subheading='dolor sit amet, oratio ornatus explicari pro ex'
-            imagePath='/src/assets/projects/angelica-teran-Bk9hpaXHK4o-unsplash.jpg'
-          />
-          <ProjectCard
-            href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            heading='Lorem ipsum'
-            subheading='dolor sit amet, oratio ornatus explicari pro ex'
-            imagePath='/src/assets/projects/kseniia-zapiatkina-yATU3rg8tNI-unsplash.jpg'
-          />
-          <ProjectCard
-            href='/projects'
-            heading='More projects'
-            subheading='Check out more projects'
-            imagePath='/src/assets/projects/wen-qiao-g_w8I64FiO0-unsplash.jpg'
-          />
-        </div>
-      </Section>
-
-      <Section title='Certifications'>
+     
+      {/* <Section title='Certifications'>
         <Card
           as='a'
           heading='Lorem ipsum'
@@ -159,7 +124,7 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
           date='July 2024'
           href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'
         />
-      </Section>
+      </Section> */}
 
       <Section title='Skills'>
         <SkillLayout title='Languages' skills={languages} />
@@ -167,6 +132,5 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
         <SkillLayout title='Backend' skills={backend} />
       </Section>
     </div>
-    <Quote class='mt-12' />
   </main>
 </PageLayout>

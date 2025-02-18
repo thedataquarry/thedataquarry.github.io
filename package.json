@@ -4,6 +4,7 @@
   "version": "4.0.2-beta",
   "scripts": {
     "dev": "astro dev",
+    "start": "astro dev --watch",
     "dev:check": "astro check --watch & astro dev",
     "build": "astro-pure check && astro check && astro build",
     "preview": "astro preview",
