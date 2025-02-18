@@ -5,7 +5,7 @@ export const theme: ThemeUserConfig = {
   /** Title for your website. Will be used in metadata and as browser tab title. */
   title: 'The Data Quarry',
   /** Will be used in index page & copyright declaration */
-  author: 'The Data Quarry',
+  author: 'Prashanth Rao',
   /** Description metadata for your website. Can be used in page metadata. */
   description: 'AI, Data, and everything in between',
   /** The default favicon for your site which should be a path to an image in the `public/` directory. */
@@ -24,7 +24,7 @@ export const theme: ThemeUserConfig = {
   },
   /** Set a logo image to show in the homepage. */
   logo: {
-    src: 'src/assets/dataquarry-banner.webp',
+    src: 'src/assets/dataquarry-banner',
     alt: 'Avatar'
   },
 
