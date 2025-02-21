@@ -1,143 +1,126 @@
 ---
 import { Image } from 'astro:assets'
-import { Button, Collapse, Icon } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
-import config from '@/site-config'
 
 const headings = [
-  { depth: 2, slug: 'theme', text: 'Theme' },
-  { depth: 2, slug: 'programs', text: 'Programs' },
-  { depth: 2, slug: 'learnings', text: 'Learnings' },
-  { depth: 2, slug: 'others', text: 'Others' },
-  { depth: 2, slug: 'gpg-signature', text: 'GPG Signature' },
-  { depth: 2, slug: 'sponsorship', text: 'Sponsorship' }
+  { depth: 2, slug: 'talks', text: 'Talks' },
+  { depth: 2, slug: 'projects', text: 'Projects' },
 ]
 ---
 
-<PageLayout title='Projects' {headings} info={{ slug: '/projects', hideComment: true }}>
-  <p>Github Activities:</p>
+<PageLayout title='GitHub activity' {headings} info={{ slug: '/projects', hideComment: true }}>
   <p>
     <Image
-      src='https://ghchart.rshah.org/659eb9/cworld1'
+      src='https://ghchart.rshah.org/prrao87'
       alt='github activities'
       inferSize
       loading='lazy'
     />
   </p>
-  <p>
-    If you think it would be useful or interesting to collaborate on a project, you can donate to
-    support my work or contact me to discuss a project.
-  </p>
-  <Button title='Checkout sponsorship' class='w-fit' href='#sponsorship'>
-    <Icon class='size-5' name='receive-money' slot='before' />
-  </Button>
 
-  <h2 id='theme'>Theme</h2>
-  <ProjectSection
-    project={[
-      {
-        name: '🍭 Astro-theme-pure',
-        description: 'A simple, clean but powerful blog theme build by astro.',
-        links: [
-          { type: 'github', href: 'https://github.com/cworld1/astro-theme-pure' },
-          { type: 'site', href: 'https://github.com/cworld1/astro-theme-pure' },
-          {
-            type: 'doc',
-            href: 'https://github.com/cworld1/astro-theme-pure/blob/main/src/content/blog/customize/index.md'
-          }
-        ]
-      }
-    ]}
-  />
 
-  <h2 id='programs'>Programs</h2>
-  <ProjectSection
-    project={[
-      {
-        name: '🤖 Arknights Telegram Bot',
-        description: 'Telegram Bot for Arknights',
-        links: [
-          { type: 'github', href: 'https://github.com/IJNKAWAKAZE/arknights_bot' },
-          { type: 'site', href: 'https://t.me/PtiIopsis_bot' },
-          {
-            type: 'doc',
-            href: 'https://github.com/IJNKAWAKAZE/arknights_bot/blob/main/docs/Development.md'
-          }
-        ]
-      },
-      {
-        name: '💄 PKU Art',
-        description: 'A script to beautify pku course website',
-        links: [
-          { type: 'github', href: 'https://github.com/zhuozhiyongde/pku-art' },
-          { type: 'site', href: 'https://github.com/zhuozhiyongde/pku-art' },
-          { type: 'doc', href: 'https://docs.arthals.ink/docs/pku-art' }
-        ]
-      }
-    ]}
-  />
-  <Collapse title='Some old projects'>
-    <ProjectSection
-      project={[
-        {
-          name: 'Search Switcher',
-          description: 'Add links to each other in search engines',
-          links: [{ type: 'github', href: 'https://github.com/cworld1/search-switcher' }]
-        },
-        {
-          name: 'Pure Baidu',
-          description: 'Baidu search page beautification module',
-          links: [
-            { type: 'doc', href: 'https://cworld0.com/blog/pure-baidu' },
-            { type: 'site', href: 'https://userstyles.org/styles/173673/pure' }
-          ]
-        }
-      ]}
-    />
-  </Collapse>
-
-  <h2 id='learnings'>Learnings</h2>
+  <h2 id='talks'>Talks & podcasts</h2>
   <ProjectSection
     class='my-2'
     project={[
       {
-        name: 'Rust Learning',
-        description: 'Some notes and code about CWorld learning Rust',
-        links: [{ type: 'github', href: 'https://github.com/cworld1/rust-learning' }]
-      },
-      {
-        name: 'CS 213 Learning',
-        description: 'Notes, code and experiences for Introduction to Computer Systems course',
+        name: 'Practical AI Podcast - Sep 2024',
+        description: 'Seems like we are hearing a lot about GraphRAG these days, but there are lots of questions: what is it, is it hype, what is practical? One of our all time favorite podcast friends, Prashanth Rao, joins us to dig into this topic beyond the hype. Prashanth gives us a bit of background and practical use cases for GraphRAG and graph data.',
         links: [
           {
-            type: 'github',
-            href: 'https://github.com/zhuozhiyongde/Introduction-To-Computer-System-2023Fall-PKU'
+            type: 'site',
+            href: 'https://changelog.com/practicalai/288'
+          }
+        ]
+      },
+      {
+        name: 'AICamp San Francisco - Jun 2024',
+        description: 'In this talk, we will explore some of the ways in which knowledge graphs are used in conjunctions with LLMs and graph databases to power RAG systems that provide insights from structured or unstructured data. We will also highlight some practical methods on how to build RAG systems that utilize the power of graphs.',
+        links: [
+          {
+            type: 'site',
+            href: 'https://youtu.be/MlxZ87WmopI?si=0RC864qe4IkT0fHg&t=1892'
+          }
+        ]
+      },
+      {
+        name: 'FOSDEM 2024 - Lightning Talks - Feb 2024',
+        description: 'This talk presents Kùzu: a new open-sourced graph database management system (GDBMS) that is designed for graph data science (GDS) eco-system, specifically in Python. GDS applications require a series of data processing steps, such as extracting data from tabular sources into a graph of nodes and relationships, cleaning and transforming the graph, extracting node features, and finally moving data into a GDS package, such as NetworkX and PyTorch Geometric for graph analytics. These steps can be performed easily and efficiently by GDBMSs, which provide high-level graph-based data models and query languages to developers. Kùzu is a GDBMS designed to serve as an essential storage system for GDS developers.',
+        links: [
+          {
+            type: 'site',
+            href: 'https://fosdem.org/2024/schedule/event/fosdem-2024-1962-kzu-a-graph-database-management-system-for-python-graph-data-science/'
+          }
+        ]
+      },
+      {
+        name: 'Practical AI Podcast - Jul 2023',
+        description: 'There’s so much talk (and hype) these days about vector databases. We thought it would be timely and practical to have someone on the show that has been hands on with the various options and actually tried to build applications leveraging vector search. Prashanth Rao is a real practitioner that has spent and huge amount of time exploring the expanding set of vector database offerings. After introducing vector database and giving us a mental model of how they fit in with other datastores, Prashanth digs into the trade offs as related to indices, hosting options, embedding vs. query optimization, and more.',
+        links: [
+          {
+            type: 'site',
+            href: 'https://changelog.com/practicalai/234'
+          }
+        ]
+      },
+      {
+        name: 'Engineer your Career (EYC) Podcast - Jun 2020',
+        description: 'In this episode, we talk to Prashanth Rao a Data Scientist and Software Developer in Vancouver, Canada. In our conversation with Prashanth, we talk about what it was like for him to transition from mechanical engineering to data science as well as hear some great approaches to being a better lifelong learner.',
+        links: [
+          {
+            type: 'site',
+            href: 'https://www.eycpodcast.com/podcast/episode-12'
           }
         ]
       }
     ]}
   />
 
-  <h2 id='others'>Others</h2>
+  <h2 id='projects'>Projects</h2>
   <ProjectSection
     project={[
       {
-        name: 'CWorld',
-        description: "CWorld's Github",
-        links: [{ type: 'github', href: 'https://github.com/cworld1' }]
+        name: 'Pydantic Benchmarks',
+        description: 'Benchmarks for newer versions of Pydantic v2, written in Rust 🦀',
+        links: [
+          { type: 'github', href: 'https://github.com/prrao87/pydantic-benchmarks' },
+        ]
       },
       {
-        name: 'Arthals',
-        description: 'Arthals Github',
-        links: [{ type: 'github', href: 'https://github.com/zhuozhiyongde' }]
+        name: 'Rust in pieces',
+        description: 'Translating Python 🐍 projects to Rust 🦀 via simple bite-sized pieces',
+        links: [
+          { type: 'github', href: 'https://github.com/thedataquarry/rustinpieces' },
+        ]
+      },
+      {
+        name: 'DBHub FastAPI',
+        description: 'Boilerplate to quickly set up a FastAPI layer on top of numerous NoSQL, graph and vector databases',
+        links: [
+          { type: 'github', href: 'https://github.com/prrao87/db-hub-fastapi' },
+        ]
+      },
+      {
+        name: 'KúzuDB study',
+        description: 'Benchmark study on KùzuDB, an embedded OLAP graph database, on an artificial social network dataset',
+        links: [
+          { type: 'github', href: 'https://github.com/prrao87/kuzudb-study' },
+        ]
+      },
+      {
+        name: 'LanceDB study',
+        description: 'Benchmark study on LanceDB, an embedded vector DB, for full-text search and vector search',
+        links: [
+          { type: 'github', href: 'https://github.com/prrao87/lancedb-study' },
+        ]
       }
     ]}
   />
 
 </PageLayout>
 
-<script
+<!-- <script
   is:inline
   type='module'
   data-astro-rerun
@@ -152,4 +135,4 @@ const headings = [
   }
 
   await loadPageviewCount()
-</script>
+</script> -->

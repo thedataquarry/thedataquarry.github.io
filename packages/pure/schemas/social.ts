@@ -21,6 +21,7 @@ export const SocialLinksSchema = () =>
           discord: 'Discord',
           youtube: 'YouTube',
           instagram: 'Instagram',
+          linkedin: 'LinkedIn',
           x: 'X',
           telegram: 'Telegram',
           rss: 'RSS',

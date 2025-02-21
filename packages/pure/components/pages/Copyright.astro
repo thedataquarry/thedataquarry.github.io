@@ -3,7 +3,6 @@ import type { CollectionKey, InferEntrySchema } from 'astro:content'
 import config from 'virtual:config'
 
 import { cn, getFormattedDate } from '../../utils'
-import { QRCode } from '../advanced'
 import { Icon } from '../user'
 
 interface Props<T extends CollectionKey> {
@@ -12,16 +11,13 @@ interface Props<T extends CollectionKey> {
 }
 
 const {
-  data: { heroImage, title, publishDate },
+  data: { title, publishDate },
   class: className
 } = Astro.props
 
-const image = typeof heroImage?.src === 'string' ? heroImage?.src : (heroImage?.src?.src ?? '')
+// const image = typeof heroImage?.src === 'string' ? heroImage?.src : (heroImage?.src?.src ?? '')
 
 const shares = {
-  weibo: {
-    link: `http://service.weibo.com/share/share.php?url=${Astro.url}&title=${title}&pic=${image}`
-  },
   x: {
     link: `https://x.com/intent/tweet?text='${title}'&url='${Astro.url}'&via='${config.author}'`
   },
@@ -84,12 +80,6 @@ const shares = {
       >
         <Icon class='size-5' name='link' />
       </button>
-      <button
-        id='get-qrcode'
-        class='group rounded-full bg-muted p-1 text-muted-foreground transition-colors hover:text-primary sm:p-1.5'
-      >
-        <Icon class='size-5' name='qrcode' />
-      </button>
       {
         config.content.share.map((share) => (
           <a
@@ -103,16 +93,12 @@ const shares = {
         ))
       }
     </div>
-    <QRCode
-      aria-expanded='false'
-      class='absolute z-10 -mt-2 box-content max-h-0 max-w-44 overflow-hidden rounded-xl border bg-muted p-4 opacity-0 transition-all duration-300 ease-in-out aria-expanded:max-h-44 aria-expanded:translate-y-4 aria-expanded:opacity-100'
-    />
   </div>
 </div>
 
 <div class='mx-6 rounded-b-xl border border-t-0 px-3 pb-1.5 pt-1 sm:mx-8 sm:px-4'>
   <a
-    href='/projects#sponsorship'
+    href='https://buymeacoffee.com/prrao87'
     class='flex items-center justify-between text-muted-foreground no-underline'
     target='_blank'
   >
@@ -130,17 +116,5 @@ const shares = {
     navigator.clipboard.writeText(window.location.href)
     // Show toast
     showToast({ message: 'Link copied!' })
-  })
-
-  // QRCode
-  const getQRCode = document.getElementById('get-qrcode')
-  const qrcodeContainer = document.getElementById('qrcode-container')
-  if (!qrcodeContainer) throw new Error('qrcode container not found')
-  getQRCode?.addEventListener('click', () => {
-    if (qrcodeContainer.ariaExpanded === 'true') {
-      qrcodeContainer.ariaExpanded = 'false'
-    } else {
-      qrcodeContainer.ariaExpanded = 'true'
-    }
   })
 </script>
