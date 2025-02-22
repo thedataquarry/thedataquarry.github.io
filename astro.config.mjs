@@ -118,5 +118,11 @@ export default defineConfig({
       //     filename: 'stats.html'
       //   })
     ]
+  },
+  redirects: {
+    '/posts/:path*': {
+      destination: '/blog/:path*',
+      status: 301  // 301 is permanent redirect
+    }
   }
 })
