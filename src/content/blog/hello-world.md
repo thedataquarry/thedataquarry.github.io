@@ -6,7 +6,6 @@ updatedDate: '2023-04-29'
 tags:
   - rust
   - general
-language: 'English'
 draft: false
 ---
 

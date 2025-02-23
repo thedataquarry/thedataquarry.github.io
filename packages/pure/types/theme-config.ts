@@ -27,6 +27,9 @@ export const ThemeConfigSchema = () =>
     /** The default favicon for your site which should be a path to an image in the `public/` directory. */
     favicon: FaviconSchema(),
 
+    /** X handle for your site. */
+    xHandle: z.string().optional().describe('X handle for your site.'),
+
     /** Set a logo image to show in the homepage. */
     logo: LogoConfigSchema(),
 

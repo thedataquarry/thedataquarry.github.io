@@ -19,6 +19,7 @@
     "clean": "rm -rf .astro .vercel dist"
   },
   "dependencies": {
+    "@astro-community/astro-embed-twitter": "^0.5.8",
     "@astrojs/check": "^0.9.4",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/vercel": "^8.0.3",
@@ -26,6 +27,7 @@
     "@unocss/reset": "^65.4.3",
     "@waline/client": "^3.5.1",
     "astro": "^5.1.9",
+    "astro-embed": "^0.9.0",
     "astro-pure": "file:packages/pure",
     "katex": "^0.16.21",
     "rehype-katex": "^7.0.1",

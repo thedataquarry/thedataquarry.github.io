@@ -117,7 +117,12 @@ export default defineConfig({
       //     emitFile: true,
       //     filename: 'stats.html'
       //   })
-    ]
+    ],
+    build: {
+      rollupOptions: {
+        external: ["astro-community/astro-embed-twitter"]
+      }
+    }
   },
   redirects: {
     '/posts/:path*': {

@@ -22,6 +22,8 @@ export const theme: ThemeUserConfig = {
       year: 'numeric'
     }
   },
+  /** X handle **/
+  xHandle: 'tech_optimist',
   /** Set a logo image to show in the homepage. */
   logo: {
     src: 'src/assets/dataquarry-banner',
@@ -62,17 +64,17 @@ export const theme: ThemeUserConfig = {
       url: '',
       text: ''
     },
-    /** Enable displaying a “Astro & Pure theme powered” link in your site’s footer. */
+    /** Enable displaying a "Astro & Pure theme powered" link in your site's footer. */
     credits: true
   },
 
   content: {
-    externalLinksContent: ' ↗',
+    externalLinksContent: ' ⤴',
     /** Blog page size for pagination (optional) */
     blogPageSize: 8,
     externalLinkArrow: true, // show external link arrow
-    // Currently support weibo, x, bluesky
-    share: ['x']
+    // Currently support weibo, x, bluesky, linkedin
+    share: ['x', 'linkedin']  // can use any values from shareList
   }
 }
 

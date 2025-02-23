@@ -1,7 +1,7 @@
 ---
 import type { CollectionKey, InferEntrySchema } from 'astro:content'
 import config from 'virtual:config'
-
+import { shareList } from '../../schemas/share'
 import { cn, getFormattedDate } from '../../utils'
 import { Icon } from '../user'
 
@@ -19,12 +19,18 @@ const {
 
 const shares = {
   x: {
-    link: `https://x.com/intent/tweet?text='${title}'&url='${Astro.url}'&via='${config.author}'`
+    link: `https://x.com/intent/tweet?text=${title}&url=${Astro.url}&via='${config.xHandle}`
+  },
+  linkedin: {
+    link: `https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`
   },
   bluesky: {
     link: `https://bsky.app/intent/compose?text=${title}%0A${Astro.url}`
+  },
+  weibo: {
+    link: `http://service.weibo.com/share/share.php?url=${Astro.url}&title=${title}`
   }
-} as const
+} satisfies Record<(typeof shareList)[number], { link: string }>
 ---
 
 <div
