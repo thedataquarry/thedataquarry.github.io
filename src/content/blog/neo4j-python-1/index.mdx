@@ -436,7 +436,7 @@ MATCH (n) RETURN DISTINCT LABELS(n) AS nodeType, COUNT(n) as nodeCount
 
 This returns the per-label count of nodes in the graph.
 
-```sh
+```console
 ╒════════════╤═════════╕
 │nodeType    │nodeCount│
 ╞════════════╪═════════╡
@@ -470,7 +470,7 @@ ORDER BY points DESC LIMIT 5
 
 The following result is obtained:
 
-```sh
+```console
 ╒══════╤════════════╤══════╤═══════════════════════════════════════════════════════╕
 │wineID│variety     │points│title                                                  │
 ╞══════╪════════════╪══════╪═══════════════════════════════════════════════════════╡
