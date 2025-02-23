@@ -37,13 +37,13 @@ If you think about it, modern software engineering and machine learning workflow
 
 ### Why Rust?
 
-I've already written about this in [my other blog post](../rust-is-supercharging-python/) on how Rust has been transforming the PyData ecosystem. Rust, being a close-to-bare-metal systems language, allows developers to build highly performant and memory-safe tooling for Python users with a lot more ease than they could in other languages. This is done via [PyO3](https://github.com/PyO3/pyo3), a tool that allows developer to create Rust bindings for the Python interpreter, fully leveraging the underlying power and expressivity of Rust.
+I've already written about this in [my other blog post](/blog/rust-is-supercharging-python  ) on how Rust has been transforming the PyData ecosystem. Rust, being a close-to-bare-metal systems language, allows developers to build highly performant and memory-safe tooling for Python users with a lot more ease than they could in other languages. This is done via [PyO3](https://github.com/PyO3/pyo3), a tool that allows developer to create Rust bindings for the Python interpreter, fully leveraging the underlying power and expressivity of Rust.
 
 Since 2022, PyO3 has been having more and more of an impact on the PyData ecosystem, and the lead developer of Pydantic, Samuel Colvin, has spoken[^3] about the importance of the interplay between Python 🐍 and Rust 🦀, and the kind of impact this can have on the PyData ecosystem in general.
 
 In 2023, David Hewitt, a core maintainer of PyO3, a library that's empowering a whole new generation of Python developers to write faster, more efficient packages for Python in Rust, began working at Pydantic, which further solidifies the importance of Rust in the PyData ecosystem.
 
-<Tweet theme="dark" id="https://twitter.com/pydantic/status/1671233172867256320" />
+<Tweet id="https://twitter.com/pydantic/status/1671233172867256320" />
 
 ### How does Pydantic v2 do its magic?
 
@@ -116,7 +116,7 @@ Using a convenience library like [codetiming](https://github.com/realpython/code
 The schema file is at the root of the validation logic in Pydantic. The general practice is to use [validators](https://docs.pydantic.dev/latest/usage/validators/), which are a kind of class method in Pydantic to transform or validate data and ensure it's of the right type and format for downstream tasks. Using validators is **far cleaner** than writing custom functions that manipulate data (they would be riddled with ugly `if-else` statements or `isinstance` clauses, not to mention that they'd need added tests). The schema below implements the validation logic defined above.
 
 
-```python
+```py
 from pydantic import BaseModel, root_validator
 
 class Wine(BaseModel):
@@ -135,7 +135,7 @@ class Wine(BaseModel):
     taster_name: str | None
     taster_twitter_handle: str | None
 
-    @root_validator
+    @root_validator # [!code highlight]
     def _remove_unknowns(cls, values):
         "Set other fields that have the value 'null' as None so that we can throw it away"
         fields = ["designation", "province", "region_1", "region_2"]
@@ -144,7 +144,7 @@ class Wine(BaseModel):
                 values[field] = None
         return values
 
-    @root_validator
+    @root_validator # [!code highlight]
     def _fill_country_unknowns(cls, values):
         "Fill in missing country values with 'Unknown', as we always want this field to be queryable"
         country = values.get("country")
@@ -152,7 +152,7 @@ class Wine(BaseModel):
             values["country"] = "Unknown"
         return values
 
-    @root_validator
+    @root_validator # [!code highlight]
     def _get_vineyard(cls, values):
         "Rename designation to vineyard"
         vineyard = values.pop("designation", None)
@@ -163,7 +163,7 @@ class Wine(BaseModel):
 
 The following code in Pydantic v2 performs the same actions as the v1 version. Note the changed lines highlighted in the code below.
 
-```python
+```py
 from pydantic import BaseModel, model_validator
 
 class Wine(BaseModel):
@@ -182,7 +182,7 @@ class Wine(BaseModel):
     taster_name: str | None
     taster_twitter_handle: str | None
 
-    @model_validator(mode="before")
+    @model_validator(mode="before") # [!code highlight]
     def _remove_unknowns(cls, values):
         "Set other fields that have the value 'null' as None so that we can throw it away"
         fields = ["designation", "province", "region_1", "region_2"]
@@ -191,7 +191,7 @@ class Wine(BaseModel):
                 values[field] = None
         return values
 
-    @model_validator(mode="before")
+    @model_validator(mode="before") # [!code highlight]
     def _fill_country_unknowns(cls, values):
         "Fill in missing country values with 'Unknown', as we always want this field to be queryable"
         country = values.get("country")
@@ -199,7 +199,7 @@ class Wine(BaseModel):
             values["country"] = "Unknown"
         return values
 
-    @model_validator(mode="before")
+    @model_validator(mode="before") # [!code highlight]
     def _get_vineyard(cls, values):
         "Rename designation to vineyard"
         vineyard = values.pop("designation", None)
@@ -226,7 +226,7 @@ Set up two separate Python virtual environments, one with Pydantic v2 installed,
 
 The raw data is stored in line-delimited JSON (gzipped) format, so it is first read in as a list of dicts. The lightweight serialization library `srsly` is used for this task: `pip install srsly`
 
-```python
+```py
 from pathlib import Path
 from typing import Any
 
@@ -253,21 +253,21 @@ if __name__ == "__main__":
 - Note the change in syntax for dumping the validated data as a dict (in v1, the `dict()` method was used, but in v2, it's renamed to `model_dump`).
     - The `exclude_none=True` keyword argument to `model_dump` removes fields that have the value `None` -- this saves space and avoids us storing `None` values downstream
 
-```python
+```py
 from schemas import Wine
 
 def validate(data: list[JsonBlob]) -> list[JsonBlob]:
-    validated_data = [Wine(**item).dict(exclude_none=True) for item in data]
+    validated_data = [Wine(**item).dict(exclude_none=True) for item in data]  # [!code highlight]
     return validated_data
 ```
 
-Note how the code is almost identical for v2, except for the change from `dict()` to `model_dump()`.
+Note how the code is almost identical for v2, shown below, except for the change from `dict()` to `model_dump()`.
 
-```python
+```py
 from schemas import Wine
 
 def validate(data: list[JsonBlob]) -> list[JsonBlob]:
-    validated_data = [Wine(**item).model_dump(exclude_none=True) for item in data]
+    validated_data = [Wine(**item).model_dump(exclude_none=True) for item in data] # [!code highlight]
     return validated_data
 ```
 
@@ -275,7 +275,7 @@ def validate(data: list[JsonBlob]) -> list[JsonBlob]:
 
 To time each validation cycle, we wrap the `run` function inside a `Timer` context manager as follows. Note that this requires that the `codetiming` library is installed: `pip install codetiming`.
 
-```python
+```py
 from codetiming import Timer
 
 def run():
@@ -289,7 +289,7 @@ def run():
 
 We can then call the `run()` method in a loop to perform validation 10 times, to see the average run time. To measure the total run time for all 10 cycles, wrap the loop itself inside another `Timer` block as follows:
 
-```python
+```py
 num = 10
 with Timer(name="All cases", text="{name}: {seconds:.3f} sec"):
     for i in range(num):
@@ -327,7 +327,7 @@ In many real world scenarios, the validation logic implemented in Python (due to
 
 ## Conclusions and broader implications
 
-The timing numbers shown in this case study were for _validation only_. In a full-blown ETL workflow in production, it's likely that there are _many_ such scripts working on data far larger than 1 million records. It's easy to imagine that, when adding up the number of validations performed in Python at all the FAANG-scale companies (who really do use Pydantic in production), we would get a number in the _trillions_, purely due to the scale of data and the complexity of tasks being performed at these companies.
+The timing numbers shown in this case study were for _validation only_. In a full-blown ETL workflow in production, it's likely that there are many scripts doing both validation _and_ type coercion for millions of records. It's easy to imagine that, when adding up the number of validations performed in Python at all the FAANG-scale companies (who really do use Pydantic in production), we would get a number in the _trillions_, purely due to the scale of data and the complexity of tasks being performed at these companies.
 
 In 2019, Amazon Web Services (AWS) announced their official sponsorship for the Rust language. AWS is now among the leading contributors to the development of Rust, and for good reason: in 2022, they published a blog post highlighting how large-scale adoption of Rust at the core of compute-heavy operations can reduce energy usage in data centres worldwide[^5] by almost **50%**! 🤯
 
