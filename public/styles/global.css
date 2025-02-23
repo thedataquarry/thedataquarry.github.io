@@ -216,3 +216,11 @@ body::-webkit-scrollbar {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Add this as a separate top-level rule */
+:where(.prose code:not(pre code)) {
+  &::before,
+  &::after {
+    content: none !important;
+  }
+}
