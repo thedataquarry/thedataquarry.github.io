@@ -28,7 +28,6 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json
           npm install
-        run: npm i
       - name: Build with Astro
         run: npm run build
       - name: Upload artifact
