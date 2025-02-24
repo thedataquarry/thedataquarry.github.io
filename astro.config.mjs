@@ -112,9 +112,12 @@ export default defineConfig({
     }
   },
   redirects: {
-    '/posts/:path*': {
-      destination: '/blog/:path*',
-      status: 301  // 301 is permanent redirect
-    }
+    '/posts/': '/blog',
+    '/posts/hello-world': '/blog/hello-world',
+    '/posts/neo4j-python-1': '/blog/neo4j-python-1',
+    '/posts/neo4j-python-2': '/blog/neo4j-python-2',
+    '/posts/why-pydantic-v2-matters': '/blog/why-pydantic-v2-matters',
+    '/posts/intermediate-pydantic': '/blog/intermediate-pydantic',
+    '/posts/rust-is-supercharging-python': '/blog/rust-is-supercharging-python',
   }
 })
