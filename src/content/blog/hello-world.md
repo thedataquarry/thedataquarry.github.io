@@ -2,7 +2,6 @@
 title: "Hello, world!"
 description: "Introductory post to the Data Quarry blog"
 publishDate: '2023-04-29'
-updatedDate: '2023-04-29'
 tags:
   - rust
   - general
