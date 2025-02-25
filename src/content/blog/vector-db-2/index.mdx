@@ -7,7 +7,7 @@ tags:
 draft: false
 ---
 import { Aside } from 'astro-pure/user';
-import { Image } from 'astro:assets';
+import Figure from '@/components/Figure.astro';
 import Img1 from './vector-db-stars.png';
 import Img2 from './vector-embedding.png';
 import Img3 from './embedding-pipeline.png';
@@ -28,7 +28,7 @@ Before going deeper into what vector DBs are, what can explain this frenzy of ac
 
 In November 2022, an early demo of ChatGPT (which is OpenAI's interface to GPT 3.5 and above) was released, following which it quickly became the [fastest growing application in history](https://www.forbes.com/sites/cindygordon/2023/02/02/chatgpt-is-the-fastest-growing-ap-in-the-history-of-web-applications/), gaining a million users in just 5 days 🤯! Indeed, if you look at the ✨ history on GitHub for some of the major open-source vector database repos, it's clear that there were sharp spikes in the star counts for some of them _after_ the release of ChatGPT in November 2022 and the subsequent release of [ChatGPT plugins](https://openai.com/blog/chatgpt-plugins) in March 2023. These factors, and their associated posts in websites like Hacker News and popular media[^1], are a large part of why there's been such a lot of activity in this space.
 
-<Image src={Img1} alt="Made with ❤️ by star-history.com" caption="Made with ❤️ by star-history.com"/>
+<Figure src={Img1} alt="Made with ❤️ by star-history.com" caption="Made with ❤️ by <a href='https://star-history.com/#qdrant/qdrant&weaviate/weaviate&milvus-io/milvus&chroma-core/chroma&Date'>star-history.com</a>" />
 
 #### The problem with relying on LLMs
 
@@ -48,7 +48,7 @@ A vector database stores not only the original data (which could be images, audi
 
 Within the storage layer, the database stacks $m$ vectors, each representing a data point using $n$ dimensions, for a total size of $m \times n$. The stacks are typically partitioned via sharding for query performance reasons.
 
-<Image src={Img2} alt="Embedding"/>
+<Figure src={Img2} alt="Embedding"/>
 
 ## How are embeddings generated?
 
@@ -69,7 +69,7 @@ The choice of embedding model is typically a trade-off between quality and cost.
 
 Because of their amenability to operating in embedding space, vector databases are proving to be very useful for _semantic or similarity-based search_ for multiple forms of data (text, image, audio). In semantic search, the input query sent by the user (typically in natural language) is translated into vector form, in the same embedding space as the data itself, so that the top-k results that are most similar to the input query are returned. A visualization of this is shown below.
 
-<Image src={Img3} alt="Embedding pipeline"/>
+<Figure src={Img3} alt="Embedding pipeline"/>
 
 ## How is similarity computed?
 
@@ -82,11 +82,13 @@ The various vector databases offer different metrics to compute similarity, but 
 
 Consider a simplified example where we vectorize the titles of red and white wines in 2-D space, where the horizontal axis represents red wines and the vertical axis represents white wines. In this space, points that are closer together would represent wines that share similar words or concepts, and points that are further apart do not have that much in common. The cosine distance is defined as the cosine of the angle between the lines connecting the position of each wine in the embedding space to the origin.
 
-$$cos \theta = \frac{a^T \cdot b}{|a| \cdot{ |b|}}$$
+$$
+\cos \theta = \frac{a^T \cdot b}{\|a\| \cdot \|b\|}
+$$
 
 A visualization will make this more intuitive.
 
-<Image src={Img4} alt="Cosine distance example"/>
+<Figure src={Img4}/>
 
 On the left, the two wines (the Reserve White and the Toscana Red) have very little in common, both in terms of vocabulary and concepts, so they have a cosine distance approaching zero (they are orthogonal in the vector space). On the right, the two Zinfandels from Napa Valley have a lot more in common, so they have a much larger cosine similarity closer to 1. The limiting case here would be a cosine distance of 1; a sentence is always perfectly similar to itself.
 
@@ -96,7 +98,7 @@ Of course, in a real situation, the actual data exists in higher dimensional vec
 
 Once the vectors are generated and stored, when a user submits a search query, the goal of similarity search is to provide the top-k most similar vectors to the input query's own vector. Once again, we can visualize this in a simplified 2-D space.
 
-<Image src={Img5} alt="k-nearest neighbours"/>
+<Figure src={Img5} alt="k-nearest neighbours"/>
 
 The most naive way to do this would be to compare the query vector with each and every vector in the database, with the so-called k-nearest neighbour (kNN) method. However, **this quickly becomes way too expensive** as we scale to millions (or billions) of data points, as the number of comparisons required keeps increasing linearly with the data.
 
@@ -124,7 +126,7 @@ In a nutshell, the state-of-the-art in indexing is achieved by newer algorithms 
 
 We can combine all the above ideas to form a mental picture of what a vector database actually _is_.
 
-<Image src={Img6} alt="Vector database components"/>
+<Figure src={Img6} alt="Vector database components"/>
 
 The specifics of how each database vendor achieves scalability (via Kubernetes, sharding, streaming and so on) are not important for practitioners -- it's up to each vendor to architect the system considering the trade-offs between latency, cost and scalability.
 
@@ -158,7 +160,7 @@ To summarize the points above:
 
 This can be effectively visualized per the diagram below:
 
-<Image src={Img7} alt="Diagram inspired by <a href='https://qdrant.tech/articles/hybrid-search/'>Qdrant blog post</a>"/>
+<Figure src={Img7} alt="Diagram inspired by <a href='https://qdrant.tech/articles/hybrid-search/'>Qdrant blog post</a>"/>
 
 BM25[^6] is the most common indexing algorithm used for keyword search in certain databases (e.g., Elasticsearch, Opensearch, MongoDB). It produces a _sparse_ vector, by considering keyword term frequencies in relation to their inverse document frequency (IDF). In contrast, vector databases typically encode and store text in embeddings represented by _dense_ vectors (none of the terms in the vector are zero, unlike BM25), and this is typically done via a bi-encoder model like BERT, that produces a sentence embedding for a pair of documents, that can then be compared to produce a cosine similarity score.
 
@@ -166,7 +168,7 @@ BM25[^6] is the most common indexing algorithm used for keyword search in certai
 
 To effectively perform hybrid search, it becomes necessary to combine search result candidates obtained via BM25 (keyword search) and cosine similarity (vector search), which requires a _cross-encoder_. This is a downstream step, as shown in the image below, that allows two sentences to be simultaneously passed to an encoder model like BERT. Unlike the bi-encoder that's used to produce sentence embeddings, a cross-encoder doesn't produce embeddings, but rather, it allows us to classify a pair of sentences by assigning them a score between 0 and 1, via a softmax layer. This is termed **_re-ranking_**, and is a very powerful approach to obtaining results that combine the best of both worlds (keyword + vector search).
 
-<Image src={Img8} alt="Diagram inspired by <a href='https://www.sbert.net/examples/applications/cross-encoder/README.html'>Sentence transformers docs</a>"/>
+<Figure src={Img8} alt="Diagram inspired by Sentence transformers docs" caption="Diagram inspired by <a href='https://www.sbert.net/examples/applications/cross-encoder/README.html'>Sentence transformers docs</a>"/>
 
 <Aside>
 It should be noted that re-ranking via cross-encoders is an expensive step, as it requires the use of a transformer model during query time. This approach is used when the quality of search is critical to a use case, and requires more compute resources (typically, GPUs) and tuning time to ensure that the application is performing as intended.
@@ -176,7 +178,7 @@ It should be noted that re-ranking via cross-encoders is an expensive step, as i
 
 With the advent of powerful LLMs like GPT-4, we can effectively integrate the user experience of an application with clean, factual information stored in a vector DB, allowing the user to query their data via natural language. Because question-answering can involve more than just information retrieval (it may require parts of the data to be analyzed, not just queried), including an agent-based framework like LangChain[^7] in between the application UI and the vector DB can be much more powerful than just plugging into the vector DB directly.
 
-<Image src={Img9} alt="Generative QA"/>
+<Figure src={Img9} />
 
 Because vector DBs store the data to be queried as embeddings, and the LLM also encodes the knowledge within it as embeddings, they are a natural pairing when it comes to generative QA applications. The vector DB functions as a knowledge base, and the LLM can query a subset of the data directly in the embedding space. This can be done using the following approach:
 
