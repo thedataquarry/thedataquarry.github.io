@@ -224,3 +224,8 @@ body::-webkit-scrollbar {
     content: none !important;
   }
 }
+
+/* Footnotes */
+.prose .footnotes {
+  font-size: 0.875em;  /* 14px if base is 16px */
+}

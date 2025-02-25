@@ -1,68 +1,35 @@
 # Astro Theme Pure
 
-[English](./README.md) | [简体中文](./README-zh-CN.md)
-
-A simple, fast and powerful blog theme built by Astro.
-
-[![GitHub deployments](https://img.shields.io/github/deployments/cworld1/astro-theme-pure/production?style=flat&logo=vercel&label=vercel)](https://astro-pure.js.org/)
-[![NPM Version](https://img.shields.io/npm/v/astro-pure?logo=npm&style=flat)](https://www.npmjs.com/package/astro-pure)
-[![GitHub Release](https://img.shields.io/github/v/release/cworld1/astro-theme-pure?include_prereleases&style=flat&label=template)](https://github.com/cworld1/astro-theme-pure/releases)
-[![GitHub License](https://img.shields.io/github/license/cworld1/astro-theme-pure?style=flat)](https://github.com/cworld1/astro-theme-pure/blob/main/LICENSE)
-
-![image](./.github/assets/header.webp)
-![image](./.github/assets/body.webp)
-
-> [!WARNING]
-> Theme template v4.0.2^ is changing CSS engine to UnoCSS. Stabler experience is currently on [v4.0.1-beta](https://github.com/cworld1/astro-theme-pure/tree/v4.0.1-beta). Known issues:
->
-> 1. UnoCSS adaption (serious)
-> 2. Cannot pack sitemap and pagefind resources on Vercel ([need upstream fix](https://github.com/withastro/astro/issues/12663) & temp fixed)
-> 3. Header & customize options is still under development (template exposed still)
+Code for The Data Quarry blog site, built with [Astro](https://astro.build/) & TypeScript. This site is built on top of the [Pure theme](https://github.com/cworld1/astro-theme-pure) for Astro.
 
 ## Introduction
 
-Checkout [Demo Site →](https://astro-pure.js.org/)
+Checkout [the site →](https://thedataquarry.com/).
 
-### :fire: Features
+### Why Astro and the Pure theme?
 
-- [x] :rocket: Fast & high performance
-- [x] :star: Simple & clean design
-- [x] :iphone: Responsive design
-- [x] :mag: Full-site search built with [pagefind](https://pagefind.app/)
-- [x] :world_map: Sitemap & RSS feed
-- [x] :spider_web: SEO-friendly
-- [x] :book: TOC (table of contents)
-- [x] :framed_picture: Dynamic open graph generation for posts
-- [x] :framed_picture: Mediumzoom lightbox for images
-
-### :package: Components
-
-Theme includes a lot of components, which can not only be used in the theme, but also in other astro projects.
-
-> For other astro projects, Tailwind CSS is required.
-
-- Basic components: `Aside`, `Tabs`, `Timeline`, `Steps`, `Spoiler`...
-- Advanced components: `GithubCard`, `LinkPreview`, `Quote`, `QRCode`...
-
-### :white_check_mark: Lighthouse score
-
-[![lighthouse-score](./.github/assets/lighthouse-score.png)](https://pagespeed.web.dev/analysis/https-cworld-top/o229zrt5o4?form_factor=mobile&hl=en)
-
-## Documentation
-
-[Docs](https://astro-pure.js.org/docs) | [Showcase](https://github.com/cworld1/astro-theme-pure/issues/10)
-
-## Package
-
-See [astro-theme-pure](https://www.npmjs.com/package/astro-pure) on npm.
+- [x] Fast & high performance
+- [x] Simple & clean design
+- [x] Responsive design
+- [x] Full-site search built with [pagefind](https://pagefind.app/)
+- [x] Sitemap & RSS feed
+- [x] SEO-friendly
+- [x] TOC (table of contents)
+- [x] Dynamic open graph generation for posts
+- [x] Mediumzoom lightbox for images
+- [x] Easy-to-customize components
+- [x] Footnotes
+- [x] Readymade KaTeX support for mathematical symbols and equations
+- [x] Aside boxes for emphasizing key points
+- [x] Easy to add YouTube and X (Twitter) embeds
 
 ## Local development
 
-Environment requirements:
+Environment used:
 
-- [Nodejs](https://nodejs.org/): 18.0.0+
+- [Nodejs](https://nodejs.org/): 20.0.0+
 
-Clone the repository:
+Clone the source repository and customize to your liking:
 
 ```shell
 git clone https://github.com/cworld1/astro-theme-pure.git
@@ -88,18 +55,21 @@ bun preview
 bun new-post
 ```
 
-## Contributions
+## Deployment
 
-To spend more time coding and less time fiddling with whitespace, this project uses code conventions and styles to encourage consistency. Code with a consistent style is easier (and less error-prone!) to review, maintain, and understand.
+A GitHub Actions workflow is configured to deploy the site via GitHub Pages. The pipeline is triggered when a commit is pushed to the main branch.
 
-## Thanks
+## Adding New Posts
+Add MDX files to a custom directory in `src/content/blog`.
 
-- [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus)
-- [Astro Resume](https://github.com/srleom/astro-theme-resume)
-- [Starlight](https://github.com/withastro/starlight)
+> [!NOTE]
+> MDX combines JSX and Markdown to make it easier to write component-driven content like tabbed code blocks. This theme requires that you work with .mdx files instead of .md when using JSX components. See the official [MDX documentation](https://mdxjs.com/) for more information.
+
+## 👀 Learn more
+
+See the official [Astro](https://docs.astro.build/en/getting-started/) docs and the [Pure theme](https://github.com/cworld1/astro-theme-pure) repo to learn more how to customize the site. Many
+thanks to the maintainers of both these projects. 🫶🏼
 
 ## License
 
-This project is licensed under the Apache 2.0 License.
-
-[![Star History Chart](https://api.star-history.com/svg?repos=cworld1/astro-theme-pure&type=Date)](https://star-history.com/#cworld1/astro-theme-pure&Date)
+The Astro project is MIT licensed and the Pure theme has an Apache 2.0 license.

@@ -13,13 +13,11 @@ import { Image } from 'astro:assets';
 import { Tweet } from '@astro-community/astro-embed-twitter';
 import Img1 from './pydantic-core.png';
 
-## Why it matters that Pydantic v2 is written in Rust
-
 If you've worked with any form of data wrangling in Python, you've likely heard of [Pydantic](https://docs.pydantic.dev/latest/). If not, welcome! In this post, I'll show an example of why Pydantic is so integral to the workflows of data scientists and engineers, and how just a few small changes to your existing code written in v1 can be changed as per v2, to obtain a **5x speedup** and more, largely due to Pydantic's internals being rewritten in Rust.
 
 ## What is Pydantic and why would you use it?
 
-Yes, compiled language enthusiasts, we hear you. _Unlike_ compiled languages (C, C++, Rust), Python is an interpreted, dynamically typed language where variables can change types during run time. This means that when you write Python code, especially for large code bases involving ETL & data transformations, it becomes necessary to test for a _lot_ of edge cases. A whole class of errors (`TypeError`) gets introduced into your Python runtime, where data obtained downstream may not align with expectations based on logic you or other developers put in, further upstream.
+Unlike compiled languages (C, C++, Rust), Python is an interpreted, dynamically typed language where variables can change types during run time. This means that when you write Python code, especially for large code bases involving ETL & data transformations, it becomes necessary to test for a _lot_ of edge cases. A whole class of errors (`TypeError`) gets introduced into your Python runtime, where data obtained downstream may not align with expectations based on logic you or other developers put in, further upstream.
 
 Python 3.5 introduced [type hints](https://peps.python.org/pep-0484/), which allows developers to declare what type a variable should be, prior to runtime. However, type hints are only marginally effective because they **don't enforce** data types at runtime -- they're only a _guide_, and not a guarantee that the data you pass around remains a certain type. What's the solution to this? Enter Pydantic 😎.
 

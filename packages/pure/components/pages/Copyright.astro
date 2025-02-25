@@ -19,7 +19,7 @@ const {
 
 const shares = {
   x: {
-    link: `https://x.com/intent/tweet?text=${title}&url=${Astro.url}&via='${config.xHandle}`
+    link: `https://x.com/intent/tweet?text=${title}&url=${Astro.url}&via=${config.xHandle}`
   },
   linkedin: {
     link: `https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`
