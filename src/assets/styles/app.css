@@ -1,19 +1,21 @@
 /* Font */
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Regular.ttf');
+  src: url('/fonts/Inter_18pt-Regular.ttf') format('truetype');
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Bold.ttf');
+  font-weight: bold;
+  src: url('/fonts/Inter_18pt-Bold.ttf') format('truetype');
   font-style: bold;
   font-display: swap;
 }
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Italic.ttf');
+  font-style: italic;
+  src: url('/fonts/Inter_18pt-Italic.ttf') format('truetype');
   font-style: italic;
   font-display: swap;
 }

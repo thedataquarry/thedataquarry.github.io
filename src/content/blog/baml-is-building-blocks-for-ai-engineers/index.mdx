@@ -1,0 +1,468 @@
+---
+title: "BAML is like building blocks for AI engineers"
+description: "A deeper dive into BAML's tiers of functionality and its impact on the AI engineering and agentic workflow landscape"
+publishDate: 2025-02-10
+draft: false
+tags:
+  - baml
+  - agentic
+  - workflow
+  - orchestration
+  - rust
+---
+import Figure from '@/components/Figure.astro';
+import { Aside } from 'astro-pure/user';
+import { YouTube } from 'astro-embed';
+import { Tweet } from '@astro-community/astro-embed-twitter';
+import Img1 from './baml-encapsulation.png';
+import Img2 from './baml-tier-functions.png';
+import Img3 from './baml-languages.png';
+
+The AI agents market is poised for 10x growth by 2030[^1]. With a whole new wave of
+upcoming systems built on top of agents that can assess their environments, make decisions and take actions, it's worth thinking
+more about this important question: How will AI engineers of the future build, test and deploy these agents?
+How will organizations achieve enough trust in the their overall systems to use them widely in production?
+
+It's early 2025 as I write this, and it almost seems like everywhere you look these days, there's a new "low-code" agentic workflow tool coming out.
+These tools allow you to quickly chain together LLM prompts with tools and data sources, either through a text-based UI or
+a fancy graphical UI. Many (if not all) of these tools treat LLM prompts as strings, where users can write their
+own prompts in a text editor UI and start seeing the LLM's results on their specific tasks. Pure string-based prompts can be fragile,
+and can break in various ways. They are verbose and require some massaging to get the LLM to produce the output you need. Importantly, developers
+building these systems need to properly _test_ their components.
+
+A prompt is simply a way to get an LLM to do the thing a human wants. As an engineer, the natural realization as you experiment with an LLM's abilities
+is that good prompts are far more than just plain old strings -- they are
+_functions_ or _programs_, and can include conditional logic, loops, and more. In fact, this is the main idea
+behind prompting libraries like ell[^2], which made prompt engineering a breeze in comparison to pre-existing tools.
+However, a lot of libraries like ell rely on Python and Pydantic, forcing developers to set up an entire Python environment
+just to test a minor change to a prompt. Why does Python have to be the gatekeeping language for developers to work with LLMs?
+
+In this post, I'll explain more about how BAML, a domain-specific language for helping LLMs generate better structured outputs, provides
+AI engineers the necessary building blocks to create more composable, testable and robust LLM and agentic workflows.
+If you've never heard of BAML, check out my [previous post](/posts/baml-and-future-agentic-workflows) that introduces its fundamentals.
+
+## Structured outputs are worth more you might think
+
+Although we primarily use LLMs to output a continuous stream of tokens (text, pixels, audio, etc.), in many scenarios, it can be very useful to
+have additional metadata associated with the response. For example, in a chatbot, you may want to know the sentiment of the user's message,
+or specific entities mentioned in a message's text. As an example, let's say we want an LLM to parse a user's message from a chat, and return the following response:
+```json
+{
+    "message": "I love apple and samsung phones",
+    "sentiment": "positive",
+    "entities": ["apple", "samsung"],
+}
+```
+In this simple example, we want the LLM to do two-subtasks as it parses the user's message: (i) extract the sentiment,
+and (ii) extract the entities of interest mentioned in the message. But importantly, we want every LLM response to predictably
+contain the same fields, so that we can use them downstream.
+
+What if you don't care about the structure of the output in your use case? Say in the case of RAG, where
+all you want is a string response to the user's query? Even in this case, it's arguable that having the
+flexiblity of attaching useful metadata to the response is useful. Let's look at an example below
+where we attach a citation to the RAG bot's response, which is a great way to increase the user's trust in the response.
+
+```json
+{
+    "answer": "Samsung Galaxy S25 has a strong titanium frame and reinforced Gorilla glass",
+    "citations": [
+        {
+            "doc_id": "550e8400-e29b-41d4-a716-446655440000",
+            "relevant_text": "Samsung's Galaxy S25 Ultra features a durable titanium body and enhanced Gorilla glass protection. It also comes with a 256GB of storage and 12GB of RAM."
+        }
+    ]
+}
+```
+When formulating the task, we must always ask ourselves: "Is my downstream use case better served by a
+structured output or a raw string?" In most cases, it's the former. By adding some level of structure
+in an LLM's output, we are able to more deterministically **test**
+the workflow for a) the right data _types_, and b) the right data _values_. From an engineering perspective,
+this is great, because it allows us to write **unit tests** for our prompts and workflows.
+
+This is basically the original idea and motivation behind BAML.
+
+## BAML's tiered functionality
+
+Let's decompose the functionality of BAML using an analogy of a tiered cake with a cherry on top.
+Each tier relies on the ones beneath it, providing AI engineers with the building blocks to
+create robust and testable workflows that involve LLMs and other components.
+
+<Figure src={Img2} alt="BAML's tiers of functionality" />
+
+### Structured outputs
+
+The foremost requirement for robustness in an AI workflow is to be able to predictably obtain **high-quality structured outputs**
+from LLMs at any stage of the workflow to better inform the downstream component. Without this base tier of functionality,
+workflows are brittle, hard to reason about and can fail in unexpected ways. Note that there already exist ways to reliably generate structured outputs from LLMs:
+1. Outlines by .txt -- Modify the tokens during generation and model the JSON schema as a finite state machine[^4]
+2. Use structured output models -- Commercial providers like OpenAI and Anthropic have their own models that specialize towards token manipulation that ensure correct structured outputs
+
+While .txt's Outlines is very clever and powerful, it requires access to the model weights, making it realize its full potential only on open source LLMs.
+The second method is based on commercial providers' capabilities to support structured outputs -- not all models support this, and those that do, tend to
+be far more expensive than open source models.
+
+<Aside>
+BAML addresses both of these shortcomings:
+- It is designed to work with _any_ LLM, whether open source or commercial, including the latest ones
+- It lets the LLM do what it does best: generate streams of tokens, and instead focuses on _fixing mistakes_ in the LLM's output
+</Aside>
+
+BAML provides a strong and expressive type system, allowing static analysis of
+the desired schema as well as the LLM orchestration logic. With its Schema-Aligned Parsing[^5] mechanism,
+BAML focuses a model's reasoning capabilities in understanding the data and the world, rather than the schema[^5].
+
+### Modularity
+
+With the base tier (structured outputs) in place, AI engineers can build modular agents, each of which perform a simple task well.
+This aligns the AI system design with software engineering best practices, allowing developers to write functions with unit tests.
+
+<Aside>
+All prompts are functions in BAML. Every prompt is testable, even before a line of application code is written in the client language.
+</Aside>
+
+### Composability
+
+With the ability to connect prompts, tools and data sources together, multiple agents can be composed together in various ways,
+This allows developers to orchestrate complex workflows while testing each component in isolation.
+At the time of writing this post, BAML relies on the developer writing client code in their language of choice and focuses primarily on the prompting layer. In the
+future, it will support more and more features that allow developers to define composable orchestration logic in BAML code.
+
+<Aside>
+Complex agentic workflows of the future will likely be composed of self-contained, simple agents that are tested
+and whose effects on the overall state of the system is well-understood. Tools like BAML can play a key role in
+this style of development.
+</Aside>
+
+### Developer experience
+
+By providing great tooling at each stage of the development process, BAML helps AI engineers rapidly gain feedback on
+their prompts and workflows. The philosophy of BAML is to allow engineers to ship fast, iterate quickly,
+while encouraging them to think about breaking down a complex task into smaller, more manageable components.
+Again, this is akin to how complex deterministic software is built today.
+
+<Aside>
+BAML's tooling is designed from the ground up to aid in developer productivity, from the initial prompt formulation
+to generation of the client code, and more.
+</Aside>
+
+### Language agnosticity 🍒 
+
+The above four functions themselves are good enough that we'd have taken them if they were only available in Python.
+But BAML takes this a step further and adds a cherry on top: language agnosticity. Because it's a DSL,
+BAML is completely **agnostic to the application language**
+-- the same BAML prompts and schemas can be used by any application developer working in the language of their choice,
+such as Python, TypeScript, Go, Rust, Ruby and more. For specific languages that aren't natively
+supported, it's trivial to wrap the client code generated by BAML in a REST API to be available to developers from those languages.
+
+<Aside>
+BAML brings the capabilities of any of the latest LLMs to developers coming from languages other than Python. This can open
+up entirely new AI use cases in organizations that don't have a Python-based tech stack.
+</Aside>
+
+<Figure src={Img3} alt="BAML: Function calling for all LLMs from any language." caption="BAML: Function calling for all LLMs from any language. Source: <a href='https://www.boundaryml.com/'>boundaryml.com</a>" />
+
+## Why invent new syntax?
+
+A common pushback to BAML is that it might impose more of a cognitive load than existing frameworks do,
+because it introduces new syntax. After all, pretty much all the well-known frameworks and libraries
+for building LLM workflows are Python-based, and Python is by far the most widely used programming language for AI.
+
+As stated above, many large enterprises have senior engineers who are already experts at building deterministic software,
+using tools and frameworks that are independent of the Python ecosystem. As a result, the latest developments
+and workflow innovations in the LLM world have largely been inaccessible to them. By providing a DSL
+(with as few keywords as possible), an expressive type system and the right primitives, BAML allows
+great developers _coming from any language_ to harness the power of LLMs.
+
+There are also technical and conceptual reasons why inventing new syntax is a good idea. In the future,
+nearly every piece of software will be agentic[^6]. Prompting is a crucial part of the AI engineer's toolkit, and it deserves
+more first-class treatment than being buried inside multiple layers of application code, as is common in many popular AI and agentic frameworks today.
+Providing developers with a general-purpose syntax and useful tooling that make LLM prompts entirely transparent
+and testable can fundamentally change the way they think, enabling them to build complex workflows more productively[^6].
+
+## Building blocks
+
+I began this post by saying BAML provides AI engineers with building blocks, so let's spend
+the rest of this post looking at what they are!
+
+### LLM clients
+
+Because modern AI applications are driven primarily by LLMs, one of the main goals of BAML is to
+allow developers to easily use and swap out any LLM (including the latest ones) for parts of their
+workflows. By composing multiple smaller, testable workflows together, you can use LLMs that are
+suited to a specific subtask, to keep costs low while ensuring that the overall application goals
+are being met.
+
+BAML provides a `client` keyword, which is a wrapper around an LLM provider.
+The client clearly specifies the provider name, the necessary input parameters, as well as useful
+features like retry policies, fallbacks (if the LLM API call fails), and more.
+
+```ts
+client<llm> CustomGoogleGemini2Flash {
+  provider google-ai
+  retry_policy Constant
+  options {
+    model "gemini-2.0-flash"
+    api_key env.GOOGLE_API_KEY
+  }
+}
+```
+
+### Schemas
+
+Every BAML project begins with the definition of schemas that describe the desired structured output
+that a prompt downstream will ask the LLM to generate. Defining schemas involves using an underlying type system
+that provides the necessary primitives so that developers can easily express their ideas in code
+while having faith that the LLM will produce outputs of a desired structure.
+
+Schemas are defined using the `class` keyword in BAML. Here's an example of a BAML schema that
+classifies mergers & acquisitions texts into structured data.
+The task is to have an LLM classify a given text into one of two categories: "merger" and "acquisition",
+while also attaching useful metadata to the output, such as the amount, currency and companies involved.
+
+```rs
+class DealAnalysis {
+  dealType "merger" | "acquisition" @description("Type of business deal")
+  amount float @description("The monetary value of the deal")
+  currency string @description("The currency code of the deal amount. If the symbol is $, always assume USD.")
+  companies string[] @description("Names of companies involved")
+}
+```
+To a developer, the data types and structure of the output are immediately apparent (no matter what language they might be coming from).
+
+BAML schemas also provide the ability to define attributes (indicated by the `@` symbol) -- these 
+attach additional metadata or behaviour to fields and types. Attributes can be applied at different levels,
+(field-level or block-level), and are used to assist the LLM in better understanding the user's intent.
+
+<Aside title="Note on tool calling">
+Tool calling is a common use case for tasks that aren't a good fit for an LLM's capabilities,
+such as calculations on numbers, and providing current facts about the world. Through its schema definition,
+BAML allows developers to easily define tool-calling functionality at the application layer in their
+client code. In such cases, tools are essentially just functions that return data via an underlying BAML
+schema. More on this in a future post!
+</Aside>
+
+### Prompts
+
+Prompts are first-class citizens in BAML. Every prompt is a function that can be tested in isolation
+before being used in a workflow, and includes an associated `client`, which is a wrapper around an LLM.
+This makes it very clear which LLM is being used for a given subtask, and helps developers easily swap
+out LLMs with their own custom retry logic.
+
+For the above example with the M&A text classifier, we can write a prompt
+that uses the `DealAnalysis` schema and the `CustomGoogleGemini2Flash` LLM defined above with its specific parameters
+and retry policy. The system prompt is concise, to the point, and less verbose than you may be used to from
+other frameworks. In BAML, you don't waste words explaining your desired output format to the LLM -- instead, it's
+presented to the LLM as a _data model_. It turns out that LLMs are actually quite good at respecting
+the output schema when it's provided in the prompt this way, who'd have thought!
+
+```rs
+function ClassifyDeal(text: string) -> DealAnalysis {
+  client CustomGoogleGemini2Flash
+  prompt #"
+    Analyze the following business deal text and classify it according to whether it's a merger or
+    acquisition, extracting the monetary value and currency.
+
+    {{ ctx.output_format }}
+
+    {{ _.role('user') }} {{ text }}
+  "#
+}
+```
+The full prompt, including the output structure, is constructed by BAML via the `{{ ctx.output_format }}` macro
+because it is aware of the schema beforehand. The final prompt is fully transparent and easy to access.
+User prompts allow you to pass in custom data as a string.
+
+```json
+Answer in JSON using this schema:
+Analyze the following business deal text and classify it according to whether it's
+a merger or acquisition, extracting the monetary value and currency.
+
+Answer in JSON using this schema:
+{
+  // Type of business deal
+  dealType: "merger" or "acquisition",
+  // The monetary value of the deal
+  amount: float,
+  // The currency code of the deal amount. If $, always assume USD.
+  currency: string,
+  // Names of companies involved
+  companies: string[],
+}
+```
+Note how the schema information is being presented in the prompt to the LLM. There are no extraneous
+characters like double-quotes. String arrays are requested using a concise syntax that LLMs understand well (`string[]`).
+And there are helpful comments that utilize the `@description` annotations to better inform the LLM about
+gotchas, such as the currency code `$` meaning USD rather than another country's dollar.
+
+### Tests
+
+One of the biggest issues with many existing AI frameworks is that the onus is on the application
+developer to write good tests for the LLM's _outputs_, but there are no requirements for the developer to test the
+prompts themselves. BAML enforces a higher degree of rigor by requiring
+developers to test prompts _even before writing a line of application code_.
+In fact, the BAML client won't even compile until the user writes at least
+one unit test for the prompt they just defined.
+
+We'll write two tests in BAML to demonstrate this: There are two pairs of gold mining companies,
+the first of which is an acquisition, and the second a merger.
+
+```rs
+test AcquisitionTest {
+  functions [ClassifyDeal]
+  args {
+    text "Contango ORE Inc. has entered into a definitive agreement to acquire HighGold Mining Inc. in an all-shares deal valued at roughly $37 million (C$55 million)."
+  }
+}
+
+test MergerTest {
+  functions [ClassifyDeal]
+  args {
+    text "Westgold Resources and Karora Resources completed their merger at a cost of $800m, establishing a new mid-tier gold production company in Australia."
+  }
+}
+```
+The test executes the prompting logic, gets the output from our `CustomGoogleGemini2Flash` LLM, following which
+BAML does its work to validate the output against the `DealAnalysis` schema. The following output is obtained:
+
+#### Test 1: Acquisition
+```json
+{
+  "dealType": "acquisition",
+  "amount": 37000000,
+  "currency": "USD",
+  "companies": [
+    "Contango ORE Inc.",
+    "HighGold Mining Inc."
+  ]
+}
+```
+#### Test 2: Merger
+```json
+{
+  "dealType": "merger",
+  "amount": 800000000,
+  "currency": "USD",
+  "companies": [
+    "Westgold Resources",
+    "Karora Resources"
+  ]
+}
+```
+It's trivial to swap out the LLM provider, rerun the tests and verify that the output is generated
+with the required structure.
+
+### Validation
+
+As an engineer, you may want to add more rigorous tests that validate both the schema **and** the data.
+BAML provides additional `@check` and `@assert` annotations to validate the LLM's output.
+
+Schema validation is done internally by the BAML runtime (via Schema-Aligned Parsing[^5]), where it
+takes in the LLM's raw output string and ensures that it returns a valid `DealAnalysis` object that
+the engineer can use downstream.
+
+Data validation allows you to perform specific checks on the returned data like the following:
+- Whether there are two or more companies involved in the deal (you can't clap with one hand)
+- Whether the `amount` is positive
+- Whether the `currency` is a valid ISO 4217 currency code.
+
+The [BAML docs](https://docs.boundaryml.com/ref/attributes) on `@check` and `@assert` provide several
+examples of this, so we won't go over it here.
+
+## Bringing it all together
+
+The above steps are nicely encapsulated by BAML in your editor's UI, providing rapid feedback on
+your prompts and how they affect your downstream workflows. By increasing the rate at which you can discover
+issues with your prompts causing things to break in various ways,
+you can iterate faster and have more confidence to ship all sorts of AI applications to production.
+
+<Figure src={Img1} alt="BAML's encapsulation of the prompt, schema, tests and validation" />
+
+After the tests pass, the client code is generated by `baml_client` that can then easily be called
+from your application language. Here's how you'd do it in Python:
+
+```python
+from baml_client import b
+from baml_client.types import DealAnalysis
+
+def analyze_deals():
+    deal_texts = [
+        "Contango ORE Inc. has entered into a definitive agreement to acquire HighGold Mining Inc. in an all-shares deal valued at roughly $37 million (C$55 million).",
+        "Westgold Resources and Karora Resources completed their merger at a cost of $800m, establishing a new mid-tier gold production company in Australia."
+    ]
+    
+    for text in deal_texts:
+        result = b.ClassifyDeal(text)
+        print(f"Deal Type: {result.dealType}")
+        print(f"Amount: {result.amount} {result.currency}")
+        print(f"Companies: {', '.join(result.companies)}")
+        print("---")
+
+if __name__ == "__main__":
+    analyze_deals()
+```
+Depending on the complexity of the overall task, you can then build add on more components that handle
+your larger business domain-specific logic at the application layer.
+
+
+## What about orchestration?
+
+In the above sections, we covered the core building blocks of BAML: LLM clients, schemas, prompts, tests and validation.
+One key component that wasn't covered is how to orchestrate these components together to define agentic workflows.
+At the time of writing this post, BAML relies on the application developer to write the orchestration logic in their language of choice,
+using whatever tools they prefer. BAML will still handle the prompting layer and ensure quality outputs
+from the LLM involved at various stages in the workflow.
+
+However, in the future, BAML will support more features that allow developers to define composable orchestration logic in BAML code.
+What might this mean for today's popular agentic frameworks?
+
+<Tweet id="https://twitter.com/aaron__vi/status/1884137401834152375" />
+
+## Key takeaways
+
+By first solving the hard problem of fast, cost-effective methods to obtain
+structured outputs from LLMs, [BoundaryML](https://www.boundaryml.com/) (the makers of BAML) have paved the way for AI engineers to build
+more modular, composable and testable workflows in a language-agnostic manner. This can prove to be a boon for
+organizations that want to leverage large teams of existing software engineers who are not as proficient in
+Python as they are in other languages. By providing the right abstraction level and useful primitives
+via a DSL specifically designed for the age of LLMs, BAML is quite well-positioned to gain rapid and
+widespread adoption in 2025.
+
+> In the future, every software engineer will be an AI engineer, and vice versa.
+
+A whole host of AI applications that were stuck at the proof-of-concept stage could benefit from the
+tiered functionality provided by BAML, because when applied together, they greatly improve developer productivity
+and the speed of iterating on new ideas. BAML brings some refreshing clarity that makes the process of building
+LLM-driven workflows incredibly fun:
+- Prompts are functions (they're totally transparent and immediately testable)
+- Schemas are classes (that empower tool usage downstream)
+- Enums are categories
+- All prompts are testable
+- LLMs are easily swappable (and prompts are immediately testable)
+
+LLMs are incredibly versatile and do surprisingly well at a wide range of tasks. Trying to stuff complex
+objectives into a single prompt has proven to be a recipe for failure, and as such, modular and composable
+functions that each accomplish a simpler task are the way to go. By providing AI engineers
+with developer-friendly tooling, full transparency in the prompting logic, and the ability to progressively build complexity into their
+workflows through better testing and validation, BAML could evolve into a powerful base-level ecosystem
+that empowers teams to build robust agentic workflows into their products and applications.
+
+Thanks for reading this far! To experiment with BAML for your own use cases, check out the following
+resources:
+- [Prompt playground](https://www.promptfiddle.com/): Write your own prompts and schemas and test them out
+- [BAML AI Chat](https://dashboard.boundaryml.com/chat): Have an LLM write BAML code for you
+
+
+---
+
+[^1]: [AI Agents Market Poised for Exponential Growth](https://villpress.com/ai-agents-market-poised-for-exponential-growth-projections-indicate-surge-from-5-1-billion-in-2024-to-47-1-billion-by-2030/),
+villpress.com blog
+
+[^2]: [ell: The Language Model Programming Library](https://docs.ell.so/#prompts-are-programs-not-strings), ell docs
+
+[^3]: [The motivation behind BAML](https://docs.boundaryml.com/home/welcome#motivation), BAML docs
+
+[^4]: [Coalescence: making LLM inference 5x faster](https://blog..txt.co/coalescence.html), .txt blog
+
+[^5]: [Schema-aligned parsing](https://www.boundaryml.com/blog/schema-aligned-parsing), BAML blog
+
+[^6]: [AI agents need new syntax](https://www.boundaryml.com/blog/ai-agents-need-new-syntax), BAML blog 
