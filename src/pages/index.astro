@@ -8,6 +8,7 @@ import { Button, Card, Icon, Label } from 'astro-pure/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import Section from '@/components/home/Section.astro'
 import SkillLayout from '@/components/home/SkillLayout.astro'
+import SubscribeForm from '@/components/home/SubscribeForm.astro'
 import avatar from '@/assets/dataquarry-banner.webp'
 import config from '@/site-config'
 
@@ -62,6 +63,7 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
         </p>
         <Button title='More about me' class='w-fit self-end' href='/about' style='ahead' />
       </Section>
+
       {
         allPostsByDate.length > 0 && (
           <Section title='Posts'>
@@ -77,6 +79,12 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
         )
       }
 
+      <!-- Subscribe to the blog -->
+      <Section title='Subscribe'>
+        <SubscribeForm />
+      </Section>
+
+      <hr class="border-border" />
       {
         /* <Section title='Experience'>
       <Card

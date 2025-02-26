@@ -1,0 +1,86 @@
+---
+// Simple email subscription form component
+---
+
+<div class="subscribe-container w-full p-6 rounded-lg border border-muted bg-card shadow-sm">
+    <h3 class="text-xl font-semibold mb-2">Stay Updated</h3>
+    <p class="text-muted-foreground mb-4">Get notified when I publish new posts!</p>
+    
+    <form id="subscribe-form" class="flex flex-col sm:flex-row gap-2">
+      <input 
+        type="email" 
+        id="email-input" 
+        placeholder="your@email.com" 
+        required
+        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      />
+      <button 
+        type="submit" 
+        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+      >
+        Subscribe
+      </button>
+    </form>
+    
+    <div id="subscribe-message" class="mt-2 text-sm hidden"></div>
+  </div>
+  
+  <script>
+    // Client-side form handling
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('subscribe-form');
+      const messageEl = document.getElementById('subscribe-message');
+      
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const emailInput = document.getElementById('email-input') as HTMLInputElement;
+        const email = emailInput.value;
+        
+        if (!email) return;
+        
+        try {
+          messageEl?.classList.remove('hidden', 'text-red-500', 'text-green-500');
+          messageEl?.classList.add('text-muted-foreground');
+          messageEl!.textContent = 'Subscribing...';
+          
+          // Replace with your actual API endpoint
+          const response = await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            messageEl?.classList.remove('text-muted-foreground');
+            messageEl?.classList.add('text-green-500');
+            messageEl!.textContent = 'Thanks for subscribing!';
+            emailInput.value = '';
+          } else {
+            throw new Error(data.message || 'Failed to subscribe');
+          }
+        } catch (error) {
+          messageEl?.classList.remove('text-muted-foreground');
+          messageEl?.classList.add('text-red-500');
+          messageEl!.textContent = error instanceof Error 
+            ? error.message 
+            : 'Something went wrong. Please try again.';
+        }
+      });
+    });
+  </script>
+  
+  <style>
+    .subscribe-container {
+      background-color: var(--card);
+      transition: transform 0.2s ease-in-out;
+    }
+    
+    .subscribe-container:hover {
+      transform: translateY(-2px);
+    }
+  </style>
