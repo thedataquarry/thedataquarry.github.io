@@ -2,7 +2,7 @@
 title: "I've moved this blog to Astro, and I like it here"
 description: "The story behind me migrating this blog site from Zola to Astro"
 publishDate: 2025-02-26
-draft: true
+draft: false
 tags:
   - astro
   - general
@@ -128,14 +128,14 @@ theme was rendering it as `April 28, 2023`, which was a day off. I was initially
 but it took me all of two minutes to get two potential solutions from Claude 3.7 Sonnet via Cursor.
 
 Not knowing a thing about how timezones and datetimes worked in TypeScript, this is the initial question
-I asked in Cursor chat to put Claude 3.7 Sonnet to work:
+I asked in Cursor chat to put Claude 3.5 Sonnet to work:
 
-<Image src={Img1} alt="Explaining to Claude 3.7 Sonnet about the datetime issue in the Astro theme" />
+<Image src={Img1} alt="Explaining to Claude 3.5 Sonnet about the datetime issue in the Astro theme" />
 
 The model's response was nuanced, giving me two different ways to fix the issue. I ended up going with the second
 approach that sets the default timezone to UTC, because I'd like to preserve the exact date of the blog post's publication.
 
-<Image src={Img2} alt="Claude 3.7 Sonnet suggesting a solution in Cursor's chat interface" />
+<Image src={Img2} alt="Claude 3.5 Sonnet suggesting a solution in Cursor's chat interface" />
 
 All in all, I continued addressing my own feature requests, needs and wants this way, and it took me all of 1-2
 days of work (among other things) to get the site up and running. Not bad at all! After this, it was
@@ -227,9 +227,19 @@ Thanks to the widespread usage of Astro in so many amazing sites already out the
 and there are custom components for all sorts of things. I'm sure I'll be able to add even more custom components in the
 future as needed, without too much effort.
 
+## Building more with LLMs
+
+With the release of Anthropic's Claude [3.7 Sonnet](https://www.anthropic.com/news/claude-3-7-sonnet), it's
+amply clear that humans and LLMs are going to become natural pair programmers. Working with Claude 3.7 Sonnet 
+has been like having a non-judgmental, infinitely patient, skilled senior developer by my side.
+I'm looking forward to working with it to add more advanced features to this site,
+such as a subscribe button that allows readers like you to subscribe to the blog and stay updated.
+
+LLMs are truly changing the future of coding, by influencing the way developers like me interface
+with editors and codebases. Translating ideas into code and implementations has never been more fun.
+Stay tuned for more posts on my experiments with LLMs!
+
 ## Conclusions
-
-
 
 What began as a personal journey of writing down my learnings eventually led to this blog finding enthusiastic
 readers from all over the 🌎 planet! It's been a multi-year journey since I began writing static blogs in
@@ -264,5 +274,5 @@ I hope you can also give it a try for your next static site!
 Zola, which uses Tera (a Jinja-like templating language) alongside Rust code, makes it even more niche for LLMs to help out.
 In contrast, Astro uses TypeScript, JSX, and Tailwind CSS, which may be new to me, but modern LLMs seem to do well with them.
 [^3]: This excellent comparison by [CloudCannon](https://cloudcannon.com/blog/astro-vs-next-js/) shows that Astro sites are generally faster than Next.js sites,
-although with some nuances. Next.js is a more feature-rich framework than Astro, and Astro is easier to get started with than Next.js, is fast, and a perfect fit
+although with some nuances. Next.js is a more feature-rich framework than Astro, and Astro is much easier to get started with, is fast, and a perfect fit
 for simple blog sites like this one.

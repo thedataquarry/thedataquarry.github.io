@@ -28,7 +28,7 @@ import config from './src/site.config.ts'
 // https://astro.build/config
 export default defineConfig({
   // Top-Level Options
-  site: 'https://prrao87.github.io',
+  site: 'https://thedataquarry.com',
   // base: '/docs',
   trailingSlash: 'never',
 
