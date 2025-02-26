@@ -119,5 +119,19 @@ export default defineConfig({
     '/posts/why-pydantic-v2-matters': '/blog/why-pydantic-v2-matters',
     '/posts/intermediate-pydantic': '/blog/intermediate-pydantic',
     '/posts/rust-is-supercharging-python': '/blog/rust-is-supercharging-python',
+    "/posts/baml-and-future-agentic-workflows": "/blog/baml-and-future-agentic-workflows",
+    "/posts/baml-is-building-blocks-for-ai-engineers": "/blog/baml-is-building-blocks-for-ai-engineers",
+    "/posts/embedded-db-1": "/blog/embedded-db-1",
+    "/posts/embedded-db-2": "/blog/embedded-db-2",
+    "/posts/embedded-db-3": "/blog/embedded-db-3",
+    "/posts/intro-to-rayon": "/blog/intro-to-rayon",
+    "/posts/meilisearch-async": "/blog/meilisearch-async",
+    "/posts/open-source-via-graph-viz": "/blog/open-source-via-graph-viz",
+    "/posts/static-site-zola": "/blog/static-site-zola",
+    "/posts/towards-a-unified-python-toolchain": "/blog/towards-a-unified-python-toolchain",
+    "/posts/vector-db-1": "/blog/vector-db-1",
+    "/posts/vector-db-2": "/blog/vector-db-2",
+    "/posts/vector-db-3": "/blog/vector-db-3",
+    "/posts/vector-db-4": "/blog/vector-db-4"
   }
 })
