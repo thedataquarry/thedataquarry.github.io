@@ -79,7 +79,7 @@ Rust and Zola's templating language, Tera, I was able to customize the [Serene t
 to my liking.
 
 However, after my experience with Astro as part of my job duties at Kuzu, I began finding easier and more aesthetic
-ways to do things. The ability to use Tailwind CSS and JSX to build the site, made it easier for me to get a far better looking site
+ways to do things in Astro. The ability to use Tailwind CSS and JSX to build the site, made it easier for me to get a far better looking site
 while also adding custom components to enhance my use case.
 
 My experience with Zola was undoubtedly positive, and I'd largely attribute my
@@ -125,7 +125,7 @@ and its faithful sidekicks, Claude 3.5/3.7 Sonnet, to help me out.
 To demonstrate how useful they were, I came across a strange issue where the theme's datetime calculation
 was off by a day. When I entered the post's published date in the post's frontmatter as `2023-04-29`, the
 theme was rendering it as `April 28, 2023`, which was a day off. I was initially scratching my head as to the source of the problem,
-but it took me all of two minutes to get two potential solutions from Claude 3.7 Sonnet via Cursor.
+but it took me all of two minutes to get two potential solutions from Claude 3.5 Sonnet via Cursor.
 
 Not knowing a thing about how timezones and datetimes worked in TypeScript, this is the initial question
 I asked in Cursor chat to put Claude 3.5 Sonnet to work:
@@ -145,8 +145,8 @@ components worked.
 ## Timeline components and more
 
 In Astro, blogs are typically written in `.mdx` files. MDX is a markdown-like syntax that allows you to
-incorporate JSX code for custom UI components. This is _extremely_ useful for static blog sites like this one,
-where I like to illustrate my points with timelines, callouts, code blocks and more.
+incorporate JSX code blocks for custom UI components. This is _extremely_ useful for a self-hosted, static blog site like this one,
+where I like to have the freedom to illustrate my points with timelines, callouts, code blocks and more.
 
 Say I want to describe a timeline of key milestones in the history of this blog, I can use the `Timeline`
 component that's built into the Pure theme. Once it's defined in Astro, it's just a matter of importing it
