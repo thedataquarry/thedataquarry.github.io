@@ -35,9 +35,9 @@ const {
 
 const socialImage = heroImage
   ? typeof heroImage.src === 'string'
-    ? heroImage.src
-    : heroImage.src.src
-  : '/images/social-card.png'
+    ? new URL(heroImage.src, Astro.site).href
+    : new URL(heroImage.src.src, Astro.site).href
+  : new URL('/images/social-card.png', Astro.site).href
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
 // const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-text-opacity))'
 ---
