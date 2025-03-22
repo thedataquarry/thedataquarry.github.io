@@ -1,8 +1,8 @@
 ---
-slug: "can-llms-be-used-to-enrich-datasets"
-title: "Can LLMs be used to enrich datasets with their own knowledge?"
-description: "How I used BAML on a gender classification task to enrich a dataset using LLMs"
-publishDate: 2025-03-22
+slug: "using-llms-to-enrich-datasets"
+title: "Using LLMs to enrich datasets: A case study with BAML"
+description: "How I used BAML to prompt Gemma-3 and gpt-4o-mini to enrich a dataset via a gender classification task"
+publishDate: 2025-03-23
 draft: false
 tags:
   - llm
@@ -16,24 +16,25 @@ import { YouTube } from 'astro-embed';
 import Img1 from './nobel_graph.png';
 import Img2 from './baml-prompt-preview.png';
 
-When working with LLMs, I'm sure we've all seen our fair share of comical (or catastrophic) hallucinations,
-causing us to wonder how we'd ever use them in practice on our real world problems.
-It's been two months since I've discovered [BAML](https://github.com/BoundaryML/baml), an AI framework
+It's been two months since I discovered [BAML](https://github.com/BoundaryML/baml), an AI framework
 that helps get better structured outputs from LLMs -- and it's been enabling me to experiment with
-numerous LLMs at a mad pace.
+numerous LLMs at a mad pace. 🚀
+And in my conversations with Vaibhav Gupta
+(CEO of [BoundaryML](https://www.boundaryml.com/), the team that makes BAML), I've come to realize
+that I have the tendency to underestimate LLMs for most tasks. One particular thing that Vaibhav
+said got me thinking -- LLMs have been getting better and better at not only reasoning, but also at
+memorizing large amounts of factual knowledge and recalling it on demand. This combined ability of modern LLMs can be
+viewed as an _asset_ that can be used to enrich datasets with new knowledge.
 
 In my work as an AI engineer, I regularly come across datasets that are incomplete, and in many cases, it's quite hard to obtain
-augmentation data sources to improve them for downstream tasks. In my numerous conversations with Vaibhav Gupta
-(CEO of [BoundaryML](https://www.boundaryml.com/), the team that makes BAML), I've come to realize
-that modern LLMs are not only getting better and better at reasoning, but their ability to recall memorized knowledge
-can be viewed as an _asset_ that can be used to enrich datasets with new knowledge. I found this idea quite interesting
-and it gave me loads of food for thought, so I decided to put it to the test on an existing dataset I had.
+augmentation data sources to improve them for downstream tasks. Why not run an experiment to see how LLMs
+do in comparison to prior methods?
 
-In this post, I'll lay out how I reframed the task of dataset enrichment as a classification problem,
+In this post, I'll lay out how I reframed the task of dataset enrichment as a classification problem in my case,
 and how I used BAML to test and evaluate prompts for multiple LLMs.
 Along the way I'll do my best to illustrate how the rapid iteration cycle in BAML -- from an initial
 idea to producing a result that can be tested and evaluated quickly -- is the key reason why building with BAML
-is so effective while being a ton of fun! 🚀
+is so effective while being a ton of fun!
 
 I hope that by the end of this post, you'll be excited to try out new ideas and get your hands dirty with LLMs,
 with BAML at the helm!
@@ -73,14 +74,14 @@ The network contains very interesting tree structures, as shown in the image bel
 
 The dataset is obtained from [this source](https://github.com/rtol/NobelNetwork) and was part of a
 study that aimed to identify the level of influence in the networks of Nobel Prize laureates. The raw
-data from the study was made publicly available in the form of MATLAB files, and it was only possible to
-extract the names of the scholars, and in the case of Nobel Prize laureates, the year and category of the prize.
+data from the study was made publicly available in the form of MATLAB files, and it
+only contained the names of the scholars, and in the case of Nobel Prize laureates, the year and category of the prize.
 Only four Nobel Prize categories (Physics, Chemistry, Physiology & Medicine, and Economic Sciences)
 were present in this dataset.
 
-Looking at the data more closely, some pertinent questions related to gender imbalance emerged, for example: _What is the ratio
-of female to male laureates per Nobel Prize category?_[^1]. However, the available dataset does not contain any gender information,
-so if we want to answer these kinds of questions, we're left with the following classification task:
+As I looked at the data more closely, some pertinent questions related to gender imbalance emerged, for example: _What is the ratio
+of female to male laureates per Nobel Prize category?_[^1]. However, the available dataset did not contain any gender information,
+so if I want to answer these kinds of questions, I'm left with the following classification task:
 
 > Given a scholar or laureate's name and any additional information (e.g., their prize category and the year
 > they were awarded the prize), can we classify whether they are male or female?
@@ -101,21 +102,21 @@ to new, unseen scenarios.
 
 What about supervised machine learning? It's definitely possible to train an ML classifier that learns from a training
 set of annotated data, but this approach requires that a large enough corpus of annotated data with known names and their genders
-is available in the first place. Even so, the best such a model can do is make predictions based on simple patterns like
-co-occurrences of names with a given gender, or subword units that have no semantic meaning in and of themselves.
+is available in the first place. Even so, the best such a model can do is make predictions based on simple associations
+of subword features with a given gender, or subword units that have no semantic meaning in and of themselves.
 
 However, we now live in the age of LLMs, which are trained on incredibly large amounts of data. Through the process of training,
-an emergent "reasoning" ability is observed in these models, along with an impressive knowledge base of memorized information.
+an emergent "reasoning" ability is observed in these models, along with an impressive knowledge base obtained through memorization.
 Given the nature of this task, it's perfectly
 plausible that an LLM trained on a large corpus of text
 from the web has seen the names of these well-known scholars, scientists and Nobel laureates.
-Can we leverage LLMs' memorized knowledge and reasoning abilities to classify the gender of a given name?
+Can we leverage a combination of the LLMs' memorized knowledge and their reasoning abilities to classify the gender of scholars in our dataset?
 
 That's the main goal of this post! We'll compare and contrast the following methods:
 - Gender-API ([gender-api.com](https://gender-api.com)): An "AI" powered gender prediction API that has a large database of culture-aware names and their associated genders
 - LLM 1: `openai/gpt-4o-mini`: OpenAI's fast, low-cost and general-purpose LLM
-- LLM 2: `google/gemma-3-12b`: Google's low-cost, reasoning-capable LLM, with 12B parameters
-- LLM 3: `google/gemma-3-27b`: The same low-cost, reasoning-capable LLM from Google, but its 27B parameter variant
+- LLM 2: `google/gemma-3-12b`: Google's open source, reasoning-capable LLM, with 12B parameters
+- LLM 3: `google/gemma-3-27b`: The same open source reasoning-capable LLM from Google, but its 27B parameter variant
 
 As engineers, we can only convince ourselves that the performance is acceptable with quantifiable metrics
 and by running some experiments. So, let's get our hands dirty and build a BAML workflow that does this!
@@ -124,19 +125,19 @@ and by running some experiments. So, let's get our hands dirty and build a BAML 
 
 BAML can be used via several client languages, but in this post I'll be using Python. Once the BAML CLI is installed
 via `uv add baml-py,` we are presented with a `baml_src` directory, in which we can begin creating the BAML schema
-and prompts via `*.baml` files.
+and prompts.
 
 ### LLM clients
 
-BAML supports a variety of LLM clients, including OpenAI, Ollama, and Google. In this post, I'll be using
-a custom Ollama client[^3] that serves Google's recent `gemma-3` models, as well as the OpenAI `gpt-4o-mini` client.
+BAML supports a variety of LLM clients, including OpenAI, Ollama, Google and many more. In this post, I'll be using
+a custom Ollama client[^3] that serves Google's recent `gemma-3` models, as well as our noble workhorse, OpenAI's `gpt-4o-mini`.
 The inference parameters are set as per the Gemma team's
 [best practices](https://docs.unsloth.ai/basics/tutorial-how-to-run-and-fine-tune-gemma-3) for Ollama,
 and separately for `gpt-4o-mini`.
 
 <Tabs>
   <TabItem label="gpt-4o-mini">
-    ```rs
+    ```rs title="clients.baml"
     // Learn more about clients at https://docs.boundaryml.com/docs/snippets/clients/overview
     client<llm> GTP4oMini {
         provider openai
@@ -149,7 +150,7 @@ and separately for `gpt-4o-mini`.
     ```
   </TabItem>
   <TabItem label="gemma-3-12b">
-    ```rs
+    ```rs title="clients.baml"
     client<llm> OllamaGemma3_12b {
         provider openai-generic
         options {
@@ -165,7 +166,7 @@ and separately for `gpt-4o-mini`.
     ```
   </TabItem>
   <TabItem label="gemma-3-27b">
-    ```rs
+    ```rs title="clients.baml"
     client<llm> OllamaGemma3_27b {
         provider openai-generic
         options {
@@ -189,7 +190,7 @@ do this by defining an enum (enumeration) in BAML. An enum is a good fit for thi
 allows us to define an arbitrary number of possible categories the LLM can predict, so this approach
 generalizes well to other classification scenarios.
 
-```rs
+```rs title="genderize.baml"
 enum Gender {
   Male
   Female
@@ -201,26 +202,28 @@ Note that there is an extra category, `Unknown`, along with two gender categorie
 The `@description` annotation is optional, but it's a good idea to add this to tell the LLM to use
 this when it's not sure of the answer.
 
-<Aside type="caution" title="Always provide an escape hatch for the LLM in classification tasks">
-It's generally recommended to provide a "catch-all" category in
+<Aside type="caution" title="Always provide an escape hatch category for classification tasks">
+It's generally recommended to provide an "escape hatch" category in
 classification tasks, such as "`Unknown`" in this example.
-An LLM's goal is to help, and if there isn't an escape hatch provided, it could force-fit its prediction
-towards a particular category even if it's not sure of the answer.
+An LLM's goal is to be helpful, and if there isn't an escape hatch provided during classification,
+it could force-fit its prediction towards a particular category even if it's not sure of the answer.
 </Aside>
 
 ### Prompts
 
-The prompt is constructed by BAML as follows: We provide it a scholar's full name
-along with the following added context, if they are a laureate:
+The context is provided to the BAML prompt as follows: we combine the scholar's full name
+with the following extra information if they are a laureate:
 - The year they were awarded the prize
 - The category of the prize
 
-If the scholar is not a laureate, the prompt only includes the scholar's full name and the added info that they are a scholar.
-This means that the LLM will have to reason about the origins of the name or use its memorized knowledge to make a prediction.
+If the scholar is not a laureate, the prompt only includes the scholar's full name and that they are a scholar.
+This means that the LLM will have to use its best judgment to reason about the origins of the name or use
+its memorized knowledge to make a prediction. BAML uses the user-provided context to construct
+the prompt, whose formatted version is shown below.
 
 <Tabs>
   <TabItem label="BAML source">
-    ```rs
+    ```rs title="genderize.baml"
     function ClassifyGender(info: string) -> Gender {
     client OllamaGemma3_27b
     prompt #"
@@ -238,7 +241,7 @@ This means that the LLM will have to reason about the origins of the name or use
     ```
   </TabItem>
   <TabItem label="Formatted prompt">
-    ```rs
+    ```rs title="genderize.baml"
     function ClassifyGender(info: string) -> Gender {
     client OllamaGemma3_27b
     prompt #"
@@ -262,15 +265,13 @@ This means that the LLM will have to reason about the origins of the name or use
   </TabItem>
 </Tabs>
 
-The input to the function is a string that's formatted with additional information about the scholar where
-available. Some example tests in BAML are shown below.
-The output format is set to the `Gender` enum we defined earlier. The LLM client is swapped out for
-each of the runs one by one.
+If you look at the "Formatted prompt" tab, the input to the function is a string that contains
+additional information about the scholar where available.
 
 ### Tests
 
 One of the single best features of BAML is the ease with which it's possible to test prompts, even
-before writing a line of application code. From within the IDE, you can define a test that observes
+before writing a single line of application code. From within the IDE, you can define a test that observes
 the results on edge cases that are known to be challenging for certain LLMs. Here's the initial
 tests we can write for the gender classification task.
 
@@ -386,7 +387,7 @@ It's time to compare the results between the different methods!
 ### Total female predictions
 
 Let's begin by tabulating the total number of cases for which each model predicted a female gender.
-This is trivially done by counting the number occurrences of the "female" string in the output of each model.
+This is trivial -- all we need to do is count the number of occurrences of the value `"female"` in the output of each model.
 
 | Method | Total female predictions |
 |-------|:-------------------------:|
@@ -395,7 +396,7 @@ This is trivially done by counting the number occurrences of the "female" string
 | `google/gemma-3-12b` | 63 |
 | `google/gemma-3-27b` | 57 |
 
-Even at first glance, the LLMs predictions of female scholars/laureates are much more in line with
+Even at first glance, the LLM-based predictions of female scholars/laureates are much more in line with
 each other than Gender-API's predictions. Eyeballing the results from each method, it's clear that
 there are _far_ more false positives from Gender-API than the LLMs. Let's see some examples
 of names that were wrongly predicted by Gender-API, but correctly predicted by all the LLMs.
@@ -407,15 +408,15 @@ of names that were wrongly predicted by Gender-API, but correctly predicted by a
 | Zhicen Lou (male) | ❌ female | ✅ male | ✅ male | ✅ male |
 | Youyou Tu (female) | ❌ male | ✅ female | ✅ female | ✅ female |
 
-Gender-API gets confused with surnames like "Ada" and "Penny" that are traditionally male names,
+Gender-API gets confused with surnames like "Ada" and "Penny" that are traditionally female names,
 but lacks the domain knowledge to understand that in most cultures, surnames are not indicative of gender.
-This is a common problem with classical machine learning models, which learn the wrong associations
+This is a common problem with classical machine learning models, which can learn the wrong associations
 between features in the data. The other cases that Gender-API commonly gets wrong are rare names
 from diverse cultures, which is another classic symptom of classical ML models (failure to generalize
 to unseen data).
 
 The LLMs get these case right likely due to their memorization of the training data, and the fact
-that LLMs tend to learn a _lot_ of the right associations between features from the training data.
+that LLMs tend to learn a _lot_ of the right associations between features during their training.
 
 ### Female Nobel laureates
 
@@ -426,9 +427,9 @@ the number drops to just 26. 🤯
 
 With this small a list, it's trivial to human-annotate all the names for each category using knowledge from
 the Wikipedia source[^2], following which we can clearly tabulate the number of
-correctly predicted genders from each method.
+predicted/actual genders from each method.
 
-| Model | Physics | Chemistry | Physiology/Medicine | Economic Sciences |
+| Method | Physics | Chemistry | Physiology/Medicine | Economic Sciences |
 |-------|:-------:|:---------:|:-------------------:|:-----------------:|
 | GenderAPI | ❌ 8/4 | ❌ 14/8 | ❌ 17/12 | ✅ 2/2 |
 | `openai/gpt-4o-mini` | ✅ 4/4 | ✅ 8/8 | ✅ 12/12 | ✅ 2/2 |
@@ -436,33 +437,32 @@ correctly predicted genders from each method.
 | `google/gemma-3-27b` | ✅ 4/4 | ✅ 8/8 | ✅ 12/12 | ✅ 2/2 |
 
 <Aside title="LLMs got the perfect score!">
-Interestingly, **all** 26 female Nobel laureates were correctly classified by all three LLMs!!
-In every category of Nobel Prize, the LLMs got **100%** of the female laureates' gender predictions correct
--- this was double-checked by carefully inspecting the LLM's outputs and comparing them with the human-annotated data.
-As can be seen, Gender-API over-predicted the number of female Nobel laureates in 3 of the 4 categories.
+Interestingly, in **every** category of Nobel Prize, the LLMs got **100%** of the female laureates' gender predictions correct
+(26 of them). This was double-checked by carefully inspecting the LLM's outputs and comparing them with the human-annotated data.
+As can be seen, Gender-API over-predicted the number of female Nobel laureates in 3 of the 4 categories
+(for e.g., 14 predicted, vs. 8 actual in Chemistry).
 </Aside>
 
 ### Random sample of names
 
 The next result we'll look at is the accuracy of each method on a random sample of 75 scholars whose genders were
 also human-annotated. These 75 were randomly chosen from the full dataset of 3,529 scholars, and
-upon closer inspection, some of these are problematic and can quite challenging to classify without
-additional context, as we'll see below.
+upon closer inspection, some of these are problematic and can be quite challenging to classify without
+additional context, even for humans, as we'll see below.
 
-| Model       | Accuracy | Correct/Total |
+| Method       | Accuracy | Correct/Total |
 |-------------|----------|---------------|
-| GenderAPI   | 72.00%   | 54/75         |
-| `openai/gpt-4o-mini` | 89.33%   | 67/75         |
-| **`google/gemma-3-12b`**  | **97.33%**   | **73/75**         |
-| **`google/gemma-3-27b`**  | **97.33%**   | **73/75**         |
+| GenderAPI   | 72.0%   | 54/75         |
+| `openai/gpt-4o-mini` | 89.3%   | 67/75         |
+| **`google/gemma-3-12b`**  | **97.3%**   | **73/75**         |
+| **`google/gemma-3-27b`**  | **97.3%**   | **73/75**         |
 
 Of the 75 names in the human-annotated dataset, Gender-API only predicted 72% of the genders correctly,
 while the `gemma-3` models got 97% of the names correctly classified. `gpt-4o-mini` wasn't far behind, getting
 89% of the names correct.
 
-Below are the only two sample names that were wrongly classified by the `gemma-3` models. Quite ambiguous,
-and hard even for humans (unless you're already culturally familiar with the names, which in this
-case are French).
+Below are the only two sample names that were wrongly classified by the `gemma-3` models. They're quite ambiguous,
+and hard even for humans (unless you're already culturally familiar with French names in this case).
 
 <Tabs>
   <TabItem label="gemma-3-12b">
@@ -479,14 +479,14 @@ case are French).
   </TabItem>
 </Tabs>
 
-It's quite likely that had there been additional context provided, for e.g., that these scholars belonged
-to a particular institution, the models could have made better predictions.
+It's quite possible that had there been additional context provided, for e.g., that these scholars belonged
+to a particular institution, the LLMs may have gotten these predictions correct.
 
-### "Unknown" gender
+### Unknown gender
 
 Across the three LLMs, there were 62 names that were marked as "Unknown" by at least one of the models.
 Let's first look at the accuracy numbers of the predictions for all these names "Unknown" by the LLMs
-(some LLMs got more names wrong than others). To make the comparison, these 62 names were human-annotated
+(certain LLMs got right what the others got wrong). To make the comparison, these 62 names were human-annotated
 using best judgment from source on the web. Below is a table showing the accuracy of each method.
 
 | Model       | Accuracy | Correct/Total |
@@ -551,21 +551,22 @@ cases:
 - Names that are very uncommon (e.g., "Essaie Colladon")
 - Names that are from diverse cultures (e.g., "Harusada Suginome", "Pafnuty Chebychev", "Zhores Alferov")
 
-The LLMs tend to do better with these scenarios, and as can be seen above, they tend to only mark names as "Unknown"
-if they are very uncommon. Notice how Gemma-3's 12B model is much more
-confident (fewer names marked as "Unknown") than its 27B counterpart. This is worthy of a further
+The LLMs tend to do better with these scenarios because they can bank on their memorized knowledge,
+and as can be seen in the examples above, they tend to only mark names as "Unknown"
+if they are indeed very uncommon names. Notice how Gemma-3's 12b model is much more
+confident, marking fewer cases as "Unknown" than its 27b counterpart. This is worthy of a further
 investigation, which we'll do below using Chain-of-Draft (CoD) prompting via BAML.
 
 ## Chain-of-draft (CoD) prompting
 
-It's worth doing a bit more analysis to gain a more nuanced understanding of the seemingly great performance of the LLMs.
+It's worth doing a bit more analysis to gain a more nuanced understanding of the seemingly good performance of the `gemma-3` models.
 We will use a technique described in the paper [Chain of Draft: Thinking Faster by Writing Less](https://arxiv.org/abs/2502.18600).
-As always, BAML's playground, interactive testing and rapid iteration cycles make experimenting with LLM's
-an absolute breeze.
+As always, BAML's playground, interactive testing and rapid iteration cycles make experimenting with LLM
+prompts this way an absolute breeze.
 
-CoD is a less verbose form of chain-of-thought (CoT) reasoning, where the LLM is asked to only keep a minimum draft
-of its reasoning process, rather than storing the full chain of thought, which can be quite verbose. We
-can create a CoD prompt in BAML that appends to the original prompt with the following lines (highlighted below).
+CoD can be thought of as a less verbose form of chain-of-thought (CoT) reasoning, where the LLM is asked to only keep a minimum draft
+of its reasoning process, rather than storing the full chain of thought, which can be quite verbose. The
+CoD prompt is defined in BAML code where we append to the original prompt the following lines (highlighted below).
 
 ```rs
 // Chain-of-Draft (CoD) prompting
@@ -591,10 +592,9 @@ function ClassifyGenderCoD(info: string) -> Gender {
 
 The `gemma-3` models predicted the least number of unknown genders, and in general, got the most predictions
 correct. However, recall from above that `gemma-3-12b` marked fewer names as "Unknown" than `gemma-3-27b`.
-Why is that? It's natural to expect that the 27b model is more powerful and should be able to make better predictions.
+Why is that? It would be natural to expect that the 27b model is more powerful and should make better predictions.
 
-
-We can use CoD prompting to inspect the reasoning process of both these models to gain a better understanding
+We can use CoD prompting to inspect the reasoning process of both these models to gain a deeper understanding
 of their reasoning process.
 
 <Tabs>
@@ -645,10 +645,11 @@ of their reasoning process.
   </TabItem>
 </Tabs>
 
-Interesting! `gemma-3-12b` predicts the gender correctly, but not for the right _reasons_. It uses a much simpler and more
-biased reasoning process, such as the the fact that Nobel prizes are normally awarded to men to judge that Aime is a male name. However,
-`gemma-3-27b` uses a much more nuanced reasoning process, and recalls that Aime is a traditionally
-male, French name, and without any further context, it comes to the conclusion that the gender is most likely male.
+Interesting! `gemma-3-12b` predicts the gender correctly, but _not for the right reasons_. It uses a much simpler and more
+biased reasoning process, such as the the fact that Nobel prizes are normally awarded to men, and rushes to judge that Aime
+is a male name because of this fact. However, `gemma-3-27b` uses a much more nuanced and deliberate reasoning process, first
+recalling from its knowledge that Aime is a traditionally male French name, but without any further context, it comes to
+the conclusion that the gender is most likely male.
 
 `gpt-4o-mini` outright hallucinates that Aime Cotton is a "notable female physicist" (he was a male Physicist),
 so it gets this one totally wrong.
@@ -700,21 +701,24 @@ Let's look at another example, Merle Battiste, a male American chemist.
 
 `gemma-3-12b` notes that it doesn't have any information about the name "Merle", because it's an uncommon
 name, but once again, because it uses a biased and simple reasoning process that most Nobel prizes
-are awarded to men, it predicts the "male" gender. The `gemma-3-27b` model, on the other hand,
+are awarded to men, it settles on the "male" gender. The `gemma-3-27b` model, on the other hand,
 isn't entirely convinced that the name "Merle" is always male, and even though it knows men historically dominate
 among Nobel Prize winners, it judges that the gender is "unknown". `gpt-4o-mini` goes through the
 same reasoning and comes to the same conclusion as `gemma-3-27b` in this case.
 
 <Aside type="tip" title="Which Gemma-3 variant gave a better result?">
 Although `gemma-3-12b` got the answer right in this case, inspecting its CoD reasoning shows that it is overconfident
-and makes biased assumptions in its prediction. However, `gemma-3-27b` is performing more nuanced reasoning,
-so it's arguable that its predicting "unknown" here is more appropriate behaviour, as it's more closely
-following the instructions in the prompt and getting a large fraction of its predictions correct.
+and makes biased assumptions in its prediction, explaining why it marks fewer names as "Unknown" gender in total.
+However, `gemma-3-27b` is more nuanced and deliberate in its reasoning.
+
+Which is better? It's arguable that the 27b model's predicting "unknown" here is more appropriate for the task,
+as it's more closely following the instructions in the prompt and getting a large fraction of its predictions correct.
+That way, any genders marked as "unknown" can be inspected by a human to determine the final answer for certain.
 </Aside>
 
 ## Cost vs. performance
 
-No LLM workflow analysis is complete without a discussion of the trade-offs between cost and performance.
+No analysis of an LLM-based workflow is complete without discussing the trade-offs between cost and performance.
 The following table shows the cost of running each method for 3,529 predictions, as well as the run time
 it took to complete. Note that the run time noted for the LLMs is for the asynchronous
 runs, either through the OpenAI API or a custom Ollama client[^3] that can handle multiple requests in parallel.
@@ -729,20 +733,20 @@ from BAML), making this whole exercise really fast and cheap!
 | `google/gemma-3-27b` | Free | 7.3 |
 
 Gender-API is 2 orders of magnitude more expensive than the LLMs, because their licensing model is
-archaic and the only way to access it is by buying a monthly subscription to their API.
+archaic and the only way to access it is by buying a monthly subscription to their API. 😒
 
-The `gemma-3` models are open source, and the only cost incurred is the energy used to run the GPU for 7 mins.
+The `gemma-3` models are open source, and the only cost incurred is the energy used to run the GPU.
 OpenAI's API is still incredibly cheap, at \$0.06 for the entire set of 3,529 predictions.
 Isn't it incredible that we live in an age where we can access the power of
 low cost, fast, reasoning-capable LLMs like `gemma-3` and `gpt-4o-mini` for a tiny fraction of the cost of a
 cup of coffee?! All while being more accurate than pre-existing methods and allowing us to enrich
 the original data with the LLM's own knowledge! 🤯
 
-From a cost perspective, the LLMs are a highly favourable option, because any cases marked as "Unknown"
-can be inspected by a human, and the evaluation methodology can be scaled up to include more cases,
-allowing a greater degree of confidence in LLM-driven predictions for other domains. BAML can play
-a key role in this process, through its focus on DevEx and allowing teams to rapidly test and iterate
-their ideas using the latest and greatest LLMs.
+From a cost and performance perspective, the LLMs are found to be a highly favourable option, because any cases marked as "Unknown"
+can be inspected by a human, and the very same evaluation methodology can be scaled up to include more test cases,
+allowing a greater degree of confidence in LLM-driven predictions. This applies to other domains as well, and in my opinion, BAML can play
+a key role in this process due to its relentless focus on DevEx, which allows teams to rapidly test and iterate
+on their prompts using the latest and greatest LLMs.
 
 ## Strengths of BAML
 
@@ -764,31 +768,33 @@ which an idea can be translated into code.
 
 From a developer experience perspective, doing prompt engineering in BAML is just _amazing_.
 In BAML, you test _the prompts themselves_, and you have access to the LLM's raw outputs.
-By inspecting the raw LLM outputs alongside the final outputs, it's super straightforward
-to analyze the chain-of-thought (or chain-of-draft) reasoning of each model. This leads to a _much_ deeper
-understanding of the strengths and weaknesses of each model, as shown here in the case of `gemma-3`'s 12b and 27b variants.
+By inspecting the raw LLM outputs alongside BAML's final outputs, and combining this
+with chain-of-thought, or chain-of-draft prompting, it's possible to gain a much more nuanced
+understanding of the strengths and weaknesses of each model for the task at hand.
 
 In BAML, every prompt is a function, and the BAML runtime forces the developer to write at least one unit test.
-You can very quickly create tests for edge cases in your domain. Then, when you find that a shiny new model just
+You can very quickly create tests for numerous edge cases in your domain. Then, when you find that a shiny new model just
 came out, simply swap out the client in BAML (as easily as shown above), and rerun your test suite (either in the UI
 or via the CLI) to see how the new model does on those edge cases, without even writing any code in the applicatio
  language. It's that simple!
 
 ### No vendor lock-in
 
-There are many LLM prompting frameworks out there, and it's easy to get locked into a particular on,
+There are many LLM prompting frameworks out there, and it's easy to get locked into a particular one,
 whether it's a proprietary framework or an open source one. Once
-you do, it's _really_ hard to switch to a different framework. Not to mention that a lot of these existing
-frameworks simply don't have the developer experience, particularly when it comes to testing and iterating on prompts,
-that BAML provides. Because BAML is forever open source, you can live in peace knowing that you can
+you do, it's _really_ hard to switch to a different framework or LLM because the prompts may break in
+weird ways. Not to mention that a lot of these existing
+frameworks simply don't have the level of developer experience that BAML does, particularly when it
+comes to testing and iterating on prompts. Because BAML is independent and open source, you can live in peace knowing that you can
 immediately swap out LLM providers the moment something better comes along. And you're not stuck with
 the rigid APIs and pricing models of proprietary frameworks.
 
 ## Takeaways
 
 Glad you made it this far, and although this was a long post, I hope it was informative! In my view,
-based on the experiments shown here, LLMs are indeed capable of assisting with data enrichment tasks.
-Because the given dataset involves real-world historical
+based on the experiments shown here, LLMs are indeed capable of assisting with data enrichment tasks, assuming
+that sufficient thought is given to the task definition and the prompt engineering stage.
+Because the dataset used in this post involves real-world historical
 scholars, it was straightforward to build an evaluation suite to compare and contrast
 the performance of three LLMs vs. a gender-prediction API. I hope it's amply clear that it's really
 important to not take the LLM's results at face value, however, and to do a more thorough analysis of the outputs,
