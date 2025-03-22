@@ -489,7 +489,7 @@ Let's first look at the accuracy numbers of the predictions for all these names 
 (certain LLMs got right what the others got wrong). To make the comparison, these 62 names were human-annotated
 using best judgment from source on the web. Below is a table showing the accuracy of each method.
 
-| Model       | Accuracy | Correct/Total |
+| Method      | Accuracy | Correct/Total |
 |-------------|----------|---------------|
 | GenderAPI   | 41.94%   | 26/62         |
 | `openai/gpt-4o-mini` | 43.55%   | 27/62         |
@@ -775,8 +775,8 @@ understanding of the strengths and weaknesses of each model for the task at hand
 In BAML, every prompt is a function, and the BAML runtime forces the developer to write at least one unit test.
 You can very quickly create tests for numerous edge cases in your domain. Then, when you find that a shiny new model just
 came out, simply swap out the client in BAML (as easily as shown above), and rerun your test suite (either in the UI
-or via the CLI) to see how the new model does on those edge cases, without even writing any code in the applicatio
- language. It's that simple!
+or via the CLI) to see how the new model does on those edge cases, without even writing any code in the application
+language. It's that simple!
 
 ### No vendor lock-in
 
