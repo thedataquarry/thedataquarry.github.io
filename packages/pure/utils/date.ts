@@ -10,7 +10,6 @@ export function getFormattedDate(
     return new Date(date).toLocaleDateString(config.locale.dateLocale, {
       ...(config.locale.dateOptions as Intl.DateTimeFormatOptions),
       ...options,
-      timeZone: "UTC"  // Force UTC interpretation
     })
   }
 
