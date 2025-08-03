@@ -1,0 +1,82 @@
+---
+interface Props {
+  id: string;
+  fallback?: string;
+}
+
+const { id, fallback }: Props = Astro.props;
+
+// Extract tweet ID from URL for fallback
+const tweetId = id.match(/status\/(\d+)/)?.[1];
+
+async function fetchTweet(id: string, theme: 'light' | 'dark') {
+  const url = new URL('https://publish.twitter.com/oembed');
+  url.searchParams.set('url', id);
+  url.searchParams.set('omit_script', 'true');
+  url.searchParams.set('dnt', 'true');
+  url.searchParams.set('theme', theme);
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const { html } = await response.json();
+    return html;
+  } catch (error) {
+    console.warn(`Tweet fetch failed for ${id} (${theme}):`, error);
+    return null;
+  }
+}
+
+const [lightHtml, darkHtml] = await Promise.all([
+  fetchTweet(id, 'light'),
+  fetchTweet(id, 'dark')
+]);
+
+const hasEmbeds = lightHtml || darkHtml;
+---
+
+{hasEmbeds ? (
+  <div class="tweet-container">
+    {lightHtml && <astro-embed-tweet class="light" set:html={lightHtml} />}
+    {darkHtml && <astro-embed-tweet class="dark" set:html={darkHtml} />}
+    <script is:inline async src="https://platform.twitter.com/widgets.js"></script>
+  </div>
+) : (
+  <!-- Fallback: Simple link to tweet -->
+  <div class="tweet-fallback">
+    <a href={id} target="_blank" rel="noopener noreferrer">
+      {fallback || `View tweet ${tweetId ? `#${tweetId}` : ''}`}
+    </a>
+  </div>
+)}
+
+<style>
+.tweet-container :global(.dark) { display: none; }
+:global(.dark) .tweet-container :global(.light) { display: none; }
+:global(.dark) .tweet-container :global(.dark) { display: block; }
+
+/* Fix dark mode styling */
+:global(.dark .twitter-tweet) {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+/* Fallback styling */
+.tweet-fallback {
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.tweet-fallback a {
+  color: var(--link-color, #1d9bf0);
+  text-decoration: none;
+}
+
+.tweet-fallback a:hover {
+  text-decoration: underline;
+}
+</style>

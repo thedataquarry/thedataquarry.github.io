@@ -35,7 +35,7 @@ export default defineConfig({
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp'
-    }
+    },
   },
 
   integrations: [
@@ -94,10 +94,6 @@ export default defineConfig({
       ]
     }
   },
-  experimental: {
-    svg: true,
-    contentIntellisense: true
-  },
   vite: {
     plugins: [
       //   visualizer({
@@ -107,7 +103,7 @@ export default defineConfig({
     ],
     build: {
       rollupOptions: {
-        external: ["astro-community/astro-embed-twitter"]
+        external: []
       }
     }
   },

@@ -21,28 +21,28 @@
   "dependencies": {
     "@astro-community/astro-embed-twitter": "^0.5.8",
     "@astrojs/check": "^0.9.4",
-    "@astrojs/rss": "^4.0.11",
-    "@playform/compress": "^0.1.7",
-    "@unocss/reset": "^0.58.0",
-    "astro": "^5.1.9",
+    "@astrojs/rss": "^4.0.12",
+    "@playform/compress": "^0.1.9",
+    "@unocss/reset": "^0.58.9",
+    "astro": "^5.12.8",
     "astro-embed": "^0.9.0",
     "astro-pure": "file:packages/pure",
-    "katex": "^0.16.21",
+    "katex": "^0.16.22",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "sharp": "^0.33.5",
-    "typescript": "^5.7.3",
-    "unocss": "^65.4.3"
+    "typescript": "^5.9.2",
+    "unocss": "^65.5.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
-    "eslint": "^9.19.0",
+    "@eslint/js": "^9.32.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.5.1",
+    "eslint": "^9.32.0",
     "eslint-plugin-astro": "^1.3.1",
-    "prettier": "^3.4.2",
+    "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.6.11",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "rollup-plugin-visualizer": "^5.14.0",
-    "typescript-eslint": "^8.21.0"
+    "typescript-eslint": "^8.38.0"
   }
 }

@@ -229,3 +229,14 @@ body::-webkit-scrollbar {
 .prose .footnotes {
   font-size: 0.875em;  /* 14px if base is 16px */
 }
+
+/* Twitter embeds */
+astro-embed-tweet {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.twitter-tweet {
+  margin: 0 auto !important;
+}
