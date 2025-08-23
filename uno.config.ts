@@ -2,7 +2,7 @@ import { defineConfig, presetMini, presetTypography, type Rule } from 'unocss'
 
 import { integ } from './src/site.config.ts'
 
-const typographyCustom = integ.typography as any || {}
+const typographyCustom = integ.typography || {}
 
 const fg = 'hsl(var(--foreground) / var(--un-text-opacity, 1))'
 const fgMuted = 'hsl(var(--muted-foreground) / var(--un-text-opacity, 1))'

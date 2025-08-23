@@ -14,9 +14,6 @@ import { outputCopier } from './src/plugins/output-copier.ts'
 import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
 // Shiki
 import {
-  addCopyButton,
-  addLanguage,
-  addTitle,
   transformerNotationDiff,
   transformerNotationHighlight,
   updateStyle
@@ -85,10 +82,11 @@ export default defineConfig({
       transformers: [
         transformerNotationDiff(),
         transformerNotationHighlight(),
-        updateStyle(),
-        addTitle(),
-        addLanguage(),
-        addCopyButton(2000)
+        updateStyle()
+        // Temporarily disabled - need to fix context access:
+        // addTitle(),
+        // addLanguage(), 
+        // addCopyButton(2000)
       ]
     }
   },
