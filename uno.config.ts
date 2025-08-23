@@ -1,4 +1,8 @@
-import { defineConfig, presetTypography, presetUno } from 'unocss'
+import { defineConfig, presetMini, presetTypography, type Rule } from 'unocss'
+
+import { integ } from './src/site.config.ts'
+
+const typographyCustom = integ.typography || {}
 
 const fg = 'hsl(var(--foreground) / var(--un-text-opacity, 1))'
 const fgMuted = 'hsl(var(--muted-foreground) / var(--un-text-opacity, 1))'
@@ -35,7 +39,8 @@ const typographyConfig = {
       'border-left': 'inherit',
       'border-radius': 'var(--radius)',
       'padding-inline': '1.6rem',
-      'box-shadow': '0 5px 0 ' + bgMuted
+      'box-shadow': '0 5px 0 ' + bgMuted,
+      ...(typographyCustom.blockquoteStyle === 'normal' && { 'font-style': 'normal' })
     },
     'blockquote::after': {
       color: fgMuted,
@@ -51,9 +56,7 @@ const typographyConfig = {
     },
     // Table
     table: {
-      display: 'inline-table',
-      width: '100%',
-      'overflow-x': 'scroll',
+      display: 'block',
       'font-size': '.875em'
     },
     'table tr': {
@@ -66,7 +69,7 @@ const typographyConfig = {
       'font-weight': '500',
       color: fg
     },
-    'td,th': {
+    'td, th': {
       border: 'inherit',
       'text-align': 'start',
       padding: '0.57em'
@@ -89,6 +92,18 @@ const typographyConfig = {
       'margin-top': '.5em',
       'margin-bottom': '.5em'
     },
+    // Inline code
+    ...(typographyCustom.inlineCodeBlockStyle === 'modern' && {
+      ':not(pre) > code': {
+        padding: '0.3em 0.5em',
+        border: '1px solid hsl(var(--border) / 1)',
+        'border-radius': 'var(--radius)',
+        'background-color': 'hsl(var(--muted) / var(--un-bg-opacity, 1))'
+      },
+      ':not(pre)>code::before,:not(pre)>code::after': {
+        content: 'none'
+      }
+    }),
     // Others
     img: {
       'border-radius': 'var(--radius)',
@@ -108,8 +123,15 @@ const typographyConfig = {
       color: fg
     },
     a: {
+      'word-wrap': 'break-word',
+      'word-break': 'break-word',
+      'overflow-wrap': 'anywhere',
       'font-weight': '500',
       color: fg
+    },
+    'code:not(pre code)': {
+      'white-space': 'pre-wrap!important',
+      'word-break': 'break-all!important'
     }
   }
 }
@@ -150,12 +172,42 @@ const themeColors = {
   }
 }
 
+const rules: Rule<object>[] = [
+  // Fix unocss presetMini
+  [
+    'sr-only',
+    {
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      padding: '0',
+      margin: '-1px',
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      'white-space': 'nowrap',
+      'border-width': '0'
+    }
+  ],
+  [
+    'object-cover',
+    {
+      'object-fit': 'cover'
+    }
+  ],
+  [
+    'bg-cover',
+    {
+      'background-size': 'cover'
+    }
+  ]
+]
+
 export default defineConfig({
   presets: [
-    presetUno(), // required
+    presetMini(), // required
     presetTypography(typographyConfig)
   ],
-  rules: [],
+  rules,
   theme: {
     colors: themeColors
   },
