@@ -25,6 +25,7 @@
     "@playform/compress": "^0.2.0",
     "@waline/client": "^3.6.0",
     "astro": "^5.12.8",
+    "astro-embed": "^0.9.0",
     "astro-pure": "file:packages/pure",
     "katex": "^0.16.22",
     "rehype-katex": "^7.0.1",
