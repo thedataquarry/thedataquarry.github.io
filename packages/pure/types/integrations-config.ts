@@ -24,12 +24,16 @@ export const IntegrationConfigSchema = () =>
       target: z.string()
     }),
 
-    /** Tailwindcss typography */
+    /** UnoCSS typography */
     typography: z.object({
       /** The class to apply to the typography. */
       class: z
         .string()
-        .default('prose prose-pure dark:prose-invert dark:prose-pure prose-headings:font-medium')
+        .default('prose prose-pure dark:prose-invert dark:prose-pure prose-headings:font-medium'),
+      /** The style of blockquote font, normal or italic. */
+      blockquoteStyle: z.enum(['normal', 'italic']).default('italic'),
+      /** The style of inline code block, code or modern. */
+      inlineCodeBlockStyle: z.enum(['code', 'modern']).default('modern')
     }),
 
     /** A lightbox library that can add zoom effect */

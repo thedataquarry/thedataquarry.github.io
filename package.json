@@ -1,7 +1,7 @@
 {
   "name": "astro-theme-pure",
   "type": "module",
-  "version": "4.0.2-beta",
+  "version": "4.0.7",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev --watch",
@@ -22,16 +22,15 @@
     "@astro-community/astro-embed-twitter": "^0.5.8",
     "@astrojs/check": "^0.9.4",
     "@astrojs/rss": "^4.0.12",
-    "@playform/compress": "^0.1.9",
-    "@unocss/reset": "^0.58.9",
+    "@playform/compress": "^0.2.0",
+    "@waline/client": "^3.6.0",
     "astro": "^5.12.8",
-    "astro-embed": "^0.9.0",
     "astro-pure": "file:packages/pure",
     "katex": "^0.16.22",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "sharp": "^0.33.5",
-    "typescript": "^5.9.2",
+    "sharp": "^0.34.3",
+    "typescript": "^5.8.3",
     "unocss": "^65.5.0"
   },
   "devDependencies": {
