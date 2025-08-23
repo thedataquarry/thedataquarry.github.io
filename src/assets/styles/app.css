@@ -1,26 +1,77 @@
 /* Font */
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Regular.woff2') format('truetype');
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/IBMPlexSans-Regular.ttf') format('truetype');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Inter';
-  font-weight: bold;
-  src: url('/fonts/Inter_18pt-Bold.woff2') format('truetype');
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/IBMPlexSans-Bold.ttf') format('truetype');
+  font-weight: 700;
   font-style: bold;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Inter';
-  font-style: italic;
-  src: url('/fonts/Inter_18pt-Italic.woff2') format('truetype');
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/IBMPlexSans-Italic.ttf') format('truetype');
+  font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
+
+/* IBM Plex Mono for code blocks */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/IBMPlexMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/IBMPlexMono-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/IBMPlexMono-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Responsive Font Sizing */
 html {
-  font-family: 'Satoshi', sans-serif;
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px; /* Base font size for mobile */
+}
+
+/* Desktop and larger screens */
+@media (min-width: 768px) {
+  html {
+    font-size: 14px; /* Slightly larger for desktop readability */
+  }
+}
+
+/* Large desktop screens */
+@media (min-width: 1440px) {
+  html {
+    font-size: 15px; /* Even larger for wide monitors */
+  }
+}
+
+/* Code blocks font styling */
+pre,
+code,
+kbd,
+samp,
+.prose code,
+.prose pre {
+  font-family: 'IBM Plex Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 /* Theme */
