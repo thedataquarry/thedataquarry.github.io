@@ -23,6 +23,8 @@ export const theme: ThemeUserConfig = {
       timeZone: 'UTC'
     }
   },
+  /** X handle **/
+  xHandle: 'tech_optimist',
   /** Set a logo image to show in the homepage. */
   logo: {
     src: 'src/assets/dataquarry-banner',
@@ -58,21 +60,22 @@ export const theme: ThemeUserConfig = {
 
   /** Configure the footer of your site. */
   footer: {
-    /** Copyright year */
-    year: new Date().getFullYear().toString(),
+    // Registration information for ICP (optional)
+    registration: {
+      url: '',
+      text: ''
+    },
     /** Enable displaying a "Astro & Pure theme powered" link in your site's footer. */
     credits: true
   },
 
   content: {
-    /** Required field for external links */
-    externalLinks: {
-      content: ' ⤴'
-    },
+    externalLinksContent: ' ⤴',
     /** Blog page size for pagination (optional) */
     blogPageSize: 5,
-    // Keep your preferred share options including LinkedIn
-    share: ['x', 'linkedin']
+    externalLinkArrow: true, // show external link arrow
+    // Currently support weibo, x, bluesky, linkedin
+    share: ['x', 'linkedin']  // can use any values from shareList
   }
 }
 
