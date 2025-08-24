@@ -1,7 +1,7 @@
 ---
 slug: "learning-dspy-1-the-power-of-good-abstractions"
 title: "Learning DSPy (1): The power of good abstractions"
-description: "An introduction to DSPy and its core abstractions"
+description: "An introduction to DSPy and its core abstractions, and why it matters for AI engineers"
 publishDate: 2025-08-24
 draft: true
 tags:
@@ -20,11 +20,12 @@ import Img5 from './dspy-intro-5.png';
 import Img6 from './dspy-intro-6.png';
 
 Unless you've been living under a rock for the last year, you've probably heard of [DSPy](https://dspy.ai).
-If you're like me, you've probably seen posts recently on X raving about DSPy, but you probably put
-it in the back of your mind, saying "sounds interesting... but I don't really get it". Having
-spent more than a month engaging with the amazing [@DSPyOSS](https://x.com/DSPyOSS) community on X, and trying it
-out on various use cases, it's finally becoming clear to me how powerful (and well-designed) it really is,
-and I've decided that it's worth an entire blog post just explaining DSPy from the perspective of its abstraction philosophy.
+You've probably seen plenty of posts online by users of DSPy raving about it, but you probably put
+it in the back of your mind, saying "sounds interesting... but I don't really get it". That was me, in 2024. Fast
+forward to 2025, things look radically different, at least to my eyes. Having
+spent the last several weeks engaging with the amazing [@DSPyOSS](https://x.com/DSPyOSS) community on X, and building with
+it for multiple use cases, it's finally become clear to me how powerful and well-designed it really is,
+so I've decided that it's worth an entire blog post just explaining DSPy from the perspective of its abstraction philosophy.
 
 ## Your prompt's probably not as good as you think it is
 
@@ -32,29 +33,34 @@ Anyone who's spent a fair amount of time prompting language models (LMs) has pro
 way -- a small perturbation to the prompt string you write can have unforeseen consequences on the
 downstream task. This is especially true in compound AI pipelines, where you combine
 several prompts to solve a larger, more complex task. When you take a step back and think about where you
-_actually_ are in the prompt space, you come to the following humbling realization: there's an infinite
-space of prompts out there that could potentially get you a better result. All you really
-did after all that painstaking tweaking of words and word order in the prompt, was to hit upon an arbitrary
-point in this space.
+_actually_ are in the prompt space, you come to the following humbling realization: there's an infinite number
+of alternative prompts out there that could potentially get you a better result. All you really
+did after all that painstaking tweaking of words and word order in the prompt message, was to hit upon an arbitrary
+point in this space, which is likely far from optimal.
 
 <Figure src={Img1} alt='In the infinite space of good prompts, this is where you probably are' />
 
-Of course, a real prompt space isn't likely as smooth and continuous as this -- this is just to illustrate
-the point. A real-world AI pipeline is a combination of several subtasks that each require their own distinct
-prompts and styles (and indeed, language models themselves), so it's very likely that the prompt space
-you're operating in is highly discontinuous. It's not at all clear what changes you make actually help or harm
-the overall outcome. Put simply, prompts are _**not**_ a good abstraction to work with LMs.
+Of course, a real prompt space isn't likely smooth and continuous -- this is just for illustrative
+purposes. The larger point is still the same -- It's not at all clear how the changes you make to the prompt
+impact the final outcome. Put simply, prompts as user-defined strings are _**not**_ a good interface to
+building reliable AI software.
 
 As a developer beginning an AI task, conventional frameworks make you begin with the question:
 > "How can I best prompt this LM to achieve the given outcome"?
 
+This is a reasonable approach to rapidly ideate and test your ideas. However, when building AI-enabled
+software that runs in production, it's important to recognize
+that unlike in software engineering, the prompt engineering process never ends -- the moment there's a
+newer and better LM that comes along (there always is), you need to start all over, because prompts
+are brittle, and can break for reasons that are subtle and incredibly hard to debug.
+
 ## The power of good abstractions
 
-As a developer learning any new framework, it helps to understand the following: a) the abstractions you're given
+As a developer learning a new AI framework, it always helps to understand the following: a) the abstractions you're given
 to work with, and b) the _level_ of abstraction you're working at. As you read and digest the documentation, it
 becomes apparent what primitives you can use to compose and build together the workflow you have in your head
-or on the whiteboard. Too high a level of abstraction, and you end up with rigid building blocks that
-you wrestle with to align them to your task. Too low, and you're left writing tons
+or on the whiteboard. Too high-level an abstraction, and you end up with rigid building blocks that
+you need to wrestle with to align them to your task. Too low-level, and you're left writing tons
 of boilerplate and repetitive code in each and every one of your projects.
 
 As you use a framework across a wide variety of problems, you begin to see very clearly what it lacks
@@ -71,7 +77,7 @@ as the larger AI ecosystem evolves.
 
 Designing good abstractions like this, at a level that's neither too high nor too low, for every possible
 use case, in a fast-paced world like we're currently in, is _hard_. Yet,
-each day I use DSPy, it's amply clear to me that they've hit upon a great set of abstractions that
+every day I use DSPy, it's amply clear to me that they've hit upon a great set of abstractions that
 balance these qualities really well. Without any further ado, let's move on to learning DSPy!
 
 ## What is DSPy?
@@ -93,9 +99,9 @@ They let you tell the LM _what_ it needs to do, rather than specify _how_ it sho
 
 2. **Modules**: Modules are building blocks for programs that interact with LMs. They are generalized to take in any
 any signature while abstracting away the prompting technique for interacting with the LM (e.g., chain of thought).
-DSPy modules are composable, meaning that you can combine multiple modules together to create more complex modules for any task.
-Importantly, modules serve as learning targets for the optimizer. As LMs and prompting strategies evolve, so
-too does the module.
+DSPy modules are highly composable, meaning that you can combine multiple modules together to create more complex
+modules for any task. Importantly, modules serve as learning targets for the optimizer. As LMs and prompting
+strategies evolve, so too does the module.
 
 3. **Optimizers**: As indicated by their name, optimizers improve the performance of a DSPy module with annotated
 examples of input-output pairs. The optimizer can automatically generate and improve prompts, few-shot examples or the language
