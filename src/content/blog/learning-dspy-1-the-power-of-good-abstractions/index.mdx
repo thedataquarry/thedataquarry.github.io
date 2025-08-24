@@ -1,0 +1,306 @@
+---
+slug: "learning-dspy-1-the-power-of-good-abstractions"
+title: "Learning DSPy (1): The power of good abstractions"
+description: "An introduction to DSPy and its core abstractions"
+publishDate: 2025-08-24
+draft: true
+tags:
+  - llm
+  - language-model
+  - agentic
+---
+import Figure from '@/components/Figure.astro';
+import { Tabs, TabItem } from 'astro-pure/user';
+import { Aside } from 'astro-pure/user';
+// import { YouTube } from 'astro-embed';
+import Img1 from './dspy-intro-1.png';
+import Img2 from './dspy-intro-2.png';
+import Img4 from './dspy-intro-4.png';
+import Img5 from './dspy-intro-5.png';
+import Img6 from './dspy-intro-6.png';
+
+Unless you've been living under a rock for the last year, you've probably heard of [DSPy](https://dspy.ai).
+If you're like me, you've probably seen posts recently on X raving about DSPy, but you probably put
+it in the back of your mind, saying "sounds interesting... but I don't really get it". Having
+spent more than a month engaging with the amazing [@DSPyOSS](https://x.com/DSPyOSS) community on X, and trying it
+out on various use cases, it's finally becoming clear to me how powerful (and well-designed) it really is,
+and I've decided that it's worth an entire blog post just explaining DSPy from the perspective of its abstraction philosophy.
+
+## Your prompt's probably not as good as you think it is
+
+Anyone who's spent a fair amount of time prompting language models (LMs) has probably learned this the hard
+way -- a small perturbation to the prompt string you write can have unforeseen consequences on the
+downstream task. This is especially true in compound AI pipelines, where you combine
+several prompts to solve a larger, more complex task. When you take a step back and think about where you
+_actually_ are in the prompt space, you come to the following humbling realization: there's an infinite
+space of prompts out there that could potentially get you a better result. All you really
+did after all that painstaking tweaking of words and word order in the prompt, was to hit upon an arbitrary
+point in this space.
+
+<Figure src={Img1} alt='In the infinite space of good prompts, this is where you probably are' />
+
+Of course, a real prompt space isn't likely as smooth and continuous as this -- this is just to illustrate
+the point. A real-world AI pipeline is a combination of several subtasks that each require their own distinct
+prompts and styles (and indeed, language models themselves), so it's very likely that the prompt space
+you're operating in is highly discontinuous. It's not at all clear what changes you make actually help or harm
+the overall outcome. Put simply, prompts are _**not**_ a good abstraction to work with LMs.
+
+As a developer beginning an AI task, conventional frameworks make you begin with the question:
+> "How can I best prompt this LM to achieve the given outcome"?
+
+## The power of good abstractions
+
+As a developer learning any new framework, it helps to understand the following: a) the abstractions you're given
+to work with, and b) the _level_ of abstraction you're working at. As you read and digest the documentation, it
+becomes apparent what primitives you can use to compose and build together the workflow you have in your head
+or on the whiteboard. Too high a level of abstraction, and you end up with rigid building blocks that
+you wrestle with to align them to your task. Too low, and you're left writing tons
+of boilerplate and repetitive code in each and every one of your projects.
+
+As you use a framework across a wide variety of problems, you begin to see very clearly what it lacks
+and what parts you need to customize for your use cases. In this fast-moving world of AI and LMs, it's also worth
+thinking about the potential need for future-proofing your code. With all
+this in mind, let's list the qualities of what makes for _good_ abstractions in any framework:
+
+1. **Simplicity**: Provides an easy entry point for developers to begin building and testing out their ideas.
+1. **Clarity**: Offers clear semantics, making it obvious how to use them and what to expect.
+1. **Flexibility**: Enables rapid changes to workflow logic during early experimentation while making it
+easy for developers to customize for their specific needs.
+1. **Longevity**: Withstands the test of time, minimizing the need for drastic code changes
+as the larger AI ecosystem evolves.
+
+Designing good abstractions like this, at a level that's neither too high nor too low, for every possible
+use case, in a fast-paced world like we're currently in, is _hard_. Yet,
+each day I use DSPy, it's amply clear to me that they've hit upon a great set of abstractions that
+balance these qualities really well. Without any further ado, let's move on to learning DSPy!
+
+## What is DSPy?
+
+[DSPy](https://github.com/stanfordnlp/dspy), or **D**eclarative **S**elf-improving **Py**thon, is a
+framework for _programming_ -- rather than prompting -- language models. Instead of tuning prompts through
+trial and error (which can result in brittle workflows), you write modular Python code using composable
+building blocks, and _teach_ your LM to produce high-quality outputs via an optimization process. Under the
+hood, the LM still sees a prompt, but one that's automatically generated by DSPy
+based on the code you write. To begin using DSPy, all you really need is to understand these three key core
+abstractions:
+
+<Figure src={Img2} />
+
+Let's unpack each of these abstractions to understand their purpose (with examples in code, in the next section).
+
+1. **Signatures**: Signatures specify the input and output types to the LM and what the expected behaviour is.
+They let you tell the LM _what_ it needs to do, rather than specify _how_ it should do it.
+
+2. **Modules**: Modules are building blocks for programs that interact with LMs. They are generalized to take in any
+any signature while abstracting away the prompting technique for interacting with the LM (e.g., chain of thought).
+DSPy modules are composable, meaning that you can combine multiple modules together to create more complex modules for any task.
+Importantly, modules serve as learning targets for the optimizer. As LMs and prompting strategies evolve, so
+too does the module.
+
+3. **Optimizers**: As indicated by their name, optimizers improve the performance of a DSPy module with annotated
+examples of input-output pairs. The optimizer can automatically generate and improve prompts, few-shot examples or the language
+model weights to produce a new, improved module that can perform better on that task.
+
+The table below summarizes the tasks that DSPy replaces in traditional LM frameworks:
+
+Traditional task | DSPy abstraction 
+--- | --- 
+❌ Hand-writing detailed prompts | Signatures 
+❌ Hand-crafted prompting techniques & predefined prompt chains | Modules 
+❌ Manual prompt engineering | Optimizers 
+
+Once you learn DSPy, you never again have to rely on predefined prompt chains or rigid abstractions to interact with
+LMs. You leverage composable, flexible building blocks that can be easily adapted to your specific needs.
+DSPy inverts the traditional thought process when working with LMs: rather than thinking about the specific words
+to write in the prompt, you're focused on the following very important question:
+
+> What does success look like for my specific task?
+
+In DSPy, you start by thinking about metrics that measure the quality of output. This means thinking about the
+desired outcomes and how you can objectively measure them. Only then, you proceed to write your signature
+that _declares_ your intent, which in turn formulates the prompt for the module at hand. Optimizers are
+optional in DSPy -- even without using optimization, you'll be surprised to find how effective your
+initial DSPy module can be, no matter what task you throw at it.
+
+This will become much clearer with an example, so let's dive in!
+
+## Example
+
+Let's consider the following realistic scenario: you're an AI developer working at a market analysis consultancy. Your task
+is to automate the information extraction process of mergers and acquisitions from news articles in the mining industry.
+Let's assume that you've obtained access to a high-quality news feed with articles
+from specialized sources that describe the latest developments in the M&A space in natural language.
+Here's an example article describing an acquisition:
+
+<Figure src={Img4} />
+
+The article talks about Northern Star Resources' acquisition of De Grey Mining for $5 billion. There
+are company names, commodities (in this case, gold) and monetary amounts mentioned in the text,
+which are all useful fields for a downstream market analysis of acquisitions in the gold mining industry.
+
+Similarly, in other cases, there could be merger events, where, unlike acquisitions, one company
+merges with another, to create a third (new) entity.
+
+<Figure src={Img5} />
+
+In either case, there are key entities that need to be extracted for analysis,
+such as the companies involved, the nature of the transaction (acquisition or merger), and the financial details.
+The language used to describe these events is often complex and nuanced, requiring an LM to make
+an assessment on whether the merger or acquisition actually happened -- certain articles may mention
+the fact that a deal was _considered_, but it may not have actually materialized in the real world.
+
+Because mergers and acquisitions are fundamentally distinct events, we can decompose the information
+extraction task into separate components, each with their own specialized focus. Before extracting the specific
+information required for either type of deal, we first need to classify the deal itself. Here's the workflow
+we'll build in DSPy.
+
+<Figure src={Img6} />
+
+### Define success metrics
+
+Let's begin with the DSPy mindset of defining what "success" means for this task. For each news article,
+we want to a) classify it as belonging to the type "merger", "acquisition" or "other", and b) extract
+the relevant fields of interest that are exact matches with what's in the source data. Below
+are some of the fields that are captured via exact matches:
+- Company names
+- Currency symbols: `USD`, `CAD` or `AUD`
+- Company stock tickers
+- Financial amounts (e.g., `5 billion`): In this case, the multipliers ("mn" or "bn") should be extracted
+as a full word (million or billion) for the purposes of standardization in the downstream analysis.
+
+The success metric for this example is defined as follows:
+> Our result object's values should be an exact match with gold (annotated) data that has the same structure and field names.
+
+### Language model
+
+DSPy wraps [LiteLLM](https://www.litellm.ai/), an LLM gateway that provides a standard OpenAI API-compatible format
+for language model developers to integrate their models with any framework. In this example, we'll use
+OpenRouter (which itself exposes an OpenAI API-compatible interface, fitting seamlessly with DSPy), so
+that we can easily swap out language models from multiple popular providers. It's simple to set up and configure 
+a language model in DSPy as follows:
+
+```py
+import dspy
+
+# This example uses OpenRouter. Switch to any other LM provider as needed
+lm = dspy.LM(
+    model="openrouter/google/gemini-2.0-flash-001",
+    api_base="https://openrouter.ai/api/v1",
+    api_key="<OPENROUTER_API_KEY>"",
+)
+dspy.configure(lm=lm)
+```
+
+We'll use the `google/gemini-2.0-flash-001` model for our experiment below.
+
+### Define complex types
+
+The next step is to create DSPy signatures, akin to how you'd write prompts in other frameworks,
+but DSPy's approach is more declarative. Each subtask from the above diagram will have its own signature
+and module (every module requires a signature as input).
+
+Because the task requires complex objects as output, we can use Pydantic models to easily declare
+complex types to our signature. Three Pydantic models will be created: `Merger`, `Acquisition`,
+and `Other`, for each output type.
+
+```py
+from pydantic import BaseModel, Field
+
+class Merger(BaseModel):
+    article_id: int | None = Field(default=None)
+    company_1: str | None = Field(description="First company in the merger")
+    company_1_ticker: list[str] | None = Field(
+        description="Stock ticker of first company"
+    )
+    company_2: str | None = Field(description="Second company in the merger")
+    company_2_ticker: list[str] | None = Field(
+        description="Stock ticker of second company"
+    )
+    merged_entity: str | None = Field(description="Name of merged entity")
+    deal_amount: str | None = Field(description="Total monetary amount of the deal")
+    deal_currency: Literal["USD", "CAD", "AUD", "Unknown"] = Field(
+        description="Currency of the merger deal"
+    )
+    article_type: Literal["merger"] = "merger"
+
+class Acquisition(BaseModel):
+    article_id: int | None = Field(default=None)
+    parent_company: str | None = Field(description="Parent company in the acquisition")
+    parent_company_ticker: list[str] | None = Field(
+        description="Stock ticker of parent company"
+    )
+    child_company: str | None = Field(description="Child company in the acquisition")
+    child_company_ticker: list[str] | None = Field(
+        description="Stock ticker of child company"
+    )
+    deal_amount: str | None = Field(description="Total monetary amount of the deal")
+    deal_currency: Literal["USD", "CAD", "AUD", "Unknown"] = Field(
+        description="Currency of the acquisition deal"
+    )
+    article_type: Literal["acquisition"] = "acquisition"
+
+class Other(BaseModel):
+    article_id: int | None = Field(default=None)
+    article_type: Literal["other"] = "other"
+```
+
+As can be seen, we're not limiting ourselves to using flat data models and simple types. With the power
+of Pydantic, it's possible to express a much richer representation that we want to pass as inputs or
+outputs to the LMs.
+
+### Signatures
+
+Let's start with the first signature that performs classification. We create a signature by subclassing
+`dspy.Signature` and passing in a docstring in Python. The purpose of the docstring is _not_ to do
+manual prompt engineering, but rather, explain in the simplest terms, what we expect the LM to do.
+
+```py
+class ClassifyArticle(dspy.Signature):
+    """
+    Analyze the following news article and classify it according to whether it's
+    a "Merger" or "Acquisition".
+    If it mentions a potential or failed deal, classify it as "Other".
+    """
+
+    text: str = dspy.InputField()
+    article_type: Literal["merger", "acquisition", "other"] = dspy.OutputField()
+```
+
+We're simply asking the LM to classify the article as either a merger or an acquisition, without providing
+the specifics of what those terms mean. Also, we clarify under what conditions the "other" category is assigned.
+The input field is the text of the article, and the output field is a Python literal representing the article type.
+
+Next, we define the signatures for information extraction for mergers and acquisitions.
+
+```py
+class ExtractMergerInfo(dspy.Signature):
+    """
+    Extract merger information about companies from the given text.
+    """
+
+    text: str = dspy.InputField()
+    merger_info: Merger = dspy.OutputField()
+
+
+class ExtractAcquisitionInfo(dspy.Signature):
+    """
+    Extract acquisition information about companies from the given text.
+    """
+
+    text: str = dspy.InputField()
+    acquisition_info: Acquisition = dspy.OutputField()
+```
+Once again, note how simple the docstrings are. The input fields for each case are once again,
+the article texts (strings), and the output fields in this case are the Pydantic models we defined
+for `Merger` or `Acquisition`.
+
+That's it! No long, verbose prompts specifying how to get the LM to do what we want. We simply
+focus on writing the signature using Python code, and allow DSPy to formulate the prompt for us.
+
+<Aside type="tip" title="Tip">
+When defining signatures, avoid prematurely optimizing for specific phrasing or prompting styles
+in your docstring.
+_Only_ say what needs to be said for your particular domain, if you know what you want and can
+articulate it clearly. It's the job of the optimizer (downstream) to discover how
+to appropriately phrase the prompt and provide fewshot examples to guide the LM to its destination.
+</Aside>
