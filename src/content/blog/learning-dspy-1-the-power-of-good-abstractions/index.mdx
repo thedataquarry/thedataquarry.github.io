@@ -24,7 +24,7 @@ You've probably seen plenty of posts online by users of DSPy raving about it, bu
 it in the back of your mind, saying "sounds interesting... but I don't really get it". That was me, in 2024. Fast
 forward to 2025, things look radically different, at least to my eyes. Having
 spent the last several weeks engaging with the amazing [@DSPyOSS](https://x.com/DSPyOSS) community on X, and building with
-it for multiple use cases, it's finally become clear to me how powerful and well-designed it really is,
+it for multiple use cases, it's finally become clear to me how useful and well-designed it really is,
 so I've decided that it's worth an entire blog post just explaining DSPy from the perspective of its abstraction philosophy.
 
 ## Your prompt's probably not as good as you think it is
@@ -103,11 +103,12 @@ DSPy modules are highly composable, meaning that you can combine multiple module
 modules for any task. Importantly, modules serve as learning targets for the optimizer. As LMs and prompting
 strategies evolve, so too does the module.
 
-3. **Optimizers**: As indicated by their name, optimizers improve the performance of a DSPy module with annotated
-examples of input-output pairs. The optimizer can automatically generate and improve prompts, few-shot examples or the language
-model weights to produce a new, improved module that can perform better on that task.
+3. **Optimizers**: Optimizers improve the performance of a DSPy module with annotated
+examples of input-output pairs. The optimizer can automatically improve and generate prompts,
+few-shot examples or the language model weights to produce a new, improved module that can
+perform better on that task.
 
-The table below summarizes the tasks that DSPy replaces in traditional LM frameworks:
+The table below summarizes the tasks that DSPy's abstractions replace in traditional LM frameworks:
 
 Traditional task | DSPy abstraction 
 --- | --- 
@@ -116,25 +117,26 @@ Traditional task | DSPy abstraction
 ❌ Manual prompt engineering | Optimizers 
 
 Once you learn DSPy, you never again have to rely on predefined prompt chains or rigid abstractions to interact with
-LMs. You leverage composable, flexible building blocks that can be easily adapted to your specific needs.
-DSPy inverts the traditional thought process when working with LMs: rather than thinking about the specific words
-to write in the prompt, you're focused on the following very important question:
+LMs. You get composable, flexible building blocks that can be easily adapted to your specific needs.
+DSPy inverts the traditional thought process when working with LMs: rather than thinking about specific ways
+to phrase the prompt, you're focused on the following very important question:
 
 > What does success look like for my specific task?
 
-In DSPy, you start by thinking about metrics that measure the quality of output. This means thinking about the
-desired outcomes and how you can objectively measure them. Only then, you proceed to write your signature
-that _declares_ your intent, which in turn formulates the prompt for the module at hand. Optimizers are
-optional in DSPy -- even without using optimization, you'll be surprised to find how effective your
-initial DSPy module can be, no matter what task you throw at it.
+Any DSPy workflow begins with you thinking about the
+desired outcomes and how you can objectively measure them. Once you define metrics that capture the essence
+of success for your domain, you proceed to write your signature
+that declares your intent, which in turn formulates the prompt for the module. Even if you don't
+care about optimization, you'll be surprised to find how effective your
+_base_ DSPy module can be, no matter what task you throw at it.
 
-This will become much clearer with an example, so let's dive in!
+This will all become much clearer with an example, so let's dive in!
 
-## Example
+## Walkthrough
 
 Let's consider the following realistic scenario: you're an AI developer working at a market analysis consultancy. Your task
 is to automate the information extraction process of mergers and acquisitions from news articles in the mining industry.
-Let's assume that you've obtained access to a high-quality news feed with articles
+Let's assume you have access to a high-quality news feed with articles
 from specialized sources that describe the latest developments in the M&A space in natural language.
 Here's an example article describing an acquisition:
 
@@ -197,17 +199,13 @@ lm = dspy.LM(
 dspy.configure(lm=lm)
 ```
 
-We'll use the `google/gemini-2.0-flash-001` model for our experiment below.
+We'll use the `google/gemini-2.0-flash-001` model for our example below.
 
 ### Define complex types
 
-The next step is to create DSPy signatures, akin to how you'd write prompts in other frameworks,
-but DSPy's approach is more declarative. Each subtask from the above diagram will have its own signature
-and module (every module requires a signature as input).
-
 Because the task requires complex objects as output, we can use Pydantic models to easily declare
-complex types to our signature. Three Pydantic models will be created: `Merger`, `Acquisition`,
-and `Other`, for each output type.
+complex types to our signature in the next step.
+Three Pydantic models are created: `Merger`, `Acquisition`, and `Other`, for each output type.
 
 ```py
 from pydantic import BaseModel, Field
@@ -250,15 +248,18 @@ class Other(BaseModel):
     article_type: Literal["other"] = "other"
 ```
 
-As can be seen, we're not limiting ourselves to using flat data models and simple types. With the power
-of Pydantic, it's possible to express a much richer representation that we want to pass as inputs or
-outputs to the LMs.
+As can be seen, we're not limiting ourselves in DSPy to using flat data models and simple types. With the power
+of [Pydantic](/blog/intermediate-pydantic/), it's possible to use DSPy to express rich data structures when working with LMs.
 
 ### Signatures
 
-Let's start with the first signature that performs classification. We create a signature by subclassing
-`dspy.Signature` and passing in a docstring in Python. The purpose of the docstring is _not_ to do
-manual prompt engineering, but rather, explain in the simplest terms, what we expect the LM to do.
+The next step is to create signatures, akin to how you'd write prompts in other frameworks,
+but DSPy's approach is more declarative. A signature involves writing a class that clearly breaks
+down the goal (via the docstring), and the input/output types for each subtask.
+
+Let's start with the first signature that performs classification of article types. We create a signature by subclassing
+`dspy.Signature` and passing in a docstring in Python. The purpose of the docstring is _not_ to
+write a detailed prompt for the LM, but rather, explain in the simplest terms, what our intent is.
 
 ```py
 class ClassifyArticle(dspy.Signature):
@@ -267,13 +268,13 @@ class ClassifyArticle(dspy.Signature):
     a "Merger" or "Acquisition".
     If it mentions a potential or failed deal, classify it as "Other".
     """
-
     text: str = dspy.InputField()
     article_type: Literal["merger", "acquisition", "other"] = dspy.OutputField()
 ```
 
 We're simply asking the LM to classify the article as either a merger or an acquisition, without providing
 the specifics of what those terms mean. Also, we clarify under what conditions the "other" category is assigned.
+Anything like this, that's domain-specific, goes into the docstring.
 The input field is the text of the article, and the output field is a Python literal representing the article type.
 
 Next, we define the signatures for information extraction for mergers and acquisitions.
@@ -283,7 +284,6 @@ class ExtractMergerInfo(dspy.Signature):
     """
     Extract merger information about companies from the given text.
     """
-
     text: str = dspy.InputField()
     merger_info: Merger = dspy.OutputField()
 
@@ -292,21 +292,271 @@ class ExtractAcquisitionInfo(dspy.Signature):
     """
     Extract acquisition information about companies from the given text.
     """
-
     text: str = dspy.InputField()
     acquisition_info: Acquisition = dspy.OutputField()
 ```
-Once again, note how simple the docstrings are. The input fields for each case are once again,
-the article texts (strings), and the output fields in this case are the Pydantic models we defined
+Once again, note how crisp and concise the docstrings are. The input fields for each case are
+the article texts (strings), and the output fields are the Pydantic models we defined
 for `Merger` or `Acquisition`.
 
-That's it! No long, verbose prompts specifying how to get the LM to do what we want. We simply
-focus on writing the signature using Python code, and allow DSPy to formulate the prompt for us.
+That's it! No long, verbose prompts describing the specifics of what we want. We simply
+declare our intent via Python code, and allow DSPy to formulate the prompt for us[^1].
 
-<Aside type="tip" title="Tip">
+<Aside type="tip">
 When defining signatures, avoid prematurely optimizing for specific phrasing or prompting styles
 in your docstring.
 _Only_ say what needs to be said for your particular domain, if you know what you want and can
 articulate it clearly. It's the job of the optimizer (downstream) to discover how
 to appropriately phrase the prompt and provide fewshot examples to guide the LM to its destination.
 </Aside>
+
+### Modules
+
+Modules are the meat of a DSPy pipeline, and allow you to declare the interaction paradigm with the LM.
+DSPy offers several [built-in](https://dspy.ai/learn/programming/modules) modules for use. The simplest
+one is a `Predict` module that uses a basic predictor (given a prompt, predict an output). For
+the classification task, this is all we need.
+
+Let's briefly discuss how text that's given to the predictor
+is preprocessed. Rather than sending the entire news article (which can be long and verbose),
+a useful heuristic, in this case, would be to pass in the top$_N$ sentences from the article.
+M&A news articles typically describe the events right at the top, with a descriptive title and a
+few key sentences that cover the larger meaning. Using only the title and the top$_N$ sentences
+can help create a more focused input for the classification predictor, while also saving tokens. The
+code for this is excluded from this post for brevity, but you can check the `extract_first_n_sentences`
+function in the code [here](https://github.com/prrao87/dspy-intro/blob/07840c8890f70b167bedd778df428e148013cb8c/extract.py#L32).
+
+**Built-in modules**
+
+To use a built-in module in DSPy, you pass in the signature that defines the task:
+
+```py
+# Concatenate the article and first N sentences
+# ... Gather the article objects here ...
+text = article["title"] + extract_first_n_sentences(article["content"], num_sentences=5)
+# Initialize Predict module
+article_type = dspy.Predict(ClassifyArticle)
+# Call the Predict module and pass in the input
+article_type = classifier(text=text)
+print(article_type)
+
+# Output:
+# Prediction(
+#     article_type='merger'
+# )
+```
+Using a module always involves the following two steps: a) Initialize the module by passing in its signature,
+and b) Call the module by passing in the input fields. The output of the module is a `Prediction` object
+that conforms to the output fields defined in the signature.
+
+**Custom modules**
+
+The best part about modules is how composable they are. In this case, we have a compound workflow, where
+an LM's outputs are passed to another LM downstream.
+Rather than using a single linear flow where we string together module calls in Python, we can write
+a custom module that composes together these calls into a single class. Here's the custom module that
+accomplishes our _entire_ task for information extraction:
+
+```py
+class Extract(dspy.Module):
+    def __init__(self):
+        self.classifier = dspy.Predict(ClassifyArticle)
+        self.merger_extractor = dspy.Predict(ExtractMergerInfo)
+        self.acquisition_extractor = dspy.Predict(ExtractAcquisitionInfo)
+
+    def classify(self, text: str, num_sentences: int = 3) -> str:
+        text = extract_first_n_sentences(text, num_sentences=num_sentences)
+        result = self.classifier(text=text)
+        article_type = result.article_type
+        return article_type
+
+    def forward(self, text: str, article_id: int) -> Merger | Acquisition | Other:
+        # Implement extraction logic here
+        article_type = self.classify(text)
+        if article_type == "merger":
+            extracted_result = self.merger_extractor(text=text, num_sentences=5)
+            merger_info = extracted_result.merger_info
+            merger_info.article_id = article_id
+            return merger_info
+        elif article_type == "acquisition":
+            extracted_result = self.acquisition_extractor(text=text, num_sentences=5)
+            acquisition_info = extracted_result.acquisition_info
+            acquisition_info.article_id = article_id
+            return acquisition_info
+        else:
+            return Other(article_id=article_id, article_type="other")
+```
+
+In the `__init__` block we pass in all the modules. Anything that involves an LM invocation should
+go into this block. Any custom methods, for example, `classify`, which we need to get the article type,
+comes after the `__init__` block. The `forward` method is where you implement the actual logic for
+the workflow, and is the target for the optimizer downstream. Note how the `if-else` logic implements
+the branched workflow from our diagram above.
+
+Calling a custom module is just as simple as calling a built-in module. Simply initialize the module without any arguments
+(the `__init__` block has all the submodules with their signatures). Then, you can just invoke the module by
+calling it, passing in the required parameters to the `forward` method:
+
+```py
+# Concatenate the article and first N sentences
+# ... Gather the article objects here ...
+text = article["title"] + extract_first_n_sentences(article["content"], num_sentences=5)
+# Initialize custom Extract module
+extractor = Extract()
+# Call the Extract module and pass in the input
+result = extractor(text=text, article_id=article_id)
+print(result)
+
+# Output:
+# article_id=1 company_1='Sayona Mining' company_1_ticker=['ASX']
+# company_2='Piedmont Lithium' company_2_ticker=None
+# merged_entity='Elevra Lithium' deal_amount=None
+# deal_currency='Unknown' article_type='merger'
+```
+
+This runs through the entire pipeline: We classify the article, which in this example is a `merger`,
+and then extract the names of the companies involved along with all the other fields present in
+the `Merger` Pydantic model[^2].
+
+<Aside type="note">
+Custom modules allow you to build _arbitrarily complex_ pipelines in DSPy, where you can interweave
+several LM calls with deterministic logic. For example, database retrievals, which are deterministic,
+can be done using a custom method in the module, and called before or after an LM invocation.
+</Aside>
+
+**What's the true power of a module?**
+
+Modules are a powerful construct in DSPy, because they simultaneously serve multiple important functions:
+
+1. They allow for easy composition of complex workflows. By encapsulating all the logic for a specific task
+within a module, you can easily express a combination of deterministic and LM-based logic in a concise
+and readable manner
+1. They serve as learning targets for the optimizer. With a single compound module, you can make several
+submodules (that could each be built-in DSPy modules, like `Predict` or `ChainOfThought`). The _final_
+output of the module (i.e., whatever is returned by the `forward` method), is all the optimizer needs
+to improve the module via examples of input/output pairs.
+1. They handle any kind of signature, and abstract away the hard-to-understand parts (for e.g., how the phrasing of the prompts
+affects the outcome), and instead, allow the developer to focus on defining examples for evaluation and optimization
+downstream.
+
+The latter two points are particularly significant towards understanding the true power of the module abstraction
+in DSPy. Rather than separately optimizing each submodule, defining a custom module in DSPy allows you to **jointly**
+optimize them all in _a single optimization run_ -- all you need is a set of input/output pairs that cover
+the full range of behaviours you want to optimize for.
+
+When you compare this approach with other frameworks where you have to manually tune several prompts --
+not knowing whether an upstream prompt change can break the entire workflow downstream -- it becomes clear how
+useful the DSPy approach can be.
+
+### Evaluation
+
+As mentioned, DSPy makes the developer think right upfront about success metrics. The moment we write
+the custom module shown above, we can run it on a subset of the data and evaluate it using some custom
+code (see [here](https://github.com/prrao87/dspy-intro/blob/main/evaluate.py) for the code).
+
+The key part to note here is our metric, where we define an integer value of 1 or 0, for whether or
+not there was an exact match. The final score is the sum total of all exact matches.
+
+```py
+def metric(gold_val: Any, pred_val: Any, trace=None) -> int:
+    """
+    Define a DSPy metric for evaluation (and optionally, for optimization).
+    Here, we calculate an exact match score.
+    """
+    # Handle None/empty equivalence
+    if gold_val in [None, []] and pred_val in [None, []]:
+        return 1
+    return 1 if gold_val == pred_val else 0
+```
+
+Running the evaluation on the small dataset we have here (12 examples) gives us the following result:
+
+```
+============================================================
+EVALUATION RESULTS
+============================================================
+
+Total Accuracy: 82.6%
+(119/144 field comparisons correct)
+
+----------------------------------------
+FIELD-LEVEL ACCURACY
+----------------------------------------
+article_type                83.3%
+child_company               83.3%
+child_company_ticker        91.7%
+company_1                   91.7%
+company_1_ticker            83.3%
+company_2                   91.7%
+company_2_ticker            83.3%
+deal_amount                 41.7%
+deal_currency               75.0%
+merged_entity               91.7%
+parent_company              83.3%
+parent_company_ticker       91.7%
+
+----------------------------------------
+MISMATCHES BY FIELD
+----------------------------------------
+article_type              Article IDs: [8, 9]
+child_company             Article IDs: [8, 9]
+child_company_ticker      Article IDs: [9]
+company_1                 Article IDs: [9]
+company_1_ticker          Article IDs: [1, 9]
+company_2                 Article IDs: [9]
+company_2_ticker          Article IDs: [1, 9]
+deal_amount               Article IDs: [2, 4, 5, 6, 8, 9, 10]
+deal_currency             Article IDs: [2, 8, 10]
+merged_entity             Article IDs: [9]
+parent_company            Article IDs: [8, 9]
+parent_company_ticker     Article IDs: [9]
+```
+
+For the `google/gemini-2.0-flash-001` model, we start off with a total exact match accuracy of 82.6%.
+The "mismatches by field" output shows that articles 8 and 9 have the most mismatches across several fields,
+indicating that we can provide examples to the optimizer that target these specific areas for improvement.
+Optimizers in DSPy operate directly on a module, and they are also exposed through a declarative interface,
+so there's no need to write any custom code to optimize your pipeline.
+
+Optimization in DSPy is a much larger topic in itself, so we'll save that for the next post!
+
+## Summary
+
+In this post, we covered the core abstractions in DSPy, and showed how simple it is to get started.
+Signatures are the developer's entry point into DSPy -- they allow you to declare the
+behaviour you want from your LM. Within a signature, you can leverage Pydantic types, or simple native Python types,
+to indicate to the LM what input and output types you want it to work with. Modules are the building blocks
+of your DSPy application, encapsulating the main logic and making it easy to compose together multiple
+other modules, and the custom modules you write can seamlessly function as learning targets for optimizers.
+
+Let's also clarify some common misconceptions of DSPy below:
+
+1. DSPy is not _only_ about prompt optimization. As shown in this post, it's simply a way to build composable
+AI pipelines that allow you to express your intent to a language model via declarative code (and not string-based prompts).
+Using optimizers in DSPy is _optional_, and comes into the picture only after you run the initial
+pipeline end-to-end and evaluate it using your metric of choice.
+
+1. DSPy doesn't "automate away prompts" -- there's still a prompt under the hood -- it's just that
+you, as a human, don't need to fixate on the prompt itself. In DSPy, you think in terms of _signatures_, not prompts.
+While you may still specify a part of the prompt by hand (as we did in the signature's docstring), the
+focus is mainly on _what_ needs to be said (in a crisp and concise manner) without the user worrying
+about _how_ exactly the prompt is phrased or formatted.
+
+1. You don't need a lot of examples to optimize your DSPy pipeline. As we'll explore in the next post, all
+you need to begin optimizing your modules in DSPy is a handful of samples, starting with 10-20. And
+once you see the improvement, an additional 200 examples goes a long way when using the more advanced optimizers.
+
+1. You're not limited to using only the built-in modules -- in fact, it's actively encouraged for you to write
+a custom module for each and every DSPy project. Everything is designed to be flexible and transparent,
+and the core abstractions have a lot of expressive power that enable arbitrarily complex workflows.
+
+## Conclusions
+
+
+
+---
+
+[^1]: Mention adapters here for the next post.
+
+[^2]: Mention about how transparent DSPy keeps things and that there's `dspy.inspect_history()` to
+inspect what the actual prompt looks like.
