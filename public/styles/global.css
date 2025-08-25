@@ -182,7 +182,7 @@ span.katex-display {
     }
   }
 }
-.astro-code pre span {
+.light pre span {
   color: var(--shiki-light) !important;
 }
 

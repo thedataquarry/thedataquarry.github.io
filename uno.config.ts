@@ -132,6 +132,9 @@ const typographyConfig = {
     'code:not(pre code)': {
       'white-space': 'pre-wrap!important',
       'word-break': 'break-all!important'
+    },
+    'pre code': {
+      'font-size': '0.8125em'
     }
   }
 }
