@@ -341,7 +341,7 @@ To use a built-in module in DSPy, you pass in the signature that defines the tas
 # ... Gather the article objects here ...
 text = article["title"] + extract_first_n_sentences(article["content"], num_sentences=5)
 # Initialize Predict module
-article_type = dspy.Predict(ClassifyArticle)
+classifier = dspy.Predict(ClassifyArticle)
 # Call the Predict module and pass in the input
 article_type = classifier(text=text)
 print(article_type)
