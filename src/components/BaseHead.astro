@@ -102,6 +102,13 @@ const socialImageURL = new URL(ogImage ? ogImage : '/images/social-card.png', As
 </script> -->
 
 {
+  /* Umami Analytics */
+  prod && (
+    <script async src="https://analytics.umami.is/script.js" data-website-id="f597e394-113b-4fd1-ba0f-6c11ca7c62ea"></script>
+  )
+}
+
+{
   /* User script*/
   prod && (
     <script>
