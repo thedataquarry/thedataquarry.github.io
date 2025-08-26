@@ -131,7 +131,7 @@ to phrase the prompt, you're focused on the following very important questions:
 Any DSPy workflow begins with you thinking about the
 desired outcomes and how you can objectively measure them. Once you define metrics that capture the essence
 of success for your domain, you proceed to write your signature
-that declares your intent, typically in the signature's docstring. The module handles
+that declares your intent, and specify the expected input/output types. The module handles
 the signature, formulates the prompt, and invokes the LM calls. Initially, you don't need to
 (and shouldn't) care about optimization. Simply focus on writing the signatures and modules to express
 your desired logic, and you'll be surprised to find how effective your _base_ DSPy pipeline is,
@@ -537,7 +537,8 @@ Optimization in DSPy is a much larger topic in itself, so stay tuned for more in
 ## Summary of signatures and modules
 
 In this post, we covered the key abstractions in DSPy, and showed how simple it is to get started.
-As a developer, you begin by defining signatures, which are a programmatic way to declare your intent.
+As a developer, you begin by defining signatures, which are a programmatic way to declare your intent
+and specify the expected input/output types.
 You then define a custom module (or multiple built-in modules) that call their respective signatures.
 Signatures and modules depend on adapters under the hood[^1] to formulate the prompt for the LM
 to accomplish its task.
