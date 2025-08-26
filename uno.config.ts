@@ -56,8 +56,12 @@ const typographyConfig = {
     },
     // Table
     table: {
-      display: 'block',
-      'font-size': '.875em'
+      display: 'table',
+      'font-size': '.875em',
+      width: '100%',
+      'table-layout': 'fixed',
+      'overflow-x': 'auto',
+      'white-space': 'nowrap'
     },
     'table tr': {
       'border-bottom-width': '1px'
@@ -131,7 +135,8 @@ const typographyConfig = {
     },
     'code:not(pre code)': {
       'white-space': 'pre-wrap!important',
-      'word-break': 'break-all!important'
+      'word-break': 'break-all!important',
+      'hyphens': 'none'
     },
     'pre code': {
       'font-size': '0.8125em'
