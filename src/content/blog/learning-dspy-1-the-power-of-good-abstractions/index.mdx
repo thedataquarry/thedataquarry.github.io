@@ -546,12 +546,13 @@ to accomplish its task.
 As a developer, you interface with LMs via a declarative, programmatic abstraction on top of natural language prompts,
 and it's DSPy's job to manage the nuances of how the prompt is phrased and formatted. All you need 
 to focus on is defining the logic of your workflow
-and building it out end-to-end via to evaluate its baseline performance. Right upfront
+and building it out end-to-end, to evaluate its baseline performance. Right upfront
 (even before you begin optimizing anything), the focus is to define success metrics that help you
 measure the performance of your baseline implementation.
 
 ## Misconceptions
-t's worth also clarifying some common misconceptions of DSPy that people have when coming from
+
+It's worth also clarifying some common misconceptions of DSPy that people have when coming from
 other frameworks:
 
 1. DSPy is _not_ a prompt optimization framework. It's simply a declarative way to composably build
@@ -560,14 +561,15 @@ AI systems. Using optimizers in DSPy is _optional_, and optimizers can operate o
 than just prompts (including weights, and in the future, signatures, adapters and modules themselves)!
 
 1. DSPy doesn't "automate away prompts" -- there's still a prompt operating under the hood -- it's just that
-you, as a human, don't need to fixate on the prompt itself. In DSPy, you think in terms of _signatures_, not prompts.
+you, as a human, don't need to fixate on the prompt itself. In DSPy, you think in terms of signatures, not prompts.
 While you may still specify a part of the prompt by hand (as we did in the signature's docstring), the
-focus is mainly on _what_ needs to be said (in a crisp and concise manner) without worrying
+focus is mainly on _what_ needs to be said (crisply and concisely), without worrying
 about _how_ exactly the prompt is phrased or formatted.
 
 1. You don't need a lot of examples to optimize your DSPy pipeline. As we'll explore in the next post, all
-you need to begin optimizing your modules in DSPy is a handful of samples, starting with 10-20. And
-once you see the improvement, an additional 200 examples goes a long way when using the more advanced optimizers.
+you need to begin optimizing your modules in DSPy is a handful of samples, starting with 10-20, which is
+sufficient for bootstrap few-shot optimization. And once you see the improvements, an additional 200
+examples can go a long way with the more advanced optimizers.
 
 1. You're not limited to using only the built-in modules -- in fact, it's actively encouraged for you to write
 a custom module for each and every DSPy project. Everything is designed to be flexible and transparent,
@@ -579,6 +581,7 @@ It's been said plenty of times that "English is the new programming language". W
 to some extent (judging by the performance of recent LMs on tasks like coding, summarization and more),
 we also know that natural language isn't the most reliable way to obtain specific behaviours from AI systems,
 especially when you have multiple prompts.
+
 When you prompt a language model, the natural language instructions must be translated all
 the way down to the model's weights.
 The mechanics of _how_ they are compiled down to instructions that the LM understands, may not yet be fully
