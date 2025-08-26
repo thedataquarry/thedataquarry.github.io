@@ -1,26 +1,26 @@
 /* Font */
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Regular.woff2') format('truetype');
+  font-family: 'IBMPlexSans';
+  font-weight: 400;
+  src: url('/fonts/IBMPlexSans-Regular.ttf') format('truetype');
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Inter';
-  font-weight: bold;
-  src: url('/fonts/Inter_18pt-Bold.woff2') format('truetype');
-  font-style: bold;
+  font-family: 'IBMPlexSans';
+  font-weight: 700;
+  src: url('/fonts/IBMPlexSans-Bold.ttf') format('truetype');
+  font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Inter';
-  font-style: italic;
-  src: url('/fonts/Inter_18pt-Italic.woff2') format('truetype');
+  font-family: 'IBMPlexSans';
+  src: url('/fonts/IBMPlexSans-Italic.ttf') format('truetype');
   font-style: italic;
   font-display: swap;
 }
 html {
-  font-family: 'Satoshi', sans-serif;
+  font-family: 'IBMPlexSans', 'Satoshi', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
 }
 
 /* Theme */

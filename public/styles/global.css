@@ -182,7 +182,7 @@ span.katex-display {
     }
   }
 }
-.astro-code pre span {
+.light pre span {
   color: var(--shiki-light) !important;
 }
 
@@ -233,7 +233,7 @@ body::-webkit-scrollbar {
 
 /* Footnotes */
 .prose .footnotes {
-  font-size: 0.875em;  /* 14px if base is 16px */
+  font-size: 0.9em;  /* 14px if base is 16px */
 }
 
 /* Twitter embeds */
@@ -245,4 +245,8 @@ astro-embed-tweet {
 
 .twitter-tweet {
   margin: 0 auto !important;
+}
+
+.prose {
+  hyphens: auto;
 }
