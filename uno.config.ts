@@ -60,8 +60,7 @@ const typographyConfig = {
       'font-size': '.875em',
       width: '100%',
       'table-layout': 'fixed',
-      'overflow-x': 'auto',
-      'white-space': 'nowrap'
+      'overflow-x': 'auto'
     },
     'table tr': {
       'border-bottom-width': '1px'
@@ -76,7 +75,10 @@ const typographyConfig = {
     'td, th': {
       border: 'inherit',
       'text-align': 'start',
-      padding: '0.57em'
+      padding: '0.57em',
+      'word-wrap': 'break-word',
+      'overflow-wrap': 'break-word',
+      'hyphens': 'auto'
     },
     'thead th:first-child,thead th:first-child,tbody td:first-child,tfoot td:first-child': {
       'padding-inline-start': '0'
