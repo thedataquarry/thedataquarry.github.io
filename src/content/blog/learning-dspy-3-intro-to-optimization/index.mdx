@@ -1,0 +1,50 @@
+---
+slug: "learning-dspy-3-intro-to-optimization"
+title: "Learning DSPy (3): Introduction to Optimization"
+description: "What optimization means in DSPy, and how it works under the hood"
+publishDate: 2025-09-27
+draft: true
+tags:
+  - llm
+  - language-model
+  - agentic
+---
+import Figure from '@/components/Figure.astro';
+import { Aside } from 'astro-pure/user';
+import Img1 from "../learning-dspy-1-the-power-of-good-abstractions/dspy-intro-7.png";
+import Img2 from "../learning-dspy-1-the-power-of-good-abstractions/dspy-intro-6.png";
+
+Welcome back to part 3 of the _Learning DSPy_ series! Thus far, we've discussed the core building blocks
+of DSPy and uncovered some of their internals. Hopefully, it's clear by this point that the primary benefit of using
+DSPy is the programming model it offers -- you let the framework manage
+any improvements to the underlying components (via optimization), while you focus
+on defining the high-level intent of your task and evaluating the performance of the program via
+some metric.
+
+In this post, we'll describe how optimization works in DSPy, and use the example of the mergers
+and acquisitions (M&A) module from part 1 of this series to show two working level examples of
+DSPy optimizers in action. At the end of this post, you should ideally be primed to apply optimization
+to your own DSPy programs!
+
+## What is a DSPy "program"?
+
+As described in [part 1](/blog/learning-dspy-1-the-power-of-good-abstractions) of this series,
+a DSPy program is a collection of one or more modules, composed together to achieve a
+larger goal. Each module depends on a signature, which is a declarative specification of intent
+(that utilizes a prompt as the underlying mechanism for communicating with the language model).
+The DSPy program is responsible for translating your intent into prompts, and an optimizer is responsible
+for improving the performance of the program based on the examples you provide.
+
+If you're like me, and came from machine learning, the term "optimization" might conjure
+images of gradient descent, loss functions, and continuously differentiable surfaces. While this is
+a reasonable assumption, this is _not_ how optimization actually works in DSPy.
+
+## Optimization is like compilation
+
+As DSPy program consists of one or more modules, each of which has a signature that describes its inputs and outputs.
+When you run a DSPy program, the framework translates your high-level intent into a series of prompts
+that are sent to the language model. The key 
+
+<Figure src={Img1} alt="" />
+
+<Figure src={Img2} alt="" />
