@@ -1,0 +1,94 @@
+---
+slug: "i-joined-lancedb"
+title: "Why I'm excited to work at LanceDB"
+description: "Thoughts as I begin my new role as AI Engineer at LanceDB"
+publishDate: 2025-10-20
+draft: false
+tags:
+  - general
+  - rust
+---
+import { Aside } from 'astro-pure/user';
+import Figure from '@/components/Figure.astro';
+
+In early 2023, I stumbled across a fledgling GitHub repository ([Lance](https://github.com/lancedb/lance)), which had then recently been rewritten in Rust 🦀. I immediately gave it a star, and [began following](https://github.com/lancedb/lancedb/issues/51) the fascinating journey that the LanceDB team have taken to get to where they are today. Among all the other tools out there at the time, LanceDB immediately appealed to me, because it was permissively licensed (Apache 2), embedded, had a familiar table structure, and was *blazingly* fast on disk. I used it a lot because it was trivial to use and deploy it for interesting use cases at work, and for my side projects. As such, I spent most of 2023 exploring the larger vector search landscape.
+
+Both LanceDB (the "database") and Lance (the data format) have evolved, and greatly improved in every sense, since those early days, and it's at a very interesting point in time now that I'm rejoining the LanceDB team in their mission.
+
+## My recent experience
+
+Thanks to numerous innovations in the larger ecosystem at the lower layers of the stack: data formats, hardware, kernels and compilers, there's never been a better time for developers to be building the next generation of tooling for AI.
+In 2024-25, I've had the pleasure of working at [Kuzu](https://github.com/kuzudb/kuzu), an embedded graph database startup, which was at the cutting edge of architectural innovation in the graph database space. As I reflect on my time at Kuzu, it's clear to me that we're already living in a golden age of AI and data infrastructure. 
+
+Kuzu was a domain leader in the graph database space from a portability and performance perspective: deployable on nearly every device, lightweight, yet scalable and fast for expensive workloads on large graphs. At Kuzu, we were perennially at work supporting new integrations and formats while working on usability features that made it an absolute joy to use.
+
+In my daily work, I ended up going down deep rabbit holes, studying the larger database market and understanding users' use cases, many of which involved data transformation and moving data from their primary stores to different formats so that they could analyze their data as a graph. Invariably, the topics of discussion and study revolved around well-known and established data formats (like Parquet, iceberg, JSON, and many more), and how to efficiently process this data at scale.
+
+It's very clear that the 3 V's of data that people are dealing with -- _velocity_, _volume_ and _variety_, are increasing over time. In the age of AI, it's never been easier to generate massive amounts of synthetic data (and traces + metadata), as applications become more and more AI-centric. Storage and query engines that can process the kinds workloads we're seeing, at scale, are the need of the hour. Even in the graph world where I was working, getting the data *into* the graph, at scale, was the main challenge (using the graph was a whole other matter).
+
+However, the future of AI and data is not only large-scale and rapidly growing, it's also increasingly _multimodal_.
+
+## Why LanceDB?
+
+In my early days using LanceDB, I primarily worked with text embedding models for the purpose of retrieval. RAG was the hottest new term that everybody was raving about in 2023, and there were tons of retrieval problems that served as low-hanging fruit for AI engineers like me to tackle.
+
+Over the last couple of years, however, two things have changed: a) _everything_ has become more agentic (powered by LLMs), and b) more and more data is being generated and consumed in more formats than just text (images, video, audio). This has transformed the very nature of retrieval. It's no longer enough to build simple, single-stage retrieval systems that rely on a single kind of embedding. Modern RAG is inherently agentic, and it's becoming more and more important to observe the _systems_ that are at play, not just the individual components.
+
+LanceDB's multimodal goals are centered around creating a unified framework that can seamlessly integrate and process these diverse data types. The Lance format is envisioned as the foundational layer for multimodal AI data lakes, enabling efficient storage, retrieval, and analysis of data across different modalities. AI needs more than just vectors; it
+needs context and metadata in various forms -- and having a single source of truth for embeddings, documents, images, audio and video, is hugely beneficial.
+
+The variety of use cases for which the Lance team has been building towards lately is exciting. Below, I've highlighted just a few of them:
+
+| Company | Use Case | URL |
+| --- | --- | --- |
+| Runway ML | Multimodal lakehouse | [Building a Data Foundation for Multimodal Foundation Models](https://www.youtube.com/watch?v=6kf58xD5s3Q) |
+| Harvey AI | Enterprise-grade RAG | [Scaling Enterprise-Grade RAG: Lessons from Legal Frontier](https://www.youtube.com/watch?v=W1MiZChnkfA) |
+| Character AI | AI dataset preparation | [The Hierarchy of Needs for Training Dataset Development:](https://www.youtube.com/watch?v=i2vBaFzCEJw) |
+
+With more such case studies from companies like [Netflix](https://lancedb.com/blog/case-study-netflix/) and others coming out, even though it's early days for the multimodal AI lakehouse as a concept, LanceDB is definitely pushing the boundaries of what's possible in this space.
+
+## DevRel is ... so back?
+
+With the explosion of these many AI companies and tools in the market today, with more tools and frameworks coming out at a breakneck pace, it's becoming crucial to bridge the gap between the companies (tool developers) and users (primarily other developers). Enter developer relations (DevRel) -- a role that has seen a resurgence in recent times.
+
+I won't go into numbers
+(folks like swyx have already [written about the topic](https://dx.tips/devrel-is-back)), but my personal take on
+DevRel is that it's very much a two-way process -- it's just as much learning from users as it is to educate them.
+DevRel also serves as an important feedback loop for product development, such that the right features are prioritized, and developer productivity (and satisfaction) are continually improved over time. Making high quality, useful technical content that resonates with users is no mean feat, but it's what enables long term adoption.
+
+Having spent the better part of the last two years working closely with the Kuzu developer community,
+meeting all sorts of awesome founders, understanding their vision, and formulating the right language around interesting tools and use cases through my documentation and advocacy work,
+I've discovered that working at a role that's at the intersection of data infra tooling, AI/ML/LLMs and developer education is exactly what I'm looking for at this point in my career. I look forward to continue pushing the envelope at LanceDB!
+
+## Where I was, shaped where I'm going
+
+Working at Kuzu, studying the latest developments in the field, while fostering a growing open source community has genuinely been one of the best experiences of my life. Although LanceDB is at a slightly more advanced stage in their journey, the core mission is still very much the same: building the best, cutting-edge data infrastructure for the age of AI. Every role and function at pretty much any company seems to have been transformed in some way by AI, and having a role that allows me to continuously be at the forefront of these developments on X, LinkedIn, Discord and the rest of the blogosphere, is incredibly exciting and rewarding.
+
+If you've read earlier posts in this blog, you'll know that I've long been excited about companies building the next generation of data infrastructure in Rust 🦀. I've [written about this](/blog/rust-is-supercharging-python) at length
+in earlier posts. The confluence of underlying systems innovations (including data formats, compression techniques and query engines), with the rest of the developments in the AI stack, are creating the perfect storm for folks working in AI (largely in Python) to be empowered by the efforts of tool developers working in Rust. LanceDB is definitely one of the leaders in this space, with some of the most cracked Rust developers whose work I've had the pleasure of following over the years.
+
+For me personally, building out in the open has always been a strong part of my ethos, and there's no better way to learn than putting your work out there and hearing about what resonates with others. What I'll be doing at LanceDB is more or less what I was doing at Kuzu, albeit with a slightly broader scope from a data format perspective. My background has been mostly in backend development in NLP, retrieval and information extraction, but just like anyone else in this space, there are a lot of things I _don't yet know_. It's going to be fun discovering unknown unknowns with the Lance team, and the larger OSS community! 🚀
+
+## Will I still be involved in the graph community? 
+
+The absence of Kuzu (because the project was archived) has left a void in the graph database ecosystem, in terms of permissively licenced, OSS solutions. The relational database community has DuckDB; the multimodal data community has LanceDB, and there's a whole suite of open source query engines that operate on top of open data formats. Why shouldn't the graph database community have something similar?
+
+Thanks to the incredible work put in by the Kuzu team, a new, promising alternative has emerged: [LadybugDB](https://ladybugdb.com/) -- an open source, MIT-licensed fork of Kuzu. Ladybug's aim is to carry on Kuzu's tradition of being "the DuckDB for graphs". Time will tell regarding its adoption in the community, but I intend to contribute some of my free time working with graph developers and showcasing use cases of graphs, which are still great solutions for certain classes of problems. I firmly believe that building a permissively licensed tool is what will serve the Ladybug team well in its vision.
+
+On that note, an exciting new development in the Lance ecosystem is [lance-graph](https://github.com/lancedb/lance-graph), an open source graph query engine that operates on top of the Lance format. I'll be closely following its development, as well as the larger developments in the graph data and infra space, so if you've been following my work on these topics, stay tuned!
+
+## What's next?
+
+Working at LanceDB is a perfect blend of a lot of things that resonate with me at this point in my career:
+- Strong open source ethos
+- Humble, driven and absolutely cracked team
+- 🦀 Rust 🦀 at the core of everything
+- Fast, efficient data processing at scale
+- Interesting new use cases and pushing the boundaries of the cutting edge in multimodal AI
+
+I can think of no better time to be taking my next steps in this industry than by beginning a new journey [@lancedb](https://x.com/lancedb). Combining my love of writing, technical content creation, and developer advocacy with my passion for working with the latest and greatest in data and AI, is exactly what I'll be immersing myself in over the coming months.
+
+Stay tuned for a lot more technical content from me, both here and on the [LanceDB blog](https://lancedb.com/blog/) in the coming months!
+
+
+
