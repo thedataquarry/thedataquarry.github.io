@@ -1,0 +1,196 @@
+---
+title: "A framework for technical writing in the age of LLMs"
+description: "The kind of writing I want to see more of, from humans, in 2026."
+publishDate: 2025-12-25
+draft: false
+tags:
+  - llm
+  - general
+---
+import { YouTube } from 'astro-embed';
+import { Steps } from 'astro-pure/user';
+import { Aside } from 'astro-pure/user';
+import Figure from '@/components/Figure.astro';
+import Img1 from './writing-1.png';
+import Img2 from './writing-2.png';
+import Img3 from './writing-3.png';
+
+Throughout 2025, I've gotten plenty of positive feedback on my writing from very diverse audiences,
+from engineers and scientists, to founders, CEOs, academics and even non-technical folks. I'm clearly doing
+_something_ right (it can't all be just "vibes"). Over the last few days, as I've been reflecting on this,
+I realize that there are a few things I've been doing at a subconscious level as I write each of
+my posts.
+
+In this post, I'll externalize this thought process into a framework that I hope is useful for folks
+like me who are writing technical content.
+Because so much writing is already being done by LLMs nowadays, I want to focus on what I believe humans
+can do better (with or without the help of LLMs), and to encourage folks to write more authentically.
+
+Lately, I've been lamenting over the degradation in
+my X and LinkedIn feeds -- most posts are video-based slop that caters to the low-attention span crowd,
+and many long-form written posts are often AI-generated (especially on LinkedIn), lacking depth
+and substance. So, I hope this post resonates with folks who want to read/write more in 2026 (I know I do)!
+
+<Aside title="How much of this post was LLM-generated?">
+I only used LLMs at the _very end_ of the writing process, to help me proofread and paraphrase certain
+sentences that felt a little clunky. The core ideas, outline and flow of the post were all
+entirely human-generated. Writing this post took me ~3 hours, from ideation to first draft.
+</Aside>
+
+## It all begins with the way you read
+
+I firmly believe that the way you read shapes
+how you write. The example I give below applies mostly to text-based content online, like
+blogs, essays and papers. When I come across any long-form piece of writing, I tend to subconsciously
+break down the content into three layers.
+
+<Figure src={Img1} alt="The three layers of written content (online)" />
+
+Even though I love reading long-form content, time is often scarce, so I don't begin by
+reading the post word-for-word. I _always_ do a first pass where I skim through the entire
+piece at a very high-level, looking for key takeaways. This is driven by the "outline" layer of the post.
+The outline gives me an immediate sense of the author's vision, and why I should care about reading the
+entire post in detail. If the outline comes across in my mind as haphazard or incoherent, I usually
+don't bother coming back.
+
+Once the outline passes my initial filter, I normally come back (when convenient) to read the entire post.
+In this pass, I tend to focus on the "ideas" that seem interesting, and read those sections more carefully.
+The ideas are the meat of the post -- they lay down
+the core themes, concepts and arguments the author is trying to convey. If the ideas are too generic
+or shallow, I usually stop reading further and move on to other things.
+
+Finally, if the ideas resonate with me at a deeper level, I carefully read the entire post word-for-word,
+paying attention to the "details". The details include the specific details, anecdotes, data points and
+references the author uses to elaborate on their ideas. If the post lacks sufficient detail, it can end up
+feeling "empty" -- even though there are very well-written words, there's no substance behind them, and the
+reader walks away with no new insights. This is very common in AI-generated content (what people are calling
+"slop").
+
+Another way I think about these three layers is in terms of their level of granularity, and how the mind
+perceives them.
+
+<Figure src={Img2} alt="The flow between layers when reading written content" />
+
+Layer | Granularity | Focus | Purpose
+--- | --- | --- | ---
+**Outline** | coarse | structure, vision | Why should I care?
+**Ideas** | medium | concepts, themes | What are the important ideas/themes?
+**Text** | fine | examples, anecdotes, data | How does it work?
+
+While reading, I tend to jump between these layers quite fluidly. Most times, I might skim the outline first,
+then dive a little deeper to understand the key ideas, then jump back to the outline (all at a subconscious level)
+which lets me gauge structure and coherence. This relates to the concept of _flow_ in writing.
+
+Good flow isn't just about linearly presenting ideas from top to bottom -- it's also how smooth the transition
+is from one idea to the next one. This allows readers to rapidly move between layers with ease as they're
+reading, without feeling lost or confused. Flow is what ties in the three layers together, creating a sense
+of coherence and unity, making the reader walk away feeling like they gained something in the process. 
+
+## Why LLM-generated text is so dissatisfying
+
+Shreya Shankar wrote two excellent posts[^1],[^2] about why LLM-generated text always seems
+slightly "off", sometimes even "uninviting to read".
+Ted Chiang's New Yorker piece[^3] from earlier this year that likens ChatGPT's outputs to
+"blurry JPEGs of the web" also hits home.
+
+> The whole point of a blog post, to me, is that a human spent time thinking about something
+> and arrived at conclusions worth sharing.
+> 
+> -- [Shreya Shankar](https://www.sh-reya.com/blog/consumption-ai-scale/).
+
+LLMs don’t inherently care about the topic they’re writing about the way humans do. They take instructions
+from the prompt and generate text in response. But getting from what humans mean to something the model can
+act on, through prompting and the way it’s conditioned in the model's weights, is **inherently lossy**.
+This means that the nuances and grounded world-knowledge that humans possess in droves,
+are completely missed -- the LLM fails right at the beginning, at the "outline" layer.
+
+Next, LLMs can very effectively regurgitate common ideas and themes from their "deep research" abilities. Because
+they can very rapidly retrieve and scan through vast amounts of text, the ideas they generate often feel
+like a mashup of existing concepts. This means they also fail at the "ideas" layer - when asked to generate
+ideas to assist in writing, they often produce content where the result feels
+way too generic, shallow and unoriginal.
+
+It's only at the bottom layer ("text") where LLMs might actually fare better than most humans do (for now).
+LLMs are pretty much perfect at writing grammatically correct text, and can even mimic different writing
+styles very convincingly.
+But even at this layer, there are issues -- AI-generated text is that it's overly verbose _throughout_.
+An LLM tends to have poor judgment about when to be concise and when to elaborate. Human-written text,
+on the other hand, tends to intelligently use repetition and verbosity where needed.
+
+As Shreya Shankar puts it in [her post](https://www.sh-reya.com/blog/ai-writing/):
+
+> It’s now cheap to generate medium-quality text—and even high-quality text, when the scope is narrow and
+> well-defined. But figuring out what to say, how to frame it, and when and how to go deep is still the
+> hard part. That’s what takes judgment, and that’s what LLMs can’t do for me (yet).
+
+Because LLMs can't innately _feel_ what the writer wants to convey at a deep
+level (it totally depends on the instructions in the prompt) -- the ideas end up feeling hollow, the outline
+disjointed, and the text overly wordy, leading to that now-familiar dissatisfying feeling as you go through it.
+
+## How can we write more authentically?
+
+I'll now share how I apply the above framework to my own writing process, using this very post as an example.
+It all begins with the ideas, followed by the outline, and finally the details.
+
+<Figure src={Img3} alt="The ideas are the most important piece" />
+
+<Steps>
+1. **Ideas first**: Everything begins with what ideas I want to convey. For this post, the key ideas revolved
+around "what do I look for when I read?", "what is lacking in most AI-generated content?", and
+"how can humans write better?".
+
+2. **Outline next**: Once I have the ideas clear in my mind, I create a rough outline of the post, writing down
+the sub-headings and key points I want to cover under each section. The outline essentially _emerges_ from
+the ideas, so this step rarely takes much effort. As I write, the outline may evolve, with sections being added,
+removed or rearranged to improve flow.
+
+3. **Details last**: Finally, I fill in the details for each section, elaborating on the ideas with useful examples,
+diagrams, anecdotes and references. In this step, I may use LLMs to help me clean up the verbiage of specific
+sections, but I invariably end up editing the LLM's work to ensure it doesn't break the flow.
+
+</Steps>
+
+Put simply, if I don't have clearly formed ideas that I think are worth sharing, I _don't write anything at all_.
+I tend to keep an "idea graveyard" where I jot down interesting writing ideas as they come to me,
+but not all of them survive the test of time. I have a ton of ideas in my graveyard that never ended up becoming
+posts, because the transition from "idea" → "outline" → "details" never felt natural.
+
+Offloading the ideation and outlining process (layers #1 and #2) to the LLM is where I think a lot of
+LLM-generated content goes wrong.
+I think it's okay to use LLMs for #3, to assist with paraphrasing or polishing the text, but for the
+foreseeable future, and certainly in the coming year, I believe the core ideas and outline for content
+must come from the human writer -- because only humans have genuine attachment to the
+idea at hand, allowing them to exercise judgment about what to include, what to leave out, and how
+to lay out the broader vision in a way that's coherent and interesting.
+
+<Aside type="tip" title="What about titles?">
+The title is normally the _last_ thing I write, after the entire post is done. I find that writing the
+title in the beginning boxes me into a particular framing, stifling my creativity and leading to "writer's block".
+Once the post is done, I reflect on the key ideas once more, and come up with a title that best captures
+the essence of the post. LLMs can help a lot with coming up with good titles, but I avoid going overboard
+with clickbait or ragebait titles!
+</Aside>
+
+## Conclusions
+
+There's something innately beautiful about authentic human writing that causes it to resonate at
+a deeper level. Good writing expresses the writer's personality and thought process, and even though
+I may not have met them, I can often feel a connection to the writer nonetheless.
+I'd really love for more of us to write this way -- from the heart, with
+genuine ideas, a well-thought-out outline, and rich details that bring those ideas to life.
+
+Using a rough framework like I showed above for reading and writing has worked well for me over the years.
+This post took ~3 hours to write, all the way from initial ideation to the completion of the first draft.
+While it's definitely slower to write this way than just prompting an LLM "write a blog post about X",
+I firmly believe that the end result is way more satisfying for _both_ the writer and the reader.
+
+If you've made it this far, I'm sure you'll agree with me on most points! Thanks for reading, and
+here's hoping for less AI slop, and more authentic, long-form content for and by humans, in 2026! 🚀
+
+> 🎄 Oh, and here's wishing everyone Merry Christmas and happy holidays! 🎄
+
+---
+
+[^1]: "Writing in the Age of LLMs" by Shreya Shankar, [sh-reya.com/blog](https://www.sh-reya.com/blog/ai-writing/)
+[^2]: "On the Consumption of AI-Generated Content at Scale" by Shreya Shankar, [sh-reya.com/blog](https://www.sh-reya.com/blog/consumption-ai-scale/)
+[^3]: "ChatGPT is a Blurry JPEG of the Web" by Ted Chiang, [newyorker.com](https://www.newyorker.com/tech/annals-of-technology/chatgpt-is-a-blurry-jpeg-of-the-web)
