@@ -20,7 +20,7 @@ import Img5 from './lance-namespace.png';
 import Img6 from './lance-table-format.png';
 import Img7 from './lancedb-mmlh.png';
 
-Although I've been a long-time user of [LanceDB](https://github.com/lancedb/lancedb), I hadn't fully appreciated what was happening under the hood until I began studying it more deeply. LanceDB, and many other platforms at several major companies, are built on [Lance](https://lance.org/): a modern, multimodal lakehouse format designed from the ground up for AI workloads. **Disclaimer**: Because I now work at LanceDB, the company, so I've got ample time to study the format and its internals on a daily basis. 😁
+Although I've been a long-time user of [LanceDB](https://github.com/lancedb/lancedb), I hadn't fully appreciated what was happening under the hood until I began studying it more deeply. LanceDB, and many other platforms at several major companies, are built on [Lance](https://lance.org/): a modern, multimodal lakehouse format designed from the ground up for AI workloads. **Disclaimer**: Because I now work at LanceDB, the company, I've got ample time to study the format and its internals on a daily basis. 😁
 
 Anyone who's worked with data knows that the typical AI workload starts as messy, multimodal raw inputs -- text, metadata, images, audio/video. Over time, these get repeatedly enriched with labels, OCR/captions, embeddings, and derived features as the models and the developer's understanding of the domain evolve. The storage layer has to keep up with schemas that change, tables whose rows and columns drastically grow with time, and workloads that vary from bulk sequential scans to random access (search). These were the challenges that Lance was designed to solve.
 
