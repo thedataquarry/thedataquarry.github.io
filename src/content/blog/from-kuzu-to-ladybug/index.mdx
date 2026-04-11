@@ -199,10 +199,12 @@ For betweenness centrality, we also pull mentor and mentee counts to see *why* t
 ```cypher
 MATCH (a:Scholar)-[:MENTORED]->(s:Scholar)-[:MENTORED]->(b:Scholar)
 WHERE s.prize = 'Physics'
-RETURN
-    s.name AS name,
-    COUNT(DISTINCT a) AS num_mentors,
-    COUNT(DISTINCT b) AS num_mentees;
+RETURN s.name AS name,
+       s.betweenness AS betweenness,
+       COUNT(DISTINCT a) AS num_mentors,
+       COUNT(DISTINCT b) AS num_mentees
+ORDER BY betweenness DESC
+LIMIT 5;
 ```
 ```
 ┌──────────────────┬─────────────┬─────────────┬─────────────┐
