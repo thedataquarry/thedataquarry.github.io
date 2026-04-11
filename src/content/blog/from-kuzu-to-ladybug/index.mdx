@@ -13,13 +13,13 @@ import Figure from '@/components/Figure.astro';
 import { Aside } from 'astro-pure/user';
 import Img1 from './laureates.png';
 
-If you've followed any of my work for the past couple of years, you'll know I used to work at Kuzu, where we were building an embedded graph database. My work at Kuzu was all about helping users figure out how to transform and query their data as a graph, experimenting with how to define graph data models and relationships for different domains, how to bring the power of Cypher to developers who didn't want to spin up a server cluster or run a proprietary tool just to run fast traversal queries.
+If you've followed any of my work for the past couple of years, you'll know I used to work at Kuzu, where we were building an embedded graph database. My work at Kuzu was all about helping users figure out how to transform and query their data as a graph, experimenting with how to define graph data models and relationships for different domains, how to bring the power of Cypher to developers who didn't want to spin up a server or pay for a proprietary tool just to run traversal queries.
 
 In September 2025, Kuzu got archived, and the codebase went quiet. But the ideas were still relevant. The graph community still highly valued a permissively licensed, embedded graph storage and query engine that supported Cypher.
 
-That's where LadybugDB comes in. It's a fork of Kuzu, maintained by the team at [Ladybug Memory](https://ladybugmem.ai/), but with a slightly different goal. Kuzu was built primarily as a standalone, embedded graph database. Ladybug wants to be a **graph lakehouse** — interoperating with DuckDB's storage layer, reading and writing Parquet, connecting to object stores. The same columnar foundation, but opened up to the broader ecosystem.
+That's where LadybugDB comes in. It's a fork of Kuzu, maintained by the team at [Ladybug Memory](https://ladybugmem.ai/), but with a slightly different goal. Kuzu was built primarily as a standalone, embedded graph database. Ladybug wants to be a **graph lakehouse** — interoperating with DuckDB's storage layer, reading and writing Arrow/Parquet, connecting to object stores. The same columnar foundation, but opened up to the broader ecosystem.
 
-Over the past few months, I've been in close discussions with [Arun Sharma](https://x.com/arundsharma), lead maintainer of Ladybug. Having explored what his vision looks like in practice, I wanted to share a small project that demonstrates at least a part of the Ladybug's vision: running fast graph algorithms natively on top of columnar graph storage.
+Over the past few months, I've been in close discussions with [Arun Sharma](https://x.com/arundsharma), lead maintainer of LadybugDB. Having explored what his vision looks like in practice, I wanted to share a small project that demonstrates at least a part of the Ladybug's vision: running fast graph algorithms natively on top of columnar graph storage.
 
 Towards the end of this post, we'll lead into the bigger picture and what this all means for folks working with graphs.
 
