@@ -46,6 +46,8 @@ The JSON is nested: each record contains a `children` array (mentees) and a `par
 Polars handles this with `explode` (fan array elements into rows) and `unnest` (promote struct fields into columns):
 
 ```python
+import polars as pl
+
 df = pl.read_json(path)
 df = df.explode("children").unnest("children")
 df = df.filter(pl.col("type") == "laureate")
@@ -65,6 +67,8 @@ Since Polars is Arrow-native and Ladybug ingests Arrow directly, the data moves 
 With our DataFrames ready, we create the graph schema and load the data. Because Ladybug is embedded, all you do is define a connection to a local file named `nobel.lbug`. This is where the graph is stored.
 
 ```python
+import ladybug as lb
+
 db = lb.Database("nobel.lbug")
 conn = lb.Connection(db)
 
