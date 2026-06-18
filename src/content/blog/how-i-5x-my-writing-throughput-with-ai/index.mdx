@@ -51,15 +51,15 @@ In my early days using coding agents, I used to just enter the seed prompt in "p
 
 Technical writing is very much an iterative process. To write well, a single plan isn't enough to flesh out a complex post, because while dumping my thoughts, I may have had conflicting ideas, or I may have entirely missed other important points that I actually wanted to include.
 
-As a result, it's crucial to have a "brainstorming" step *prior* to planning. Rather than go free form and prompt the model to brainstorm with me, I use this excellent [brainstorming skill](https://github.com/YourTechBud/opencode-config/blob/master/.opencode/skills/brainstorming/SKILL.md) built by my good friend [Noorain Panjwani](https://github.com/YourTechBud) — feel free to copy and adapt it for your own needs!
+As a result, it's crucial to have a "brainstorming" step *prior* to planning. Rather than go free form and prompt the model to brainstorm with me, I use this [brainstorming skill](https://github.com/prrao87/agent-skills/blob/main/skills/brainstorming/SKILL.md) adapted from the one written by my good friend [Noorain Panjwani](https://github.com/YourTechBud) — feel free to copy and adapt it for your own needs!
 
 To use the skill, I just point the agent to it (in Claude Code, it's a slash command: `/use brainstorming`) and then prompt it to brainstorm with me on the seed prompt. The skill is designed to be iterative, so I can go back and forth with the model as much as needed until we arrive at an outline that feels right.
 
 <Figure src={Img1} alt="From brainstorming to outline, then writing" />
 
-The purpose of the brainstorming skill isn't to generate writing ideas for you — it's to help you clarify your own thinking. When prompted to use the skill, the agent takes the seed prompt, reasons over it, and ideates with you (asking questions where necessary) to finally output a new local markdown file (let's call it `BLOG.md`). AI is your partner during this process.
+The purpose of the brainstorming skill isn't to generate writing ideas for you — it's to help you clarify your own thinking. When prompted to use the skill, the agent takes the seed prompt, reasons over it, ideates with you, asking questions where necessary, and finally outputs a new local artifact file (the skill specifically asks for an HTML artifact). AI is your *partner*, not your guide, during this process.
 
-`BLOG.md` is organized into sections, with a concrete flow and notes contained in bullet points. This provides initial structure and guidance for the next step of drafting, but it is not a final outline. The brainstorming step is iterative and can be repeated as many times as needed until the outline feels right. `BLOG.md` serves as the baseline artifact for the writing stage, which comes later.
+The artifact file is neatly organized into sections, with HTML/CSS widgets and a concrete flow and notes contained in bullet points. This provides initial structure and guidance for the next step of drafting, but it is not a final outline. The brainstorming step is iterative and can be repeated as many times as needed until the outline feels right. The artifact from brainstorming only serves as the baseline for the writing stage, which comes later.
 
 ## Step 3: first human checkpoint (vet the outline)
 
@@ -140,6 +140,6 @@ For me, writing a lot faster isn't satisfying on its own — it's the consistenc
 
 If there's one thing I want you to take away from this post, it's this: we're all going to have to learn to adapt to using AI in whatever we do, including writing. When it comes to high-quality technical content, treat AI as the efficiency engine, not the storyteller. The human remains responsible for the ideas, the intent, the outline, the voice, and the final narrative. None of that gets outsourced to AI, otherwise we end up in a world of [AI-generated slop](https://www.forbes.com/sites/the-prompt/2026/02/03/moltbook-swarm-intelligence-or-ai-slop/).
 
-As models and harnesses continue to evolve at a rapid pace, I'm sure my workflow will keep evolving. I'm also sure I'll be modifying skills like the [brainstorming](https://github.com/YourTechBud/opencode-config/blob/master/.opencode/skills/brainstorming/SKILL.md) one I showed, and adding new writing skills as I learn more about how to work with the latest generation of models. What I described here might look different six months from now, and that's fine — the core principles should still hold.
+As models and harnesses continue to evolve at a rapid pace, I'm sure my workflow will keep evolving. I'm also sure I'll be modifying skills like the [brainstorming](https://github.com/prrao87/agent-skills/blob/main/skills/brainstorming/SKILL.md) one I use regularly, and adding new [writing skills](https://github.com/prrao87/agent-skills/blob/main/skills/blog-writer/SKILL.md) as I learn more about how to work with the latest generation of models. What I described here might look different six months from now, and that's fine — the core principles should still hold.
 
 The key takeaway for me is that authenticity in writing doesn't mean rejecting AI outright. It requires keeping humans in control of *what* is being said and *why*. As long as that stays true, I'll continue writing this way. Hope you enjoyed this post, and stay tuned for a lot more from me in the coming weeks! 🚀
