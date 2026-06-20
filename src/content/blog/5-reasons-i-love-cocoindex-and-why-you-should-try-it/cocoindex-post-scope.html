@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CocoIndex Post Scope</title>
+  <style>
+    :root {
+      --ink: #1c2429;
+      --muted: #5f6b73;
+      --paper: #fbfaf7;
+      --panel: #ffffff;
+      --line: #d9dee2;
+      --accent: #0b6f6a;
+      --accent-2: #9d3d30;
+      --wash: #eef7f5;
+      --code: #f4f1eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(900px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 72px;
+    }
+
+    header {
+      padding-bottom: 28px;
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 30px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4.4rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.45rem;
+      line-height: 1.15;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      line-height: 1.2;
+    }
+
+    p { margin: 0 0 12px; }
+
+    section {
+      margin-top: 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .recommendation {
+      border-left: 5px solid var(--accent);
+      background: var(--wash);
+    }
+
+    .constraint {
+      border-left: 5px solid var(--accent-2);
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    li { margin: 0.42rem 0; }
+
+    .label {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 750;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .subhead-list {
+      display: grid;
+      gap: 12px;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .subhead-list li {
+      margin: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .subhead-list strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .section-beats {
+      margin-top: 10px;
+      padding-left: 1.1rem;
+    }
+
+    .section-beats li {
+      margin: 0.32rem 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    code {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--code);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th,
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Scope note</p>
+      <h1>A personal CocoIndex post first, a demo post second</h1>
+    </header>
+
+    <section class="recommendation">
+      <span class="label">Recommendation</span>
+      <h2>Keep post 1 personal: five reasons CocoIndex clicked</h2>
+      <p>
+        The first post should be a personal technical argument, not a LanceDB integration post and not a full tutorial. Its job is to explain why CocoIndex feels like the right abstraction for AI engineers who need fresh data without wasting compute.
+      </p>
+      <p>
+        Post 2 should carry the concrete demo and the deeper walkthrough. That is where LanceDB belongs: as the target in a runnable example that proves the source-to-transform-to-target model.
+      </p>
+    </section>
+
+    <section>
+      <span class="label">Post 1</span>
+      <h2>5 reasons I love CocoIndex, and why you should try it</h2>
+      <p>
+        This title works because it sets the right expectation: opinionated, personal, and technical. The five reasons should be real sections in the post, each grounded in a clear developer pain.
+      </p>
+      <ol class="subhead-list">
+        <li>
+          <strong>1. CocoIndex is incremental-first</strong>
+          Most systems nudge users toward batch mode: run the job on a schedule, refresh the index, clean up after stale state. CocoIndex starts from the more intuitive model for freshness: data changes sporadically, so the system should update incrementally.
+          <ul class="section-beats">
+            <li>Start from the familiar frustration: the first indexing run is easy, but keeping the index correct over weeks and months is where the operational burden appears.</li>
+            <li>Contrast the default batch instinct with the actual shape of many AI data changes: a file is edited, a document is replaced, metadata changes, a new object lands, or one source disappears.</li>
+            <li>Make the point personal: this is refreshing because the abstraction matches the problem. Freshness is naturally incremental; scheduled full refreshes are often a workaround.</li>
+            <li>Keep the critique measured. Batch processing is not bad; it is just the wrong default mental model for every freshness problem.</li>
+            <li>Transition by saying incremental computation only works if the system can reliably tell what changed.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>2. It brings change detection to messy AI data</strong>
+          CDC is familiar in databases and proprietary platforms, but usually for structured data inside a specific system. CocoIndex generalizes the idea for arbitrary sources and targets by tracking object contents, not just filenames or scheduled jobs.
+          <ul class="section-beats">
+            <li>Use CDC as the analogy, but avoid pretending it is the same thing. Traditional CDC is usually table-shaped, database-native, and tied to a platform's log or replication model.</li>
+            <li>Explain the AI-data version of the problem: files, PDFs, images, JSON blobs, markdown, scraped pages, and API responses are messy objects, but they still need freshness semantics.</li>
+            <li>Highlight content-aware change detection: the thing that matters is whether the object meaningfully changed, not whether a cron job happened to run or a filename timestamp moved.</li>
+            <li>Mention content hashing only after verification. If using BLAKE2b in prose, make it a concrete implementation detail rather than the main conceptual claim.</li>
+            <li>Transition by saying detecting change is only half the value; the developer also needs a sane way to describe what should happen when change occurs.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>3. The interface is declarative and reactive</strong>
+          The user focuses on the desired transformation, while the runtime handles dependency-aware execution. The mental model should feel familiar to anyone who has used React state updates or Excel formulas.
+          <ul class="section-beats">
+            <li>Frame this as a developer-experience point: users should describe the desired data transformation, not manually orchestrate every recomputation path.</li>
+            <li>Use React and Excel as intuition pumps. In both cases, the user declares relationships and lets the runtime figure out what needs to update when dependencies change.</li>
+            <li>Apply that to AI data freshness: source changes should trigger the affected derived state, while unrelated derived state should remain untouched.</li>
+            <li>Explain why this matters for AI engineers: model calls, parsing, chunking, embedding, enrichment, and target writes become easier to reason about when they are expressed as a dependency graph.</li>
+            <li>Transition by saying this declarative style works better when the framework can represent the real shape of the data, not just flattened tables.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4. Nested data gets first-class treatment</strong>
+          Real AI data is rarely born as a clean dataframe. CocoIndex lets users work with nested, object-shaped data at the compute layer instead of forcing premature flattening.
+          <ul class="section-beats">
+            <li>Name the common mismatch: many tools make the user flatten the world into dataframes before the computation actually feels natural.</li>
+            <li>Use realistic source shapes: documents with sections, images with metadata, conversations with turns, products with variants, or entities with nested attributes.</li>
+            <li>Argue that flattening is often right at the storage or analytics boundary, but not always at the compute boundary where the user's mental model is object-shaped.</li>
+            <li>Connect this to performance carefully: CocoIndex can still apply batching, concurrency, memoization, and incremental execution without forcing the user into dataframe-first thinking.</li>
+            <li>Transition by saying a framework that respects real data shapes also needs to work across many different source and target systems.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>5. It generalizes through extensibility</strong>
+          CocoIndex is designed around arbitrary sources and targets, with hooks for custom connectors. When users plug into those abstractions, they inherit the runtime's batching, memoization, concurrency, and incremental execution benefits.
+          <ul class="section-beats">
+            <li>Open with the practical reality: AI pipelines rarely live inside one neat system. They touch local files, object stores, databases, APIs, queues, model providers, and retrieval targets.</li>
+            <li>Explain that built-in connectors are useful, but the deeper value is the abstraction boundary: sources and targets can be extended without each integration becoming a one-off script.</li>
+            <li>Make "generalizes" concrete: the same freshness model should apply whether the source is a folder, a SaaS API, a database table, or a custom internal system.</li>
+            <li>Emphasize the payoff for developers: custom connectors should plug into the same runtime machinery instead of making users rebuild batching, memoization, and update propagation themselves.</li>
+            <li>Transition into the conclusion by saying these five reasons add up to a broader philosophy: CocoIndex lets AI engineers describe what should be true, while the runtime handles how to keep it true.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Conclusions</strong>
+          Close by bringing the reasons together: a compact in-process runtime, open source, Python/Rust SDK surface, and an abstraction that keeps data fresh without unnecessary recomputation.
+          <ul class="section-beats">
+            <li>Return to the personal frame: these are the reasons CocoIndex feels unusually well matched to where AI engineering is going.</li>
+            <li>Summarize the through-line: incremental computation, content-aware change detection, declarative transformations, nested data, and extensible connectors all support one goal.</li>
+            <li>State the core payoff plainly: AI engineers should be able to focus on what data they want to produce, not hand-maintain the mechanics of freshness.</li>
+            <li>Mention usability briefly: compact in-process runtime, no separate server requirement, open source, and Python/Rust SDK surface. Treat future TypeScript support as a roadmap note only if verified.</li>
+            <li>End by setting up the second post: the next step is to show these ideas in a concrete pipeline, with a real target and observable updates.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <span class="label">Post 2</span>
+      <h2>Building a fresh AI data pipeline with CocoIndex and LanceDB</h2>
+      <p>
+        This post should contain the concrete demo that the first post intentionally avoids. It can use LanceDB as the target, show code, and explain the primitives through a working pipeline.
+      </p>
+      <ol class="subhead-list">
+        <li>
+          <strong>The demo: a living multimodal product catalog</strong>
+          Use a small product catalog with images plus nested metadata as the recurring example.
+        </li>
+        <li>
+          <strong>Start with sources: images and sidecar metadata</strong>
+          Explain source objects as tracked inputs whose identity and contents drive recomputation.
+        </li>
+        <li>
+          <strong>Split the expensive work from the cheap work</strong>
+          Put image embedding and metadata parsing in separate functions so the reader can see why memoization matters.
+        </li>
+        <li>
+          <strong>Declare the target row</strong>
+          Map the nested product source into a LanceDB table row and make <code>declare_row</code> the conceptual centerpiece.
+        </li>
+        <li>
+          <strong>Watch CocoIndex react to changes</strong>
+          Walk through initial insert, metadata edit, image replacement, rename, and delete.
+        </li>
+        <li>
+          <strong>Query the fresh target state in LanceDB</strong>
+          Show that the final synchronized table is useful for retrieval, filtering, and inspection.
+        </li>
+        <li>
+          <strong>What this teaches about CocoIndex's primitives</strong>
+          Tie the demo back to apps, sources, processing components, functions, and targets after the reader has seen them in context.
+        </li>
+      </ol>
+    </section>
+
+    <section class="constraint">
+      <span class="label">Scope guard</span>
+      <h2>What to keep out of post 1</h2>
+      <ul>
+        <li>No LanceDB demo. Mention targets generically if needed, but save the concrete integration for post 2.</li>
+        <li>No full primitive walkthrough. The first post can name the primitives, but it should not explain the whole programming model.</li>
+        <li>No large code block. A tiny pseudo-example is acceptable only if it helps the personal argument.</li>
+        <li>No exact implementation claims about BLAKE2b or hashing behavior unless verified against current CocoIndex source or docs.</li>
+        <li>No TypeScript roadmap claim unless it can be linked or phrased clearly as future-facing context.</li>
+      </ul>
+    </section>
+
+    <section>
+      <span class="label">Decision matrix</span>
+      <h2>Why this split works</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Shape</th>
+            <th>Works well for</th>
+            <th>Failure mode</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Post 1: personal reasons</td>
+            <td>A skeptical AI engineer who wants to know why CocoIndex is worth attention.</td>
+            <td>It must stay specific enough to avoid becoming a generic appreciation post.</td>
+          </tr>
+          <tr>
+            <td>Post 2: concrete demo</td>
+            <td>A reader who wants to see the abstractions work end to end.</td>
+            <td>It must prove behavior with tested code, not just conceptual snippets.</td>
+          </tr>
+          <tr>
+            <td>One combined post</td>
+            <td>A reader already committed to a long CocoIndex walkthrough.</td>
+            <td>The personal argument gets buried under tutorial mechanics.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

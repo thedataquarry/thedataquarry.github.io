@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <title>What you declare vs. what the CocoIndex runtime handles</title>
+  <rect x="0" y="0" width="800" height="200" rx="10" fill="#ffffff"/>
+  <g font-family="Inter, system-ui, sans-serif">
+    <rect x="20" y="30" width="360" height="150" rx="12" fill="#fbeee0" stroke="#b9892f" stroke-width="1.6"/>
+    <text x="40" y="60" font-size="15" font-weight="750" fill="#b9892f">You write WHAT</text>
+    <g font-size="13" fill="#5f6b73">
+      <text x="40" y="90">• the transformation you want</text>
+      <text x="40" y="116">• the sources and targets</text>
+      <text x="40" y="142">• the shape of the output</text>
+    </g>
+
+    <rect x="420" y="30" width="360" height="150" rx="12" fill="#eef7f5" stroke="#0b6f6a" stroke-width="1.6"/>
+    <text x="440" y="60" font-size="15" font-weight="750" fill="#0b6f6a">CocoIndex handles HOW</text>
+    <g font-size="13" fill="#5f6b73">
+      <text x="440" y="90">• detect what changed</text>
+      <text x="440" y="116">• recompute only the delta</text>
+      <text x="440" y="142">• keep the target fresh, as cheaply as possible</text>
+    </g>
+    <text x="400" y="112" font-size="22" text-anchor="middle" fill="#c7ccd0">→</text>
+  </g>
+</svg>
