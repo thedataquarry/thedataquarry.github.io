@@ -76,7 +76,8 @@ const { html } = processSteps(content)
     margin-top: 0;
     transform: translateY(var(--shift-y));
     margin-bottom: var(--shift-y);
-    color: hsl(var(--foreground) / var(--un-text-opacity, 1));
+    /* Inherit the body prose color so step text matches surrounding paragraphs. */
+    color: inherit;
   }
   .sl-steps > li > :first-child:where(h1, h2, h3, h4, h5, h6) {
     --lh: calc(1.2em);
