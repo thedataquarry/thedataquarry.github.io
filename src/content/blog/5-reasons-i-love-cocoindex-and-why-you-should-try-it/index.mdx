@@ -131,13 +131,13 @@ class Product:
     image_embedding: Annotated[NDArray, EMBEDDER]  # vector, typed
 ```
 
-As a bonus, CocoIndex quietly hands you a convenient Pythonic "map-reduce" abstraction. The function is the only primitive you need: `coco.map` fans a function out across the items of a nested field, running them concurrently and memoizing each one as required, then gives you back an ordinary list of results. The "reduce" is just plain Python that does the required task (e.g., join the text).
+Async execution is kept simple and Pythonic. `coco.map` applies an async function across a collection, runs the calls concurrently inside the current component, and returns an ordinary list of results. If the mapped function is decorated with `@coco.fn(memo=True)`, each call can benefit from CocoIndex memoization (compute only occurs when data changes). There is no special "map-reduce API" to learn: you just use normal Python to combine the results, such as joining formatted sections into one document.
 
-```python title="map-reduce that just reads like Python"
-# map: format each section concurrently (CocoIndex parallelizes + caches each)
+```python
+# Format each section concurrently within the current component.
 section_texts = await coco.map(format_section, product.sections)
 
-# reduce: ordinary Python — join into one document
+# Combine the results with ordinary Python.
 document = "\n\n".join(section_texts)
 ```
 
