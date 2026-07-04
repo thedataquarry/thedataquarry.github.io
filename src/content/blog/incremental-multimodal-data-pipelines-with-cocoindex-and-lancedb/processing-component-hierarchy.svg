@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="title desc">
+  <title id="title">Processing components organize function chains inside a CocoIndex app</title>
+  <desc id="desc">A CocoIndex app contains a mount. The mount creates processing component runs. A processing component contains named functions and declares a target row.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z" fill="#5b6570"/>
+    </marker>
+    <style>
+      .label { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .app-title { font-size: 18px; font-weight: 900; fill: #2f6f8f; }
+      .mount-title { font-size: 19px; font-weight: 900; fill: #9a6a16; }
+      .component-title { font-size: 18px; font-weight: 900; fill: #3f7f5f; }
+      .name { font-size: 13px; font-weight: 800; fill: #18212a; }
+      .badge { font-size: 10px; font-weight: 900; fill: #45515d; text-transform: uppercase; }
+      .target-badge { fill: #9b4a45; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="500" rx="14" fill="#ffffff"/>
+
+  <g class="label">
+    <rect x="28" y="26" width="904" height="448" rx="14" fill="#f8fbfc" stroke="#2f6f8f" stroke-width="2.2" stroke-dasharray="7 5"/>
+    <text x="58" y="62" class="app-title">CocoIndex app</text>
+
+    <rect x="330" y="86" width="300" height="58" rx="10" fill="#fff8e6" stroke="#d9c68f" stroke-width="2"/>
+    <text x="480" y="122" text-anchor="middle" class="mount-title">mount</text>
+
+    <line x1="480" y1="144" x2="480" y2="177" stroke="#5b6570" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+    <rect x="78" y="184" width="804" height="252" rx="12" fill="#f5fbf7" stroke="#3f7f5f" stroke-width="2.2"/>
+    <rect x="104" y="214" width="190" height="192" rx="10" fill="#ffffff" stroke="#b5d2c0" stroke-width="1.5"/>
+    <text x="199" y="290" text-anchor="middle" class="component-title">
+      <tspan x="199" dy="0">processing</tspan>
+      <tspan x="199" dy="24">component</tspan>
+    </text>
+
+    <g transform="translate(332 214)">
+      <g>
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">load_listing</text>
+      </g>
+      <g transform="translate(0 44)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">normalize_product</text>
+      </g>
+      <g transform="translate(0 88)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">build_retrieval_text</text>
+      </g>
+      <g transform="translate(0 132)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">resolve_image_path</text>
+      </g>
+    </g>
+
+    <g transform="translate(602 214)">
+      <g>
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">read_image_bytes</text>
+      </g>
+      <g transform="translate(0 44)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">embed_text</text>
+      </g>
+      <g transform="translate(0 88)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">embed_image</text>
+      </g>
+      <g transform="translate(0 132)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#ffffff" stroke="#b8c5cf"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#eef2f5" stroke="#c7d1da"/>
+        <text x="46" y="21" text-anchor="middle" class="badge">function</text>
+        <text x="96" y="22" class="name">build_lancedb_row</text>
+      </g>
+      <g transform="translate(0 176)">
+        <rect x="0" y="0" width="240" height="34" rx="7" fill="#fff6f5" stroke="#d39a95"/>
+        <rect x="10" y="8" width="72" height="18" rx="9" fill="#ffffff" stroke="#d39a95"/>
+        <text x="46" y="21" text-anchor="middle" class="badge target-badge">target</text>
+        <text x="96" y="22" class="name">target.declare_row</text>
+      </g>
+    </g>
+  </g>
+</svg>
