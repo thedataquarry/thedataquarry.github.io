@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="256" viewBox="0 56 820 256">
+  <title>One pipeline, two owners: CocoIndex fills the row, LanceDB serves it</title>
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#5f6b73"/></marker>
+  </defs>
+
+  <rect x="0" y="56" width="820" height="256" rx="10" fill="#ffffff"/>
+
+  <g font-family="Inter, system-ui, sans-serif">
+    <!-- zone backgrounds -->
+    <rect x="16" y="64" width="384" height="214" rx="12" fill="#e8f3f1" stroke="#0b6f6a" stroke-opacity="0.35"/>
+    <rect x="424" y="64" width="380" height="214" rx="12" fill="#f7f0e2" stroke="#9d3d30" stroke-opacity="0.3"/>
+
+    <!-- zone labels -->
+    <text x="32" y="92" font-size="14" font-weight="750" fill="#0b6f6a">CocoIndex</text>
+    <text x="32" y="110" font-size="11" fill="#5f6b73">ingest · transforms · freshness</text>
+    <text x="788" y="92" font-size="14" font-weight="750" fill="#9d3d30" text-anchor="end">LanceDB</text>
+    <text x="788" y="110" font-size="11" fill="#5f6b73" text-anchor="end">storage · retrieval</text>
+
+    <!-- boundary -->
+    <line x1="412" y1="64" x2="412" y2="284" stroke="#9d3d30" stroke-width="1.4" stroke-dasharray="4 4" stroke-opacity="0.6"/>
+    <text x="412" y="302" font-size="10.5" fill="#9d3d30" text-anchor="middle" font-weight="700">one typed row, handed off</text>
+
+    <!-- source card -->
+    <rect x="36" y="150" width="150" height="86" rx="8" fill="#fff" stroke="#d9dee2"/>
+    <text x="111" y="178" font-size="12.5" font-weight="700" fill="#1c2429" text-anchor="middle">ABO source</text>
+    <text x="111" y="198" font-size="10.5" fill="#5f6b73" text-anchor="middle">nested JSON listing</text>
+    <text x="111" y="214" font-size="10.5" fill="#5f6b73" text-anchor="middle">+ catalog image</text>
+
+    <!-- transform card -->
+    <rect x="232" y="150" width="158" height="86" rx="8" fill="#fff" stroke="#0b6f6a" stroke-opacity="0.5"/>
+    <text x="311" y="176" font-size="12.5" font-weight="700" fill="#0b6f6a" text-anchor="middle">transform</text>
+    <text x="311" y="196" font-size="10.5" fill="#5f6b73" text-anchor="middle">normalize fields ·</text>
+    <text x="311" y="211" font-size="10.5" fill="#5f6b73" text-anchor="middle">build text · embed both</text>
+
+    <!-- arrow source -> transform -->
+    <line x1="186" y1="193" x2="230" y2="193" stroke="#5f6b73" stroke-width="1.6" marker-end="url(#arr)"/>
+
+    <!-- arrow transform -> row (crosses boundary) -->
+    <line x1="390" y1="193" x2="446" y2="193" stroke="#5f6b73" stroke-width="1.6" marker-end="url(#arr)"/>
+
+    <!-- lancedb row/table card -->
+    <rect x="448" y="132" width="186" height="124" rx="8" fill="#fff" stroke="#9d3d30" stroke-opacity="0.5"/>
+    <text x="541" y="152" font-size="12" font-weight="700" fill="#9d3d30" text-anchor="middle">one product row</text>
+    <g font-size="10.5" fill="#1c2429">
+      <text x="462" y="174">product_id</text><text x="620" y="174" text-anchor="end" fill="#5f6b73">str</text>
+      <text x="462" y="191">text</text><text x="620" y="191" text-anchor="end" fill="#5f6b73">str</text>
+      <text x="462" y="208">image</text><text x="620" y="208" text-anchor="end" fill="#5f6b73">bytes (blob)</text>
+      <text x="462" y="225">text_vector</text><text x="620" y="225" text-anchor="end" fill="#5f6b73">vector</text>
+      <text x="462" y="242">image_vector</text><text x="620" y="242" text-anchor="end" fill="#5f6b73">vector</text>
+    </g>
+
+    <!-- arrow row -> retrieval -->
+    <line x1="634" y1="193" x2="678" y2="193" stroke="#5f6b73" stroke-width="1.6" marker-end="url(#arr)"/>
+
+    <!-- retrieval card -->
+    <rect x="680" y="150" width="108" height="86" rx="8" fill="#fff" stroke="#d9dee2"/>
+    <text x="734" y="178" font-size="12" font-weight="700" fill="#1c2429" text-anchor="middle">retrieval</text>
+    <text x="734" y="198" font-size="10.5" fill="#5f6b73" text-anchor="middle">search by</text>
+    <text x="734" y="214" font-size="10.5" fill="#5f6b73" text-anchor="middle">text or image</text>
+  </g>
+</svg>
