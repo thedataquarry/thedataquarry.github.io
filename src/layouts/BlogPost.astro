@@ -44,7 +44,7 @@ const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
 
 <PageLayout
   meta={{ articleDate, description, ogImage: socialImage, title }}
-  back="/blog"
+  back="/archive"
 >
   {!!headings.length && <TOC {headings} slot="sidebar" />}
 

@@ -104,7 +104,10 @@ export default defineConfig({
     }
   },
   redirects: {
-    '/posts/': '/blog',
+    // The paginated /blog list was removed in favour of the full /archive listing
+    '/blog': '/archive',
+    '/archives': '/archive',
+    '/posts/': '/archive',
     '/posts/hello-world': '/blog/hello-world',
     '/posts/neo4j-python-1': '/blog/neo4j-python-1',
     '/posts/neo4j-python-2': '/blog/neo4j-python-2',
