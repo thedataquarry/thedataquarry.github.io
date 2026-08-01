@@ -17,6 +17,19 @@ const {
   meta: { articleDate, description = config.description, ogImage, title },
   highlightColor
 } = Astro.props
+
+// Blend the highlight color into the body's fixed background gradient at 25% opacity,
+// so the tint stays frozen in the viewport as the page scrolls (background-attachment:
+// fixed) instead of scrolling away with the content.
+const highlightColorRgba = highlightColor
+  ? (() => {
+      const hex = highlightColor.replace('#', '')
+      const r = parseInt(hex.slice(0, 2), 16)
+      const g = parseInt(hex.slice(2, 4), 16)
+      const b = parseInt(hex.slice(4, 6), 16)
+      return `rgba(${r},${g},${b},0.12)`
+    })()
+  : undefined
 ---
 
 <html lang={config.locale.lang}>
@@ -25,16 +38,16 @@ const {
     <ThemeProvider />
   </head>
 
-  <body class='flex justify-center bg-background text-foreground'>
-    {
-      highlightColor && (
-        <div
-          id='highlight-gradient'
-          class='pointer-events-none absolute start-0 top-0 z-0 h-screen w-full opacity-25'
-          style={`background-image:linear-gradient(${highlightColor},transparent)`}
-        />
-      )
+  <body
+    class='flex justify-center bg-background text-foreground'
+    style={
+      highlightColorRgba &&
+      `background-image:linear-gradient(${highlightColorRgba},transparent);
+       background-repeat:no-repeat;
+       background-attachment:fixed;
+       background-size:100% 100vh;`
     }
+  >
     <div class='w-full max-w-[70rem] px-4 sm:px-7 lg:px-10'>
       <Header />
       <slot />

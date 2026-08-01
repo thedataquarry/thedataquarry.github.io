@@ -45,6 +45,7 @@ const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
 <PageLayout
   meta={{ articleDate, description, ogImage: socialImage, title }}
   back="/archive"
+  highlightColor='#659EB9'
 >
   {!!headings.length && <TOC {headings} slot="sidebar" />}
 
