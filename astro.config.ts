@@ -56,7 +56,8 @@ export default defineConfig({
   prefetch: true,
   // Server Options
   server: {
-    host: true
+    host: true,
+    port: 4322
   },
   // Markdown Options
   markdown: {
