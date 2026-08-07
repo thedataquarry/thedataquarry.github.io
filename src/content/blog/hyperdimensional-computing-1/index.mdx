@@ -14,7 +14,7 @@ tags:
 import Figure from '@/components/Figure.astro';
 import { Aside } from 'astro-pure/user';
 import HypervectorProperty from './HypervectorProperty.astro';
-import HdcManifold from './hdc-manifold.png';
+import HdcManifold from './hdc-concept.png';
 import TeaManifold from './tea-manifold.png';
 
 In his landmark 2009 paper that introduced hyperdimensional computing (HDC), Pentti Kanerva[^1] made an insightful observation:
@@ -23,11 +23,11 @@ In his landmark 2009 paper that introduced hyperdimensional computing (HDC), Pen
 
 To understand why a representation matters, let's take the number 27. Mathematically, it's a scalar (a single point on a number line). However, its representation on a computer requires the binary pattern `11011`. It takes two digits to represent it in decimal, but five bits to represent it in binary.
 
-The larger representation is not more meaningful on its own, but it gives the machine (which is built using binary logic gates) something more powerful: the ability to _operate_ on the data much more easily. Add an 8-bit representation of 5 (`00000101`) to an 8-bit representation of 27 (`00011011`), and we get `00100000`, which converts back to the integer 32. The representation is what enables efficient computation over the data.
+The larger representation is not more meaningful on its own, but it gives the machine (which is built using binary logic gates) something more powerful: the ability to _operate_ on the data much more easily. Add an 8-bit representation of 5 (`00000101`) to an 8-bit representation of 27 (`00011011`), and we get `00100000`, which converts back to the integer 32. The _representation_ is what enables efficient computation over the data.
 
-Hyperdimensional computing takes this intuition much further: we transform not only numbers, but **arbitrary data** into _hypervectors_ (10,000 dimensions or more). We can then use a simple algebra to operate over those hypervectors, combining and transforming them to represent new information. Importantly, these composable operations preserve the inherent structure in the raw data. Some, such as binding, can also be reversed to recover encoded information.
+Hyperdimensional computing takes this intuition much further: we transform not only numbers, but **arbitrary data** into _hypervectors_ (10,000 dimensions or more). We can then use a simple algebra to transform, combine and compare them. Importantly, these operations are _composable_, allowing us to store complex data, while preserving its inherent structure. Additionally, the operations are reversible, so we can easily recover the raw data from its representation.
 
-If you like thinking visually, you can imagine a high-dimensional space as a fuzzy manifold. Each data point lies on that manifold, and its hypervector points from the centroid toward that point. The algebra lets us move around the surface in ways that preserve relationships between points. The image below shows a conceptual view of a high-dimensional manifold projected down to three dimensions. Each hypervector points from a shared origin toward a data point across the surface.
+Let's gain a visual intuition for why HDC might work in practice. Real-world data exists in a high-dimensional space, which can be thought of as a fuzzy manifold. Each data point lies on that manifold, and is represented as a high-dimensional vector (a "hypervector") that originates at the centroid of the manifold. The algebra lets us move around the surface in ways that preserve relationships between points. Two points that are close together on the manifold will have hypervectors that are more similar than two points that are far apart.
 
 <Figure
   src={HdcManifold}
@@ -37,7 +37,7 @@ If you like thinking visually, you can imagine a high-dimensional space as a fuz
 
 ## High dimensionality: from curse to blessing
 
-Traditional machine learning tends to view high dimensionality as a curse, resorting to dimensionality reduction techniques to work with the data. In contrast, HDC treats high dimensionality as a "blessing" rather than a curse. The field of HDC has its roots in cognitive science, where it's thought that the highly interconnected nature of the brain's neurons allows for distributed representations of information that exist in a very high-dimensional space, enabling intelligence.
+Traditional machine learning encourages us to view high dimensionality as a curse, where it's common to resort to dimensionality reduction techniques when working with the data. In contrast, HDC views high dimensionality as a "blessing" rather than a curse. The field of HDC has its roots in cognitive science, where it's thought that the highly interconnected nature of the brain's neurons allows for distributed representations of information that exist in a very high-dimensional space, enabling intelligence.
 
 This leads us to one of the most important insights from Kanerva's paper[^1]: high dimensionality is useful because it gives us a large, distributed representational space that remains closed under a small algebra. And because the algebra exposes composable operations, this lets us easily combine hypervectors to create new ones in various ways, no matter the shape of the original data.
 
@@ -45,7 +45,7 @@ If this is your first foray into hyperdimensional computing, welcome! In this po
 
 ## A real-world dataset of tea
 
-In my [previous post](/blog/how-a-taiwanese-oolong-changed-the-way-i-look-at-tea) about my newfound fascination with loose-leaf tea, I showed how I curated a [tea dataset](https://huggingface.co/datasets/prrao87/tea-hypervectors) that captures various attributes of each tea. It turns out that the dataset is a _great_ way to demonstrate how HDC works. Below is an example JSON record of one of my favourite black teas from China's Yunnan province. We'll walk through a conceptual view of how to work with it using HDC algebra.
+In my [previous post](/blog/how-a-taiwanese-oolong-changed-the-way-i-look-at-tea) about my newfound fascination with loose-leaf tea, I showed how I curated a [tea dataset](https://huggingface.co/datasets/prrao87/tea-hypervectors) that captures various attributes of each tea. It turns out that the dataset is a _great_ way to demonstrate how HDC works. Below is an example JSON record of one of my favourite black teas (_Yunnan Dian Hong_), from China's Yunnan province. We'll walk through a conceptual view of how to work with it using HDC algebra.
 
 ```json title="tea_data_final.json"
 {
@@ -75,7 +75,7 @@ In my [previous post](/blog/how-a-taiwanese-oolong-changed-the-way-i-look-at-tea
 | `oxidation` \| `roast` | ordinal categories | Ordered levels describing how the tea was processed |
 | `elevation_meters` | number | The elevation at which the tea was grown |
 
-As described [in the earlier post](/blog/how-a-taiwanese-oolong-changed-the-way-i-look-at-tea#how-elevation-affects-flavour-profile), the elevation at which tea grows influences its flavour profile. When tea is grown at higher elevations, the cooler conditions slow the plant's growth, which changes the balance of amino acids and polyphenols in the leaf. This affects the tea's aroma, taste and mouthfeel, making the elevation number a proxy for a complex set of chemical and sensory properties that aren't captured in the text description.
+As described [in the earlier post](/blog/how-a-taiwanese-oolong-changed-the-way-i-look-at-tea#how-elevation-affects-flavour-profile), the elevation at which tea grows directly influences its flavour profile. When tea is grown at higher elevations, the cooler conditions slow the plant's growth, which changes the balance of amino acids and polyphenols in the leaf. This affects the tea's aroma, taste and mouthfeel, making the elevation number a proxy for a complex set of chemical and sensory properties that aren't captured in the text description.
 
 Together, numbers, categorical variables and text can describe aspects of the tea more faithfully than text alone. The image below shows, conceptually, how five different kinds of tea (green, white, yellow, oolong and black) might occupy such a hypothetical, shared high-dimensional space. Each example tea is represented by a hypervector pointing toward its data point within the corresponding category.
 
@@ -87,7 +87,7 @@ Together, numbers, categorical variables and text can describe aspects of the te
 
 ## What is a hypervector?
 
-High dimensionality alone doesn't make a representation useful as a hypervector. One of the most consequential choices in an HDC system is its encoder design. The encoder maps input data into a shared, fixed-width hypervector space and defines its geometry: which inputs should begin unrelated, which relationships should be preserved, and how different pieces of information should be composed. Those choices can encode domain knowledge, be learned from data, or combine both.
+High dimensionality alone doesn't make a representation useful as a hypervector. One of the most consequential components in an HDC system is the **encoder**. The encoder maps input data into a shared, fixed-width hypervector space and defines its geometry: which inputs should begin unrelated, which relationships should be preserved, and how different pieces of information should be composed. Those choices can encode domain knowledge, be learned from data, or combine both.
 
 $$
 \mathbf{h} = [h_1, h_2, \ldots, h_D] \in \mathbb{R}^{D}
@@ -103,7 +103,7 @@ For the tea dataset, every property value is mapped into this same fixed-width s
 
 ### Independence
 
-A 10,000-dimensional bipolar space contains $2^{10{,}000}$ possible hypervectors, a stupendously large number. Any data we could represent would fill only an infinitesimally small fraction of that space. Two randomly chosen hypervectors in this space point in nearly perpendicular directions, so their cosine similarity is close to zero.
+The useful properties of hypervectors only emerge when you have thousands (typically tens of thousands) of dimensions. A 10,000-dimensional space contains $2^{10{,}000}$ possible hypervectors, a stupendously large number. Any data we could represent would fill only an infinitesimally small fraction of that space. Two randomly chosen hypervectors in this space point are almost guaranteed to be orthogonal, meaning that their cosine similarity is close to zero.
 
 This gives unrelated concepts plenty of separation. Shared structure can move two tea hypervectors closer together, while arbitrary representations begin with almost no similarity.
 
@@ -111,7 +111,7 @@ This gives unrelated concepts plenty of separation. Shared structure can move tw
 
 ### Robustness
 
-A hypervector is **robust** to noise or corruption. Its representation is redundant, so changing many values moves it only gradually away from the original. No single value among its 10,000 positions encodes meaning on its own (see the next quality on holistic representation), so flipping a few values doesn't change its overall meaning.
+A hypervector is robust to noise or corruption. Its representation is sufficiently redundant, so changing many values moves it only gradually away from the original. No single value among its 10,000 positions encodes meaning on its own (see the next quality on holistic representation), so flipping a few values doesn't change its overall meaning.
 
 This distinguishes hypervectors from ordinary binary encodings, where flipping one bit can completely change the represented value.
 
@@ -123,7 +123,7 @@ A hypervector is **holographic** and maintains a **holistic** representation bec
 
 In the binary representation of the number 27, each bit stores an explicit part of the number. In contrast, for our tea hypervectors, the values for aroma, oxidation, roast and elevation are distributed across _all_ their positions instead of occupying specific regions. Removing the first 1,000 values should behave much like removing any other 1,000: we lose some evidence for the tea as a whole rather than one specific property.
 
-Together, all these properties make hypervectors useful. Next, let's look at the three operators of HDC algebra that let us compute with them.
+This distributed representation in HDC is analogous to how the brain is thought to store information across many neurons, rather than in a single location. There's no one single way to encode the representation of a banana 🍌 － every brain comes up with its own. It's thought that this holographic property combined with very high-dimensional representations allows the brain to store and retrieve information in a robust, flexible way.
 
 ## The three operators of HDC
 
@@ -131,17 +131,19 @@ HDC can be implemented using several algebraic models.[^2] For the tea project, 
 
 ### Binding
 
-Real-world records often come as key–value pairs. In HDC, the key becomes a *role hypervector* $\mathbf{R}$, and its associated data becomes a *value hypervector* $\mathbf{V}$. Binding combines them into one role-value hypervector that is typically dissimilar to both inputs. This lets the same value appear under different roles without conflating the two facts.
+Binding is a way to _associate_ two hypervectors into a single one that is typically dissimilar to both inputs. It lets us combine two pieces of information while keeping them separate, so we can later recover one from the other.
 
-In bipolar MAP, binding is element-wise multiplication: it multiplies the values at each matching position:
+Real-world records often come as key–value pairs. In HDC, the key becomes a *role hypervector* $\mathbf{R}$, and its associated data becomes a *value hypervector* $\mathbf{V}$. Binding combines them into one role-value hypervector. Because the result is dissimilar to both inputs, the same value can appear under different roles without conflating the two facts.
+
+In MAP, binding is element-wise multiplication: it multiplies the values at each matching position:
 
 $$
 (\mathbf{R} \otimes \mathbf{V})_i = R_i V_i
 $$
 
-In the Yunnan Dian Hong tea record shown above, the key-value pair `"oxidation": "high"` becomes the role-value pair $\mathbf{OXIDATION} \otimes \mathbf{HIGH}$.
+In the Yunnan Dian Hong tea record shown above, the key-value pair `"oxidation": "high"` becomes the role-value pair $\mathbf{OXIDATION} \otimes \mathbf{HIGH}$ in hypervector space.
 
-Binding is a self-inverse operation, so knowing the role lets us recover the value:
+Binding is a self-inverse operation, so knowing the role lets us recover its value:
 
 $$
 \begin{aligned}
@@ -154,7 +156,7 @@ $$
 
 ### Bundling
 
-Bundling is like superposition: it combines multiple hypervectors into a single one that remains _similar_ to its inputs. In MAP, bundling uses element-wise addition:
+Bundling is like _superposition_: it combines multiple hypervectors into a single one that remains _similar_ to its inputs. In MAP, bundling uses element-wise addition:
 
 $$
 (\mathbf{A} \oplus \mathbf{B})_i = A_i + B_i,
@@ -171,7 +173,7 @@ $$
 \end{aligned}
 $$
 
-We can continue bundling bound field hypervectors to create a complete tea hypervector, adding fields such as aroma, taste and elevation. Because the bundle retains some similarity to each field hypervector, teas with similar aromas, processing and elevation will end up closer together.
+We can continue bundling the already-bound role-value hypervectors to create a "complete tea hypervector", adding fields such as aroma, taste and elevation. Because the bundle retains some similarity to each field hypervector, teas with similar aromas, processing and elevation will end up closer together.
 
 ### Permutation
 
@@ -188,7 +190,7 @@ $$
 
 The values themselves haven't changed, only their positions. The exponent simply counts how many times we apply the rotation.
 
-In this tea example, we don't model sequences, so we won't use permutation. However, permutation is very useful in cases where we want to encode ordered data, such as time series or a sequence of events.
+In this tea example, we don't model sequences, so we won't use permutation. However, permutation is very useful in cases where we want to encode ordered data, such as time series or a sequence of events. Just like binding and bundling, permutation is also composable, so we can combine any of these operations in different ways to represent complex data.
 
 ## Associative search
 
@@ -204,13 +206,13 @@ Let's find the most similar results for Yunnan Dian Hong, which grows at an elev
 | 0.8294 | black | 2,000 m | Da Xue Shan Hong Cha |
 | 0.8290 | black | 1,300 m | Darjeeling Namring “Tippy Muscatel” 2nd Flush |
 
-Assam Doomni, an Indian black tea, is the most similar in hypervector space. Both are velvety and malty with fruity, caramel-like notes. A text-only representation can compare only the prose we give it. The associative search in HDC, however, isn't limited to text similarity: our tea hypervectors also encode structured evidence such as oxidation, roast and elevation.
+Assam Doomni, an Indian black tea, is the most similar in hypervector space. Both are velvety and malty with fruity, caramel-like notes. A text-only representation can compare only what's mentioned in the prose. The associative search in HDC, however, isn't limited to text similarity: our tea hypervectors also encode structured evidence such as oxidation, roast and elevation.
 
-This richer representation lets us capture relevance across several aspects of a tea at once. Assam Doomni's sensory profile and processing are similar to Yunnan Dian Hong's, and its elevation of 1,600 metres is reasonably close to the query's 1,950 metres. In the next section, we'll inspect the individual contributions to see whether the numbers support that intuition.
+This richer representation lets us capture relevance across several aspects of a tea at once. Assam Doomni is a black tea whose sensory profile and processing are similar to Yunnan Dian Hong's, and its elevation of 1,600 metres is reasonably close to the query's 1,950 metres. In the next section, we'll inspect the individual contributions to see whether the numbers support that intuition.
 
 ## Explainability via composability
 
-Composability also lets us break the similarity score into its field-level contributions, making the result much easier to explain.
+Composability is useful because it also lets us break down the similarity score into its field-level contributions, making the result much easier to explain and interpret.
 
 We constructed a full tea hypervector by binding values to their roles, then bundling those bound associations:
 
@@ -262,42 +264,44 @@ Repeating this calculation for the remaining fields gives us a full breakdown:
 | Taste | +0.2553 |
 | Class | +0.1349 |
 | Oxidation | +0.1321 |
-| Roast | +0.0054 |
 | Elevation | +0.0525 |
+| Roast | +0.0054 |
 | **Total** | **0.8487** |
 
-Aroma and taste provide most of the evidence for why these two teas are "similar", contributing `0.5237` together. Their shared black class and high oxidation add another `0.2670`. The relatively high elevation contributes a sizeable fraction at `0.0525`: Yunnan Dian Hong grows at 1,950 metres and Assam Doomni at 1,600 metres. Both teas are unroasted, so that field contributes the least, at just `0.0054`.
+Aroma and taste provide most of the evidence for why these two teas are "similar", contributing `0.5237` together. Their shared black class and high oxidation add another `0.2670`. The relatively high elevation contributes a sizeable fraction at `0.0525`: Yunnan Dian Hong grows at 1,950 metres and Assam Doomni at 1,600 metres.
 
-This is one of the most compelling benefits of composability in HDC algebra. The similarity score can be unpacked into the parts that produced it: aroma, taste, processing and elevation. The same simple algebra that generated the hypervectors also supports an explainable form of retrieval, giving us a result we can inspect, rather than returning an opaque score from a black-box model.
+This is one of the most compelling benefits of composability. The similarity score can be unpacked into the parts that contributed the most: aroma, taste, class, processing and elevation. The same simple algebra that generated the hypervectors supports an explainable form of retrieval, giving us a result we can inspect, rather than returning an opaque score from a black-box model.
 
 ## Can we do this with traditional embeddings?
 
 At this point, a reasonable question is: instead of using HDC, why not concatenate fields such as `aroma` and `oxidation`, then pass the text through a traditional embedding model? This can work, but the resulting dense embedding is a compressed, lossy summary shaped by the model's training. It _may_ recognize “1,950 metres” as meaningful, but we can't rely on it to preserve elevation as an ordered quantity or correctly rank 1,600 and 1,300 metres by their distance from it.
 
-The bigger difference is *control*. Once a tea's key-value fields are stuffed into a text embedding, we don't have a reliable post-training knob to make `aroma` and `taste` matter more than `roast` level. We're relying on relationships the model learned during training, with every input field entangled in one opaque representation. HDC lets us operate explicitly on the field components, so we can weight each contribution and adjust those domain assumptions as needed.
+The bigger difference is *explicit control*. When a tea's properties are stuffed into a text embedding, we don't have a reliable post-training knob to make `aroma` and `taste` matter more than `roast` level. We're relying on the implicit associations the model learned during training, with every input field entangled in one opaque representation. HDC gives us an algebra to explicitly operate on the field components per our domain knowledge, so we can weight each contribution and adjust those domain assumptions as needed.
 
-The composability of HDC operations also helps with explainability. A text-embedding result doesn't reveal how much of the similarity score came from `aroma`, `elevation` or any other field. An HDC representation is more transparent because its construction remains explicit: we can inspect its field components and use reversible operations to recover bound values.
+The explainability helps make the results more trustworthy. A text-embedding result doesn't reveal how much of the similarity score came from `aroma`, `elevation` or any other field. An HDC representation is more transparent because it baked in human domain knowledge into the encoder: we can inspect the hypervector's components and use reversible operations to recover the original values.
 
-This post didn't go into the details of how we can tune each component via weights. In the next post, we'll explore encoder design, including how we select the weights to reflect domain knowledge and how we can handle specific fields in a principled way.
+In the next post, we'll explore encoder design in more detail, including how we assign weights to reflect domain knowledge, and how we can model specific fields in a principled way.
 
 <Aside title="How is this different from advanced RAG?">
-An advanced RAG system can combine BM25 and embedding retrieval with reranking and metadata filters. These systems can work well in practice, but the controls and tuning knobs come from sophisticated machinery _around_ the embedding, with its own deployment overhead. HDC builds these controls _into the representation itself_.
+An advanced RAG system can combine BM25 and embedding retrieval with reranking and metadata filters. These systems can work well in practice, but the controls and tuning knobs come from sophisticated machinery _around_ the embedding, with their own deployment overhead. HDC builds many of these controls _into the representation itself_.
 
-The same operations used to construct the hypervector also let us decompose it, recover bound values and, as we'll see in a future post, support online learning.
+The same operations used to construct the hypervector also let us decompose it, recover bound values and, as we'll see in a future post, perform online learning.
 </Aside>
 
 ## What's next: designing an encoder
 
-This post gave a basic introduction to the algebra provided by HDC. By turning tea records into hypervectors, we distribute their information across a high-dimensional space and can compute efficiently over those representations. Binding associates role-value pairs, bundling superposes multiple bound pairs, and permutation gives us a way to represent order. Because each operation returns another hypervector of the same length, we can compose them as needed to represent complex data from any domain.
+This post gave a basic introduction to the algebra provided by HDC. By turning tea records into hypervectors, we distribute their information across a high-dimensional space so that we can compute efficiently over those representations. Binding associates role-value pairs, bundling superposes multiple bound pairs, and permutation gives us a way to represent ordered events. Because each operation returns another hypervector of the same length, we can compose/decompose them as needed and represent arbitrarily complex data from any domain.
 
-In the [tea hypervector dataset](https://github.com/thedataquarry/tea-hypervector-dataset), we saw how to bring each tea's attributes, such as aroma, taste, class, oxidation, roast and elevation, into one shared representation. We used cosine similarity to search by association, recovered Assam Doomni as the closest match to Yunnan Dian Hong (my current favourite black tea), and decomposed their similarity score to explain the result. Unlike naive text concatenation and RAG, the hypervector construction remains explicit enough to inspect and tune how strongly each field influences the search results.
+In the [tea hypervector dataset](https://github.com/thedataquarry/tea-hypervector-dataset), we saw how to bring each tea's attributes, such as aroma, taste, class, oxidation, roast and elevation, into one shared representation. We used cosine similarity to search by association, recovered Assam Doomni[^3] as the closest match to Yunnan Dian Hong (my current favourite black tea), and decomposed their similarity score to explain the result. Unlike naive text concatenation or RAG, the hypervector construction remains explicit enough to inspect and we can tune how strongly each field influences the search results.
 
-You'll notice that we deliberately didn't go deeper into one key topic: **encoder design**. This requires a post of its own, as the encoder is the single most important part of an HDC system. Aroma and taste need their semantic relationships preserved, oxidation and roast need their order as categorical levels preserved, and elevation needs a meaningful notion of distance in numeric space. We also need to handle missing values, choose weights that express our domain knowledge, and verify that the resulting geometry behaves as intended. These choices determine whether closeness in hypervector space corresponds to similarity a tea drinker would recognize.
+You'll notice that I deliberately didn't go deeper into one key topic: **encoder design**. This requires a separate post of its own, as the encoder is the single most important part of an HDC system. Aroma and taste need their semantic relationships preserved, oxidation and roast need their order as categorical levels preserved, and elevation needs a meaningful notion of distance in numeric space. We also need to handle missing values, choose weights that express our domain knowledge, and verify that the resulting geometry behaves as intended. These choices determine whether closeness in hypervector space corresponds to similarity a tea drinker (like myself) would recognize.
 
-In the next post, we'll take a deep dive into how the encoder is built and show that it works well in practice. Stay tuned! 🚀
+The next post is all about how the encoder is built. Stay tuned! 🚀
 
 ---
 
 [^1]: Pentti Kanerva, ["Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors"](https://redwood.berkeley.edu/wp-content/uploads/2018/01/kanerva2009hyperdimensional.pdf), _Cognitive Computation_, 2009. Here, the dimensionality of the entity describes the mathematical object itself, while the dimensionality of its representation describes the number of values used to encode it. Those dimensions don't need to match, and choosing a larger representation can give us useful computational properties that the original object doesn't have on its own.
 
 [^2]: The literature commonly uses **Hyperdimensional Computing** and **Vector Symbolic Architectures** (VSA) as synonymous names for the same family of computational models. See Denis Kleyko, Dmitri A. Rachkovskij, Evgeny Osipov and Abbas Rahimi, ["A Survey on Hyperdimensional Computing aka Vector Symbolic Architectures, Part I: Models and Data Transformations"](https://arxiv.org/abs/2111.06077), _ACM Computing Surveys_, 2022.
+
+[^3]: I haven't yet tried Assam Doomni, but I look forward to it! In a future post, I'll push this experiment further and build a tea recommender system that can suggest new teas I try out based on past teas I liked/disliked. It's fascinating how well this works in practice!
