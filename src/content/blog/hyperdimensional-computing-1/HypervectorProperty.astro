@@ -1,0 +1,321 @@
+---
+interface Props {
+  variant: 'space' | 'randomness' | 'independence' | 'holographic';
+}
+
+const { variant } = Astro.props;
+const dimensions = 48;
+
+function makeVector(seed: number) {
+  let state = seed >>> 0;
+  return Array.from({ length: dimensions }, () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state >>> 31 ? 1 : -1;
+  });
+}
+
+function fromBits(bits: string) {
+  return Array.from(bits, (bit) => bit === '1' ? 1 : -1);
+}
+
+const original = makeVector(42);
+const unrelated = makeVector(348);
+const oolong = makeVector(71);
+const black = makeVector(204);
+const aroma = makeVector(913);
+const firstMissing = new Set(Array.from({ length: 10 }, (_, index) => index));
+const middleMissing = new Set(Array.from({ length: 10 }, (_, index) => index + 19));
+const senchaGreen = fromBits('111100110111000001100011001100110000010100011001');
+const gyokuroGreen = fromBits('111110110111000001100011001100110000010110011101');
+const assamBlack = fromBits('011010110111101000100111011100010000101100111101');
+---
+
+{variant === 'space' && (
+  <figure class="property-visual" aria-label="Two unrelated bipolar hypervectors have cosine similarity close to zero">
+    <div class="metric-row">
+      <div>
+        <span class="eyebrow">Possible hypervectors (bipolar example)</span>
+        <strong class="vector-count">2<sup>10,000</sup></strong>
+      </div>
+      <div>
+        <span class="eyebrow">Unrelated hypervectors</span>
+        <strong>cos ≈ 0</strong>
+      </div>
+    </div>
+    <div class="vector-row">
+      <span class="vector-name">A</span>
+      <div class="strip" aria-hidden="true">
+        {original.map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />)}
+      </div>
+    </div>
+    <div class="vector-row">
+      <span class="vector-name">B</span>
+      <div class="strip" aria-hidden="true">
+        {unrelated.map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />)}
+      </div>
+    </div>
+    <figcaption>Bright is positive, dark is negative. Only a subset of the values are shown. In the full space, unrelated hypervectors are always near-orthogonal.</figcaption>
+  </figure>
+)}
+
+{variant === 'randomness' && (
+  <figure class="property-visual" aria-label="Random starting hypervectors are nearly orthogonal">
+    <div class="visual-header">
+      <span class="eyebrow">Random starting hypervectors</span>
+      <span class="visual-note">unrelated by default</span>
+    </div>
+    {[
+      ['A', oolong],
+      ['B', black],
+      ['C', aroma]
+    ].map(([name, vector]) => (
+      <div class="vector-row named-row">
+        <code>{name}</code>
+        <span class="arrow">→</span>
+        <div class="strip" aria-hidden="true">
+          {(vector as number[]).map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />)}
+        </div>
+      </div>
+    ))}
+    <figcaption>These random hypervectors are only starting points. Meaning comes from how they're reused and combined.</figcaption>
+  </figure>
+)}
+
+{variant === 'independence' && (
+  <figure class="property-visual" aria-label="Two similar green tea hypervectors have high cosine similarity, while a black tea hypervector has lower similarity">
+    <div class="vector-row compared-row">
+      <span class="row-label">Sencha green</span>
+      <div class="strip" aria-hidden="true">
+        {senchaGreen.map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />)}
+      </div>
+      <strong class="score">1.0000</strong>
+    </div>
+    <div class="vector-row compared-row">
+      <span class="row-label">Gyokuro green</span>
+      <div class="strip" aria-hidden="true">
+        {gyokuroGreen.map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />)}
+      </div>
+      <strong class="score accent">0.8591</strong>
+    </div>
+    <div class="vector-row compared-row">
+      <span class="row-label">Assam black</span>
+      <div class="strip" aria-hidden="true">
+        {assamBlack.map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative', 'muted-bit']} />)}
+      </div>
+      <strong class="score muted-score">0.5437</strong>
+    </div>
+    <figcaption>Cosine similarity of two greens and one black tea from the dataset. The strips show the signs of the first 48 values from each tea's hypervector (blue → positive, gray → negative).</figcaption>
+  </figure>
+)}
+
+{variant === 'holographic' && (
+  <figure class="property-visual" aria-label="Removing different regions of a holographic hypervector causes the same gradual loss of information">
+    <div class="distributed-label">aroma + oxidation + roast + elevation distributed across every position</div>
+    <div class="vector-row compared-row">
+      <span class="row-label">complete</span>
+      <div class="strip" aria-hidden="true">
+        {original.map((value) => <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />)}
+      </div>
+      <strong class="score">100%</strong>
+    </div>
+    <div class="vector-row compared-row">
+      <span class="row-label">start missing</span>
+      <div class="strip" aria-hidden="true">
+        {original.map((value, index) => <span class:list={['bit', value > 0 ? 'positive' : 'negative', firstMissing.has(index) && 'missing']} />)}
+      </div>
+      <strong class="score accent">≈ 80%</strong>
+    </div>
+    <div class="vector-row compared-row">
+      <span class="row-label">middle missing</span>
+      <div class="strip" aria-hidden="true">
+        {original.map((value, index) => <span class:list={['bit', value > 0 ? 'positive' : 'negative', middleMissing.has(index) && 'missing']} />)}
+      </div>
+      <strong class="score accent">≈ 80%</strong>
+    </div>
+    <figcaption>Position doesn't select a field. Losing any equally sized region removes roughly the same amount of evidence.</figcaption>
+  </figure>
+)}
+
+<style>
+  .property-visual {
+    margin: 1.5rem 0 2rem;
+    padding: 1.25rem;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.9rem;
+    background: hsl(var(--card));
+  }
+
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .metric-row > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .metric-row strong {
+    color: hsl(var(--foreground));
+    font-size: clamp(1.35rem, 4vw, 2rem);
+    font-weight: 500;
+  }
+
+  .metric-row .vector-count {
+    font-size: clamp(1rem, 3vw, 1.4rem);
+  }
+
+  .metric-row small {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.65em;
+  }
+
+  .eyebrow,
+  .visual-note,
+  figcaption,
+  .distributed-label {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.78rem;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .visual-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .vector-row {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.65rem 0;
+  }
+
+  .named-row {
+    grid-template-columns: 4.75rem 1rem minmax(0, 1fr);
+  }
+
+  .compared-row {
+    grid-template-columns: 6.5rem minmax(0, 1fr) 4.5rem;
+  }
+
+  .vector-name,
+  .row-label,
+  .arrow,
+  .score,
+  code {
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.76rem;
+  }
+
+  .row-label {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .score {
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .score.accent {
+    color: hsl(var(--primary));
+  }
+
+  .muted-score {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(48, minmax(0, 1fr));
+    gap: 0;
+    min-width: 0;
+    height: 32px;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.35rem;
+    background: hsl(var(--muted));
+  }
+
+  .bit {
+    min-width: 2px;
+    height: 100%;
+  }
+
+  .bit.positive {
+    background: hsl(var(--primary) / 0.88);
+  }
+
+  .bit.negative {
+    background: hsl(var(--muted));
+  }
+
+  .bit.muted-bit {
+    opacity: 0.5;
+  }
+
+  .bit.missing {
+    background: repeating-linear-gradient(
+      135deg,
+      hsl(var(--border) / 0.45) 0,
+      hsl(var(--border) / 0.45) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+    opacity: 0.55;
+  }
+
+  .distributed-label {
+    margin-bottom: 0.85rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px dashed hsl(var(--border));
+    border-radius: 0.5rem;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: 1rem;
+    text-align: left;
+  }
+
+  @media (max-width: 560px) {
+    .property-visual {
+      padding: 1rem 0.75rem;
+    }
+
+    .metric-row {
+      gap: 0.5rem;
+    }
+
+    .named-row {
+      grid-template-columns: 4rem 0.75rem minmax(0, 1fr);
+    }
+
+    .compared-row {
+      grid-template-columns: 5.25rem minmax(0, 1fr);
+    }
+
+    .compared-row .score {
+      grid-column: 2;
+      margin-top: -0.45rem;
+      text-align: left;
+    }
+
+    .visual-note {
+      display: none;
+    }
+  }
+</style>
