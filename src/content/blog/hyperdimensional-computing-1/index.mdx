@@ -17,17 +17,17 @@ import HypervectorProperty from './HypervectorProperty.astro';
 import HdcManifold from './hdc-concept.png';
 import TeaManifold from './tea-manifold.png';
 
-In his landmark 2009 paper that introduced hyperdimensional computing (HDC), Pentti Kanerva[^1] made an insightful observation:
+In his landmark 2009 paper, Pentti Kanerva[^1] made an insightful observation:
 
 > The dimensionality of an entity (a number) and the dimensionality of its representation for computing purposes (a bit vector) are separate issues.
 
 To understand why a representation matters, let's take the number 27. Mathematically, it's a scalar (a single point on a number line). However, its representation on a computer requires the binary pattern `11011`. It takes two digits to represent it in decimal, but five bits to represent it in binary.
 
-The larger representation is not more meaningful on its own, but it gives the machine (which is built using binary logic gates) something more powerful: the ability to _operate_ on the data much more easily. Add an 8-bit representation of 5 (`00000101`) to an 8-bit representation of 27 (`00011011`), and we get `00100000`, which converts back to the integer 32. The _representation_ is what enables efficient computation over the data.
+The larger representation is not more meaningful on its own, but it gives a machine built on binary logic gates something more powerful: the ability to _operate_ on the data much more easily. Add an 8-bit representation of 5 (`00000101`) to an 8-bit representation of 27 (`00011011`), and we get `00100000`, which converts back to the integer 32. The representation is what enables efficient computation over the data.
 
-Hyperdimensional computing takes this intuition much further: we transform not only numbers, but **arbitrary data** into _hypervectors_ (10,000 dimensions or more). We can then use a simple algebra to transform, combine and compare them. Importantly, these operations are _composable_, allowing us to store complex data, while preserving its inherent structure. Additionally, the operations are reversible, so we can easily recover the raw data from its representation.
+Hyperdimensional computing (HDC) is a computing paradigm for AI that takes this intuition much further. In HDC, we transform not only numbers, but **arbitrary data** into _hypervectors_ (10,000 dimensions or more). We can then use a simple algebra to transform, combine and compare them in this high-dimensional space. Importantly, the operations are composable, allowing us to preserve the stored data's inherent structure. The operations are also reversible, so we can easily recover the raw data from its representation.
 
-Let's gain a visual intuition for why HDC might work in practice. Real-world data exists in a high-dimensional space, which can be thought of as a fuzzy manifold. Each data point lies on that manifold, and is represented as a high-dimensional vector (a "hypervector") that originates at the centroid of the manifold. The algebra lets us move around the surface in ways that preserve relationships between points. Two points that are close together on the manifold will have hypervectors that are more similar than two points that are far apart.
+Real-world data exists in a high-dimensional space, which can be thought of as a fuzzy manifold. Each data point lies on that manifold, and is represented as a high-dimensional vector (a "hypervector") that originates at the centroid of the manifold. The algebra in HDC lets us move around the surface in ways that preserve relationships between points. Two points that are close together on the manifold will have hypervectors that are more similar than two points that are far apart.
 
 <Figure
   src={HdcManifold}
@@ -35,13 +35,13 @@ Let's gain a visual intuition for why HDC might work in practice. Real-world dat
   caption="A high-dimensional space, projected down to 3D. Each data point is a near-orthogonal hypervector."
 />
 
+If this is your first foray into hyperdimensional computing, welcome! In this post, we'll go over what hypervectors are, what properties they have, and what operations we can perform on them.
+
 ## High dimensionality: from curse to blessing
 
-Traditional machine learning encourages us to view high dimensionality as a curse, where it's common to resort to dimensionality reduction techniques when working with the data. In contrast, HDC views high dimensionality as a "blessing" rather than a curse. The field of HDC has its roots in cognitive science, where it's thought that the highly interconnected nature of the brain's neurons allows for distributed representations of information that exist in a very high-dimensional space, enabling intelligence.
+Traditional machine learning tends to view high dimensionality as a curse, where it's common to resort to dimensionality reduction techniques when working with the data. In contrast, HDC views high dimensionality as a "blessing" rather than a curse. The field of HDC has its roots in cognitive science, where it's thought that the highly interconnected nature of the brain's neurons allows for distributed representations of information that exist in a very high-dimensional space, enabling intelligence.
 
 This leads us to one of the most important insights from Kanerva's paper[^1]: high dimensionality is useful because it gives us a large, distributed representational space that remains closed under a small algebra. And because the algebra exposes composable operations, this lets us easily combine hypervectors to create new ones in various ways, no matter the shape of the original data.
-
-If this is your first foray into hyperdimensional computing, welcome! In this post, we'll go over what hypervectors are, what properties they have, and what operations we can perform on them.
 
 ## A real-world dataset of tea
 
@@ -85,7 +85,7 @@ Together, numbers, categorical variables and text can describe aspects of the te
   caption="A conceptual view of how different teas might occupy a shared high-dimensional space."
 />
 
-## What is a hypervector?
+## Characteristics of hypervectors
 
 High dimensionality alone doesn't make a representation useful as a hypervector. One of the most consequential components in an HDC system is the **encoder**. The encoder maps input data into a shared, fixed-width hypervector space and defines its geometry: which inputs should begin unrelated, which relationships should be preserved, and how different pieces of information should be composed. Those choices can encode domain knowledge, be learned from data, or combine both.
 
@@ -290,13 +290,13 @@ The same operations used to construct the hypervector also let us decompose it, 
 
 ## What's next: designing an encoder
 
-This post gave a basic introduction to the algebra provided by HDC. By turning tea records into hypervectors, we distribute their information across a high-dimensional space so that we can compute efficiently over those representations. Binding associates role-value pairs, bundling superposes multiple bound pairs, and permutation gives us a way to represent ordered events. Because each operation returns another hypervector of the same length, we can compose/decompose them as needed and represent arbitrarily complex data from any domain.
+This post was a basic introduction to the algebra provided by HDC. By turning tea records into hypervectors, we distribute their information across a high-dimensional space so that we can compute efficiently over those representations. Binding associates role-value pairs, bundling superposes multiple bound pairs, and permutation gives us a way to represent ordered events. Because each operation returns another hypervector of the same length, we can compose/decompose them as needed and represent arbitrarily complex data from any domain.
 
 In the [tea hypervector dataset](https://github.com/thedataquarry/tea-hypervector-dataset), we saw how to bring each tea's attributes, such as aroma, taste, class, oxidation, roast and elevation, into one shared representation. We used cosine similarity to search by association, recovered Assam Doomni[^3] as the closest match to Yunnan Dian Hong (my current favourite black tea), and decomposed their similarity score to explain the result. Unlike naive text concatenation or RAG, the hypervector construction remains explicit enough to inspect and we can tune how strongly each field influences the search results.
 
-You'll notice that I deliberately didn't go deeper into one key topic: **encoder design**. This requires a separate post of its own, as the encoder is the single most important part of an HDC system. Aroma and taste need their semantic relationships preserved, oxidation and roast need their order as categorical levels preserved, and elevation needs a meaningful notion of distance in numeric space. We also need to handle missing values, choose weights that express our domain knowledge, and verify that the resulting geometry behaves as intended. These choices determine whether closeness in hypervector space corresponds to similarity a tea drinker (like myself) would recognize.
+You'll notice that I deliberately didn't go deeper into one key topic: **encoder design**. This requires a separate post of its own, as the encoder is the single most important part of an HDC system. Aroma and taste need their semantic relationships captured, oxidation and roast need their order as categorical levels preserved, and elevation needs a meaningful notion of distance in numeric space. We also need to handle missing values, choose weights that express our domain knowledge, and verify that the resulting geometry behaves as intended. These choices determine whether closeness in hypervector space corresponds to similarity a tea drinker (like myself) would recognize.
 
-The next post is all about how the encoder is built. Stay tuned! 🚀
+The next post is all about how such an encoder is built. Stay tuned! 🚀
 
 ---
 
@@ -304,4 +304,4 @@ The next post is all about how the encoder is built. Stay tuned! 🚀
 
 [^2]: The literature commonly uses **Hyperdimensional Computing** and **Vector Symbolic Architectures** (VSA) as synonymous names for the same family of computational models. See Denis Kleyko, Dmitri A. Rachkovskij, Evgeny Osipov and Abbas Rahimi, ["A Survey on Hyperdimensional Computing aka Vector Symbolic Architectures, Part I: Models and Data Transformations"](https://arxiv.org/abs/2111.06077), _ACM Computing Surveys_, 2022.
 
-[^3]: I haven't yet tried Assam Doomni, but I look forward to it! In a future post, I'll push this experiment further and build a tea recommender system that can suggest new teas I try out based on past teas I liked/disliked. It's fascinating how well this works in practice!
+[^3]: I haven't yet tried Assam Doomni, but, in hypervector space, I trust (I think I'll like it) 😁. In a future post, I'll push this experiment further and build a tea recommender system that can suggest new teas I try out based on past teas I liked/disliked. It's already fascinating to me how well this works in practice!
