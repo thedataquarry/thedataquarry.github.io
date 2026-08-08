@@ -9,6 +9,7 @@
     // Code runs in the DOM
     "lib": ["es2022", "dom", "dom.iterable"],
     // Others
+    "baseUrl": ".",
     "strictNullChecks": true,
     // Paths
     "paths": {
