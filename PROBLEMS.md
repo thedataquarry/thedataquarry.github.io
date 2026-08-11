@@ -27,7 +27,7 @@ This caused TypeScript type mismatches and prevented Shiki from tokenizing code 
 **Remove external Shiki dependency** and let Astro use its internal bundled version:
 
 ```bash
-bun remove shiki
+pnpm remove shiki
 ```
 
 Then use basic Shiki configuration in `astro.config.ts`:
@@ -57,6 +57,14 @@ Example of working output:
 - `package.json` - Removed `shiki` dependency
 - `astro.config.ts` - Simplified Shiki config (transformers temporarily disabled)
 - All MDX blog posts now display proper syntax highlighting
+
+### Follow-up: Shiki after the pnpm migration (2026-08-10)
+
+`src/plugins/shiki-official-transformers.ts` has a **type-only** import from `shiki`. Bun's flat
+`node_modules` let that resolve to a hoisted copy; pnpm's strict layout does not, so `shiki` is now
+a devDependency **pinned to `1.29.2`** — the exact version Astro 5.1.10 depends on (`^1.29.1`).
+pnpm dedupes it to the same physical package Astro uses, so there is no second Shiki at runtime and
+no repeat of the version conflict below. If you bump Astro, re-pin this to match its Shiki range.
 
 ### Key Learnings
 1. **Don't override Astro's internal dependencies** - Let Astro manage its own Shiki version

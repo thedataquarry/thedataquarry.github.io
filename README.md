@@ -40,19 +40,19 @@ Useful commands:
 
 ```shell
 # install dependencies
-bun install
+pnpm install
 
 # start the dev server
-bun dev
+pnpm dev
 
 # build the project
-bun run build
+pnpm run build
 
 # preview (after the build)
-bun preview
+pnpm preview
 
 # create a new post
-bun new-post
+pnpm new
 ```
 
 ## Deployment
