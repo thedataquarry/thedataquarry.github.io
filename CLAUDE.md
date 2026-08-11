@@ -7,32 +7,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Core Commands
 ```bash
 # Development server with hot reload
-bun dev
-# or npm run dev
+pnpm dev
 
 # Development server with type checking
-bun dev:check
+pnpm dev:check
 
 # Build the site
-bun run build
+pnpm run build
 
 # Preview built site
-bun preview
+pnpm preview
 
 # Type checking
-bun check
+pnpm check
 # or astro check
 
 # Linting and formatting
-bun lint
-bun format
+pnpm lint
+pnpm format
 
 # Create new blog post
-bun new
+pnpm new
 # or astro-pure new
 
 # Clean build artifacts
-bun clean
+pnpm clean
 ```
 
 ## Architecture Overview
@@ -44,7 +43,14 @@ This is an Astro-based blog site using the "Pure" theme with TypeScript. The pro
 - **TypeScript**: Full type safety throughout
 - **UnoCSS**: Utility-first CSS framework with custom theme
 - **astro-pure**: Custom theme package (located in `packages/pure/`)
-- **Bun**: Primary package manager and task runner
+- **pnpm**: Primary package manager and task runner (workspace-based)
+
+### Package Management
+
+- **pnpm workspace**: the root package plus `packages/pure` (the vendored `astro-pure` theme), declared in `pnpm-workspace.yaml`. The root depends on it via `"astro-pure": "workspace:*"`, so `node_modules/astro-pure` is a live symlink to `packages/pure` — edits there take effect without reinstalling.
+- **Pinned version**: the `packageManager` field in `package.json` pins pnpm, and CI (`pnpm/action-setup`) reads it. Keep local and CI on the same version.
+- **Strict resolution**: pnpm will not resolve undeclared transitive dependencies. If an import fails after adding code, declare the package in the `package.json` that actually imports it (root for `src/` and `astro.config.ts`, `packages/pure/package.json` for the theme) rather than reaching for `shamefully-hoist`.
+- **Single Astro**: `pnpm.overrides` pins `astro` to `5.1.10` tree-wide, since `packages/pure` declares a looser `^5.12.0` range and two Astro copies break the build.
 
 ### Project Structure
 ```

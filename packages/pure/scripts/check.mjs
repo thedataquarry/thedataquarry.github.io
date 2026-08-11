@@ -23,17 +23,20 @@ const runCommand = (command, cwd, timeout = 5000) => {
 }
 
 export default async function main() {
-  if (process.env.BUN_LINK_PKG === 'true') {
+  // Not needed in this repo: the root package depends on "astro-pure": "workspace:*",
+  // so pnpm already symlinks ./packages/pure into node_modules. This stays as an
+  // opt-in escape hatch for consumers outside the workspace.
+  if (process.env.LINK_PKG === 'true') {
     try {
-      console.log('Running "bun link" at "./packages/pure"')
-      console.log(await runCommand('bun link', './packages/pure'))
-      console.log('Running "bun link astro-pure" at "."')
-      console.log(await runCommand('bun link astro-pure', '.'))
+      console.log('Running "pnpm link --global" at "./packages/pure"')
+      console.log(await runCommand('pnpm link --global', './packages/pure'))
+      console.log('Running "pnpm link --global astro-pure" at "."')
+      console.log(await runCommand('pnpm link --global astro-pure', '.'))
       console.log('Commands executed successfully.')
     } catch (error) {
       console.error(error)
     }
   } else {
-    console.log('BUN_LINK_PKG is not set to true. Skipping commands.')
+    console.log('LINK_PKG is not set to true. Skipping commands.')
   }
 }
