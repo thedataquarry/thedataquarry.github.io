@@ -1,0 +1,345 @@
+---
+const dimensions = 10_000
+const visibleDimensions = 48
+
+function makeVector(seed: number) {
+  let state = seed >>> 0
+  return Array.from({ length: dimensions }, () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0
+    return state >>> 31 ? 1 : -1
+  })
+}
+
+function cosineSimilarity(left: number[], right: number[]) {
+  let dotProduct = 0
+  let leftMagnitude = 0
+  let rightMagnitude = 0
+
+  for (let index = 0; index < left.length; index += 1) {
+    dotProduct += left[index] * right[index]
+    leftMagnitude += left[index] ** 2
+    rightMagnitude += right[index] ** 2
+  }
+
+  return dotProduct / Math.sqrt(leftMagnitude * rightMagnitude)
+}
+
+const components = [
+  { name: 'aroma', values: makeVector(71) },
+  { name: 'taste', values: makeVector(204) },
+  { name: 'elevation', values: makeVector(913) }
+]
+
+const bundle = Array.from({ length: dimensions }, (_, index) =>
+  components.reduce((sum, component) => sum + component.values[index], 0)
+)
+
+const rows = components.map((component) => ({
+  ...component,
+  similarity: cosineSimilarity(component.values, bundle).toFixed(3)
+}))
+---
+
+<figure class='bundle-visual' aria-labelledby='bundle-visual-title'>
+  <div class='visual-header'>
+    <strong id='bundle-visual-title'>Three bound components become one bundle</strong>
+    <span>first 48 of 10,000 coordinates</span>
+  </div>
+
+  <div class='column-labels' aria-hidden='true'>
+    <span>component</span>
+    <span>coordinate signs</span>
+    <span>cosine to bundle</span>
+  </div>
+
+  {
+    rows.map((row) => (
+      <div class='vector-row'>
+        <span class='row-label'>
+          <>
+            <i>H</i>
+            <sub>{row.name}</sub>
+          </>
+        </span>
+        <div class='strip' aria-hidden='true'>
+          {row.values.slice(0, visibleDimensions).map((value) => (
+            <span class:list={['bit', value > 0 ? 'positive' : 'negative']} />
+          ))}
+        </div>
+        <strong class='score'>{row.similarity}</strong>
+      </div>
+    ))
+  }
+
+  <div class='bundle-rule' aria-hidden='true'>
+    <span>⊕</span>
+    <span>element-wise sum</span>
+  </div>
+
+  <div class='vector-row result-row'>
+    <span class='row-label'><i>H</i><sub>bundle</sub></span>
+    <div class='strip result-strip' aria-hidden='true'>
+      {
+        bundle
+          .slice(0, visibleDimensions)
+          .map((value, index) => (
+            <span
+              class:list={[
+                'bit',
+                'result-bit',
+                value > 0 ? 'positive' : 'negative',
+                Math.abs(value) === 3 ? 'strong' : 'weak'
+              ]}
+              title={`Coordinate ${index + 1}: ${value > 0 ? '+' : ''}${value}`}
+            />
+          ))
+      }
+    </div>
+    <strong class='score result-label'>sum</strong>
+  </div>
+
+  <div class='legend' aria-hidden='true'>
+    <span><i class='swatch positive strong'></i><code>+3</code> all positive</span>
+    <span><i class='swatch positive weak'></i><code>+1</code> positive majority</span>
+    <span><i class='swatch negative weak'></i><code>-1</code> negative majority</span>
+    <span><i class='swatch negative strong'></i><code>-3</code> all negative</span>
+  </div>
+
+  <figcaption>
+    Each component remains similar to the bundle (the scores use all 10,000 coordinates). Darker
+    cells mark coordinates where all three signs agree. These stronger values are scattered across
+    the hypervector rather than reserved for any one field.
+  </figcaption>
+</figure>
+
+<style>
+  .bundle-visual {
+    margin: 1.5rem 0 2rem;
+    padding: 1.25rem;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.9rem;
+    background: hsl(var(--card));
+  }
+
+  .visual-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .visual-header strong {
+    color: hsl(var(--foreground));
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .visual-header span,
+  .column-labels,
+  .bundle-rule,
+  .legend,
+  figcaption {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.75rem;
+  }
+
+  .column-labels,
+  .vector-row {
+    display: grid;
+    grid-template-columns: 5.75rem minmax(0, 1fr) 6.5rem;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .column-labels {
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .column-labels span:last-child {
+    text-align: right;
+  }
+
+  .vector-row {
+    margin: 0.55rem 0;
+  }
+
+  .row-label,
+  .score,
+  code {
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.76rem;
+  }
+
+  .row-label {
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+  }
+
+  .row-label i {
+    color: hsl(var(--foreground));
+    font-family: serif;
+  }
+
+  .row-label sub {
+    margin-left: 0.08rem;
+    font-size: 0.7em;
+  }
+
+  .score {
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(48, minmax(0, 1fr));
+    gap: 0;
+    min-width: 0;
+    height: 28px;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.35rem;
+    background: hsl(var(--muted));
+  }
+
+  .bit {
+    min-width: 2px;
+    height: 100%;
+  }
+
+  .bit.positive {
+    background: hsl(var(--primary) / 0.78);
+  }
+
+  .bit.negative {
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  .bundle-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0.75rem 0 0.45rem 5.75rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .bundle-rule span:first-child {
+    color: hsl(var(--primary));
+    font-size: 1.1rem;
+  }
+
+  .result-row {
+    margin-top: 0.35rem;
+  }
+
+  .result-strip {
+    height: 36px;
+  }
+
+  .result-bit.positive.strong,
+  .swatch.positive.strong {
+    background: hsl(var(--primary));
+  }
+
+  .result-bit.positive.weak,
+  .swatch.positive.weak {
+    background: hsl(var(--primary) / 0.42);
+  }
+
+  .result-bit.negative.weak,
+  .swatch.negative.weak {
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  .result-bit.negative.strong,
+  .swatch.negative.strong {
+    background: hsl(var(--muted-foreground) / 0.78);
+  }
+
+  .result-label {
+    color: hsl(var(--primary));
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0.9rem 0 0 6.5rem;
+  }
+
+  .legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .legend code {
+    font-size: 0.7rem;
+  }
+
+  .swatch {
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.15rem;
+  }
+
+  figcaption {
+    margin-top: 1rem;
+    text-align: left;
+  }
+
+  @media (max-width: 600px) {
+    .bundle-visual {
+      padding: 1rem 0.75rem;
+    }
+
+    .visual-header {
+      display: block;
+    }
+
+    .visual-header span {
+      display: block;
+      margin-top: 0.2rem;
+    }
+
+    .column-labels {
+      display: none;
+    }
+
+    .vector-row {
+      grid-template-columns: 4.5rem minmax(0, 1fr);
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .vector-row .score {
+      grid-column: 2;
+      margin-top: -0.45rem;
+      text-align: left;
+    }
+
+    .bundle-rule {
+      margin-left: 4.5rem;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.45rem;
+      margin-left: 5rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .legend {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
