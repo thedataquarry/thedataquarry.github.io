@@ -101,7 +101,7 @@ Here, $h_i$ is the value at position $i$, and $D$ is the length of the hypervect
 An encoder maps raw data into the hypervector space chosen by the implementation. Its components might be binary (`0` or `1`), bipolar (`-1` or `+1`), or real-valued floats. All are valid choices. The geometry and exact implementation of each operator depend on that choice.
 </Aside>
 
-For the tea dataset, every property value is mapped into this same fixed-width space. The encoder design is what maps the roles and qualities of the data into the hypervector. We'll unpack the details of encoder design in the next post of this series. For now, let's focus on the key qualities of hypervectors themselves.
+For the tea dataset, every property value is mapped into this same fixed-width space. The encoder design is what maps the roles and qualities of the data into the hypervector. We'll unpack the details of encoder design in the [next post](/blog/hyperdimensional-computing-2) of this series. For now, let's focus on the key qualities of hypervectors themselves.
 
 ### Independence
 
@@ -298,7 +298,7 @@ In the [tea hypervector dataset](https://github.com/thedataquarry/tea-hypervecto
 
 You'll notice that we glossed over one key topic: **how the encoder works**. This requires a separate post of its own, as the encoder is the single most important part of an HDC system. Aroma and taste need their semantic relationships captured, oxidation and roast need their order as categorical levels preserved, and elevation needs a meaningful notion of distance in numeric space. We also need to handle missing values, choose weights that express our domain knowledge, and verify that the resulting geometry behaves as intended. These choices determine whether closeness in hypervector space corresponds to similarity a tea drinker (like myself) would recognize.
 
-The next post is all about how such an encoder is built. Stay tuned! 🚀
+The [next post](/blog/hyperdimensional-computing-2) is all about how such an encoder is built. Stay tuned! 🚀
 
 ---
 
