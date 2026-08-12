@@ -171,14 +171,14 @@ H_elevation = bind(R_elevation, elevation_value)
 
 The range of 0–3,000 m and the 50-metre bin resolution are modelling choices made by us, and is totally subjective. In a different application, we might use finer bins or a continuous encoding.
 
-This bin structure encoded as levels is powerful, because it lets us ask counterfactual questions like this: "_Which tea resembles Ali Shan but grows at `1,600 m`?_" (Recall that Ali Shan grows at 1,400 m). Because each tea's final hypervector is a sum of bound role-value hypervectors, we can build this kind of query via the same encoder:
+This bin structure encoded as levels is powerful, because it lets us ask counterfactual questions like this: "_Which tea resembles Ali Shan but grows at `1,600 m`?_" (Recall that Ali Shan grows at 1,400 m). Because each tea's final hypervector is a sum of bound role-value hypervectors, we can build this kind of query via the same encoder. Here, $\mathbf{C}_{\mathrm{elevation}}$ means the complete elevation contribution, including its weight in the final bundle:
 
 $$
 \begin{aligned}
 \mathbf{H}_{\mathrm{query}} ={}&
 \mathbf{H}_{\mathrm{Ali\ Shan}}
-- 0.15\mathbf{H}_{\mathrm{elevation},1400}
-+ 0.15\mathbf{H}_{\mathrm{elevation},1600} \\
+- \mathbf{C}_{\mathrm{elevation},1400}
++ \mathbf{C}_{\mathrm{elevation},1600} \\
 \operatorname{nearest\ tea}(\mathbf{H}_{\mathrm{query}}) ={}&
 \text{Mi Lan Xiang Lao Cong}
 \end{aligned}
