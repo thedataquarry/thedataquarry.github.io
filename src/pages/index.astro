@@ -12,8 +12,8 @@ import avatar from '@/assets/dataquarry-banner.webp'
 import config from '@/site-config'
 
 const languages = ['Python', 'Rust', 'Shell', 'Cypher', 'SQL']
-const databases = ['PostgreSQL', 'MongoDB', 'Kuzu', 'LanceDB', 'Qdrant', 'Neo4j']
-const frameworks = ['DSPy', 'BAML', 'Pydantic', 'PyTorch', 'Spark', 'Ray']
+const databases = ['PostgreSQL', 'MongoDB', 'Kuzu', 'LanceDB', 'LadybugDB', 'DuckDB']
+const frameworks = ['DSPy', 'BAML', 'Pydantic', 'PyTorch', 'CocoIndex']
 
 const MAX_POSTS = 10
 const allPosts = await getBlogCollection()
@@ -56,7 +56,7 @@ const allPostsByDate = sortMDByDate(allPosts).slice(0, MAX_POSTS)
       <Section title='About'>
         <p class='text-muted-foreground'>AI Engineer</p>
         <p class='text-muted-foreground'>
-          I'm an AI and data engineer who's passionate about building intelligent, automated applications
+          I'm an AI engineer and researcher who's passionate about building intelligent, automated applications
           using agents and the tools around them. My interests vary over time but largely combine insights from
           data modelling, knowledge graphs, machine learning, data infrastructure and agentic systems.
         </p>
