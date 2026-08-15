@@ -1,0 +1,685 @@
+---
+import artifact from './tea-recommender-3d.json'
+
+const featuredTeaIds = ['4736788332653', '9435624592', '9378917968', '9378918800']
+const featuredTeas = featuredTeaIds.map((id) => {
+  const tea = artifact.teas.find((entry) => entry.id === id)
+  if (!tea) throw new Error(`Missing featured tea ${id}`)
+  return tea
+})
+const artifactJson = JSON.stringify(artifact).replaceAll('<', '\\u003c')
+---
+
+<figure class='tea-pca-explorer' data-tea-pca-explorer>
+  <div class='pca-stage' data-stage>
+    <canvas
+      data-canvas
+      aria-label='Rotating 3D PCA plot of 166 tea hypervectors. Drag to rotate, right-drag to pan, and scroll or pinch to zoom.'
+    ></canvas>
+    <button class='reset-view' type='button' data-reset-view>Reset view</button>
+    <div class='hover-card' data-tooltip role='tooltip' hidden></div>
+    {
+      featuredTeas.map((tea) => (
+        <div class='tea-annotation' data-tea-annotation data-tea-id={tea.id}>
+          <strong>{tea.title}</strong>
+          <small>{tea.class}</small>
+          <i aria-hidden='true' />
+        </div>
+      ))
+    }
+    <p class='webgl-fallback' data-fallback hidden>
+      This interactive view needs WebGL, which is unavailable in this browser.
+    </p>
+  </div>
+
+  <figcaption class='pca-legend' aria-label='Tea classes'>
+    {
+      artifact.palette.classes.map((entry) => (
+        <span>
+          <i style={`--legend-color: ${entry.color}`} />
+          {entry.label}
+        </span>
+      ))
+    }
+  </figcaption>
+
+  <script is:inline type='application/json' data-artifact set:html={artifactJson} />
+</figure>
+
+<script>
+  import * as THREE from 'three'
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+
+  type Position = [number, number, number]
+
+  interface TeaRecord {
+    id: string
+    title: string
+    class: string
+    country: string | null
+    region: string | null
+    oxidation: string | null
+    roast: string | null
+    aroma: string[]
+    taste: string[]
+    position: Position
+  }
+
+  interface Checkpoint {
+    positive_position: Position
+    negative_position: Position | null
+  }
+
+  interface Artifact {
+    palette: {
+      classes: Array<{ class: string; label: string; color: string }>
+    }
+    teas: TeaRecord[]
+    checkpoints: Checkpoint[]
+  }
+
+  const requireElement = <T extends Element>(root: ParentNode, selector: string): T => {
+    const element = root.querySelector<T>(selector)
+    if (!element) throw new Error(`Tea PCA explorer is missing ${selector}`)
+    return element
+  }
+
+  const makePointTexture = (ring = false): THREE.CanvasTexture => {
+    const textureCanvas = document.createElement('canvas')
+    textureCanvas.width = 96
+    textureCanvas.height = 96
+    const context = textureCanvas.getContext('2d')
+    if (!context) throw new Error('Could not create a point texture')
+
+    context.clearRect(0, 0, 96, 96)
+    if (ring) {
+      context.strokeStyle = '#ffffff'
+      context.lineWidth = 9
+      context.beginPath()
+      context.arc(48, 48, 35, 0, Math.PI * 2)
+      context.stroke()
+    } else {
+      const glow = context.createRadialGradient(48, 48, 4, 48, 48, 44)
+      glow.addColorStop(0, 'rgba(255,255,255,1)')
+      glow.addColorStop(0.58, 'rgba(255,255,255,0.96)')
+      glow.addColorStop(0.72, 'rgba(255,255,255,0.32)')
+      glow.addColorStop(1, 'rgba(255,255,255,0)')
+      context.fillStyle = glow
+      context.beginPath()
+      context.arc(48, 48, 46, 0, Math.PI * 2)
+      context.fill()
+    }
+
+    const texture = new THREE.CanvasTexture(textureCanvas)
+    texture.colorSpace = THREE.SRGBColorSpace
+    return texture
+  }
+
+  const initExplorer = (root: HTMLElement): void => {
+    if (root.dataset.ready === 'true') return
+    root.dataset.ready = 'true'
+
+    const canvas = requireElement<HTMLCanvasElement>(root, '[data-canvas]')
+    const stage = requireElement<HTMLElement>(root, '[data-stage]')
+    const tooltip = requireElement<HTMLElement>(root, '[data-tooltip]')
+    const resetButton = requireElement<HTMLButtonElement>(root, '[data-reset-view]')
+    const fallback = requireElement<HTMLElement>(root, '[data-fallback]')
+    const artifactElement = requireElement<HTMLScriptElement>(root, '[data-artifact]')
+    const data = JSON.parse(artifactElement.textContent ?? '') as Artifact
+
+    let renderer: THREE.WebGLRenderer
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false })
+    } catch (error) {
+      console.error(error)
+      canvas.hidden = true
+      fallback.hidden = false
+      return
+    }
+
+    renderer.setClearColor('#09171F', 1)
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+    const scene = new THREE.Scene()
+    scene.fog = new THREE.FogExp2('#09171F', 0.035)
+
+    const camera = new THREE.OrthographicCamera(-6, 6, 6, -6, 0.1, 100)
+    const initialCamera = new THREE.Vector3(8.5, 6.2, 9.5)
+    camera.position.copy(initialCamera)
+
+    const controls = new OrbitControls(camera, canvas)
+    controls.enableDamping = true
+    controls.dampingFactor = 0.05
+    controls.enablePan = true
+    controls.enableRotate = true
+    controls.enableZoom = true
+    controls.zoomSpeed = 1.5
+    controls.screenSpacePanning = true
+    controls.minZoom = 0.65
+    controls.maxZoom = 6
+    controls.autoRotate = true
+    controls.autoRotateSpeed = 0.4
+    controls.target.set(0, 0, 0)
+    controls.update()
+
+    const allPositions = [
+      ...data.teas.map((tea) => tea.position),
+      ...data.checkpoints.map((checkpoint) => checkpoint.positive_position),
+      ...data.checkpoints.flatMap((checkpoint) =>
+        checkpoint.negative_position ? [checkpoint.negative_position] : []
+      )
+    ]
+    const minimum = new THREE.Vector3(Infinity, Infinity, Infinity)
+    const maximum = new THREE.Vector3(-Infinity, -Infinity, -Infinity)
+    for (const position of allPositions) {
+      minimum.min(new THREE.Vector3(...position))
+      maximum.max(new THREE.Vector3(...position))
+    }
+    const center = minimum.clone().add(maximum).multiplyScalar(0.5)
+    const span = maximum.clone().sub(minimum)
+    const scale = 8 / Math.max(span.x, span.y, span.z, 1e-9)
+    const transform = (position: Position): THREE.Vector3 =>
+      new THREE.Vector3(...position).sub(center).multiplyScalar(scale)
+    const gridRadius =
+      Math.max(...allPositions.map((position) => transform(position).length())) * 1.08
+
+    const classColors = new Map(
+      data.palette.classes.map((entry) => [entry.class, new THREE.Color(entry.color)])
+    )
+    const transformedPositions = new Map<string, THREE.Vector3>()
+    const positionAttribute = new Float32Array(data.teas.length * 3)
+    const colorAttribute = new Float32Array(data.teas.length * 3)
+    data.teas.forEach((tea, index) => {
+      const position = transform(tea.position)
+      transformedPositions.set(tea.id, position)
+      positionAttribute.set(position.toArray(), index * 3)
+      const color = classColors.get(tea.class)
+      if (!color) throw new Error(`No color for tea class ${tea.class}`)
+      colorAttribute.set(color.toArray(), index * 3)
+    })
+
+    const pointTexture = makePointTexture()
+    const ringTexture = makePointTexture(true)
+    const pointGeometry = new THREE.BufferGeometry()
+    pointGeometry.setAttribute('position', new THREE.BufferAttribute(positionAttribute, 3))
+    pointGeometry.setAttribute('color', new THREE.BufferAttribute(colorAttribute, 3))
+    const pointMaterial = new THREE.PointsMaterial({
+      size: 11.5,
+      map: pointTexture,
+      alphaTest: 0.04,
+      transparent: true,
+      opacity: 0.92,
+      vertexColors: true,
+      depthWrite: false,
+      sizeAttenuation: true
+    })
+    const points = new THREE.Points(pointGeometry, pointMaterial)
+    scene.add(points)
+
+    const hoverMaterial = new THREE.SpriteMaterial({
+      map: ringTexture,
+      color: '#FFFFFF',
+      transparent: true,
+      opacity: 0.9,
+      depthTest: false,
+      fog: false
+    })
+    const hoverMarker = new THREE.Sprite(hoverMaterial)
+    hoverMarker.scale.setScalar(0.3)
+    hoverMarker.visible = false
+    scene.add(hoverMarker)
+
+    const gridMaterial = new THREE.LineBasicMaterial({
+      color: '#B8CDD1',
+      transparent: true,
+      opacity: 0.2,
+      depthWrite: false
+    })
+    const gridGroup = new THREE.Group()
+    const gridSegments = 96
+    const addGridCircle = (positions: THREE.Vector3[]): void => {
+      const geometry = new THREE.BufferGeometry().setFromPoints(positions)
+      gridGroup.add(new THREE.LineLoop(geometry, gridMaterial))
+    }
+
+    for (let latitudeIndex = 1; latitudeIndex < 12; latitudeIndex += 1) {
+      const latitude = -Math.PI / 2 + (Math.PI * latitudeIndex) / 12
+      const ringRadius = gridRadius * Math.cos(latitude)
+      const y = gridRadius * Math.sin(latitude)
+      addGridCircle(
+        Array.from({ length: gridSegments }, (_, index) => {
+          const angle = (Math.PI * 2 * index) / gridSegments
+          return new THREE.Vector3(ringRadius * Math.cos(angle), y, ringRadius * Math.sin(angle))
+        })
+      )
+    }
+
+    for (let longitudeIndex = 0; longitudeIndex < 9; longitudeIndex += 1) {
+      const longitude = (Math.PI * longitudeIndex) / 9
+      addGridCircle(
+        Array.from({ length: gridSegments }, (_, index) => {
+          const angle = (Math.PI * 2 * index) / gridSegments
+          const radialDistance = gridRadius * Math.sin(angle)
+          return new THREE.Vector3(
+            radialDistance * Math.cos(longitude),
+            gridRadius * Math.cos(angle),
+            radialDistance * Math.sin(longitude)
+          )
+        })
+      )
+    }
+    scene.add(gridGroup)
+
+    const annotations = new Map<string, HTMLElement>()
+    root.querySelectorAll<HTMLElement>('[data-tea-annotation]').forEach((annotation) => {
+      const teaId = annotation.dataset.teaId
+      if (teaId) annotations.set(teaId, annotation)
+    })
+    const positionAnnotations = (): void => {
+      for (const [teaId, annotation] of annotations) {
+        const teaPosition = transformedPositions.get(teaId)
+        if (!teaPosition) continue
+        const projected = teaPosition.clone().project(camera)
+        annotation.style.left = `${(projected.x * 0.5 + 0.5) * stage.clientWidth}px`
+        annotation.style.top = `${(-projected.y * 0.5 + 0.5) * stage.clientHeight}px`
+        annotation.dataset.side = projected.x < 0 ? 'right' : 'left'
+      }
+    }
+
+    const raycaster = new THREE.Raycaster()
+    raycaster.params.Points = { threshold: 0.22 }
+    const pointer = new THREE.Vector2()
+    let resumeRotationTimer: number | undefined
+
+    const scheduleAutoRotation = (): void => {
+      if (resumeRotationTimer) window.clearTimeout(resumeRotationTimer)
+      resumeRotationTimer = window.setTimeout(() => {
+        controls.autoRotate = true
+      }, 2200)
+    }
+
+    const addTooltipField = (details: HTMLDListElement, label: string, value: string): void => {
+      const row = document.createElement('div')
+      const term = document.createElement('dt')
+      term.textContent = label
+      const description = document.createElement('dd')
+      description.textContent = value || 'Not specified'
+      row.append(term, description)
+      details.append(row)
+    }
+
+    const showTooltip = (tea: TeaRecord, clientX: number, clientY: number): void => {
+      const title = document.createElement('strong')
+      title.textContent = tea.title
+      const subtitle = document.createElement('span')
+      subtitle.textContent = `${tea.class.toUpperCase()} · ID ${tea.id}`
+      const details = document.createElement('dl')
+      tooltip.replaceChildren(title, subtitle, details)
+      addTooltipField(details, 'Country', tea.country ?? 'Not specified')
+      addTooltipField(details, 'Region', tea.region ?? 'Not specified')
+      addTooltipField(details, 'Oxidation', tea.oxidation ?? 'Not specified')
+      addTooltipField(details, 'Roast', tea.roast ?? 'Not specified')
+      addTooltipField(details, 'Aroma', tea.aroma.join(', '))
+      addTooltipField(details, 'Taste', tea.taste.join(', '))
+
+      tooltip.hidden = false
+      const stageBounds = stage.getBoundingClientRect()
+      const tooltipBounds = tooltip.getBoundingClientRect()
+      const preferredLeft = clientX - stageBounds.left + 16
+      const preferredTop = clientY - stageBounds.top + 16
+      tooltip.style.left = `${Math.max(
+        12,
+        Math.min(preferredLeft, stageBounds.width - tooltipBounds.width - 12)
+      )}px`
+      tooltip.style.top = `${Math.max(
+        12,
+        Math.min(preferredTop, stageBounds.height - tooltipBounds.height - 12)
+      )}px`
+    }
+
+    const hideTooltip = (): void => {
+      hoverMarker.visible = false
+      tooltip.hidden = true
+      canvas.style.cursor = 'grab'
+    }
+
+    const inspectPointer = (event: PointerEvent): void => {
+      const bounds = canvas.getBoundingClientRect()
+      pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1
+      pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1
+      raycaster.setFromCamera(pointer, camera)
+      const intersection = raycaster.intersectObject(points, false)[0]
+      const nextIndex = intersection?.index ?? null
+      if (nextIndex === null) {
+        hideTooltip()
+        scheduleAutoRotation()
+        return
+      }
+
+      if (resumeRotationTimer) window.clearTimeout(resumeRotationTimer)
+      controls.autoRotate = false
+      hoverMarker.position.copy(transform(data.teas[nextIndex].position))
+      hoverMarker.visible = true
+      canvas.style.cursor = 'pointer'
+      showTooltip(data.teas[nextIndex], event.clientX, event.clientY)
+    }
+
+    let animationFrame = 0
+    let isVisible = true
+    const timer = new THREE.Timer()
+    timer.connect(document)
+    const animate = (timestamp = performance.now()): void => {
+      animationFrame = requestAnimationFrame(animate)
+      if (!isVisible) return
+      timer.update(timestamp)
+      controls.update(timer.getDelta())
+      renderer.render(scene, camera)
+      positionAnnotations()
+    }
+
+    const resize = (): void => {
+      const width = Math.max(stage.clientWidth, 1)
+      const height = Math.max(stage.clientHeight, 1)
+      const aspect = width / height
+      const verticalSpan = gridRadius * 2.15
+      camera.left = (-verticalSpan * aspect) / 2
+      camera.right = (verticalSpan * aspect) / 2
+      camera.top = verticalSpan / 2
+      camera.bottom = -verticalSpan / 2
+      camera.updateProjectionMatrix()
+      renderer.setSize(width, height, false)
+      renderer.render(scene, camera)
+      positionAnnotations()
+    }
+
+    controls.addEventListener('start', () => {
+      controls.autoRotate = false
+      if (resumeRotationTimer) window.clearTimeout(resumeRotationTimer)
+    })
+    controls.addEventListener('end', scheduleAutoRotation)
+    canvas.addEventListener('pointermove', inspectPointer)
+    canvas.addEventListener('pointerleave', () => {
+      hideTooltip()
+      scheduleAutoRotation()
+    })
+    resetButton.addEventListener('click', () => {
+      camera.position.copy(initialCamera)
+      camera.zoom = 1
+      camera.updateProjectionMatrix()
+      controls.target.set(0, 0, 0)
+      controls.autoRotate = true
+      controls.update()
+      hideTooltip()
+    })
+
+    const resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(stage)
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting
+      if (isVisible) timer.reset()
+    })
+    visibilityObserver.observe(root)
+    resize()
+    animate()
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        cancelAnimationFrame(animationFrame)
+        if (resumeRotationTimer) window.clearTimeout(resumeRotationTimer)
+        resizeObserver.disconnect()
+        visibilityObserver.disconnect()
+        controls.dispose()
+        renderer.dispose()
+        pointGeometry.dispose()
+        pointMaterial.dispose()
+        pointTexture.dispose()
+        hoverMaterial.dispose()
+        ringTexture.dispose()
+        for (const child of gridGroup.children) {
+          if (child instanceof THREE.LineLoop) child.geometry.dispose()
+        }
+        gridMaterial.dispose()
+        timer.dispose()
+      },
+      { once: true }
+    )
+  }
+
+  const initExplorers = (): void => {
+    document.querySelectorAll<HTMLElement>('[data-tea-pca-explorer]').forEach(initExplorer)
+  }
+
+  initExplorers()
+  document.addEventListener('astro:page-load', initExplorers)
+</script>
+
+<style>
+  .tea-pca-explorer {
+    --plot: #09171f;
+    --foreground: #eaf3f2;
+    --muted: #8fa5ae;
+    --subtle: #38505a;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 1.5rem 0 2.25rem;
+    overflow: hidden;
+    color: var(--foreground);
+    background: #071117;
+    border: 1px solid color-mix(in srgb, var(--subtle), transparent 20%);
+    border-radius: 1rem;
+    box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 22%);
+  }
+
+  .pca-stage {
+    position: relative;
+    height: clamp(390px, 52vw, 580px);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 48% 38%, rgb(26 66 78 / 55%), transparent 42%), var(--plot);
+    border-bottom: 1px solid rgb(56 80 90 / 65%);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  canvas:active {
+    cursor: grabbing;
+  }
+
+  .reset-view {
+    position: absolute;
+    z-index: 3;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.45rem 0.68rem;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.72rem;
+    background: #0d2029;
+    border: 1px solid var(--subtle);
+    border-radius: 0.45rem;
+    cursor: pointer;
+  }
+
+  .reset-view:hover,
+  .reset-view:focus-visible {
+    color: var(--foreground);
+    border-color: #74e5d0;
+    outline: none;
+  }
+
+  .tea-annotation {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    gap: 0.08rem;
+    max-width: 11rem;
+    padding: 0.28rem 0.42rem;
+    color: var(--foreground);
+    background: rgb(7 17 23 / 82%);
+    border: 1px solid rgb(143 165 174 / 45%);
+    border-radius: 0.32rem;
+    line-height: 1.1;
+    pointer-events: none;
+  }
+
+  .tea-annotation strong {
+    overflow: hidden;
+    font-size: 0.64rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tea-annotation small {
+    color: var(--muted);
+    font-size: 0.56rem;
+    font-weight: 720;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tea-annotation > i {
+    position: absolute;
+    top: 50%;
+    width: 0.7rem;
+    height: 1px;
+    background: var(--foreground);
+    opacity: 0.7;
+  }
+
+  .tea-annotation[data-side='right'] {
+    transform: translate(0.9rem, -50%);
+  }
+
+  .tea-annotation[data-side='right'] > i {
+    right: calc(100% + 0.2rem);
+  }
+
+  .tea-annotation[data-side='left'] {
+    transform: translate(calc(-100% - 0.9rem), -50%);
+  }
+
+  .tea-annotation[data-side='left'] > i {
+    left: calc(100% + 0.2rem);
+  }
+
+  .hover-card {
+    position: absolute;
+    z-index: 4;
+    width: min(19rem, calc(100% - 1.5rem));
+    max-height: calc(100% - 1.5rem);
+    padding: 0.8rem;
+    overflow: auto;
+    color: var(--foreground);
+    background: rgb(7 17 23 / 95%);
+    border: 1px solid #4c6872;
+    border-radius: 0.55rem;
+    box-shadow: 0 0.9rem 2.4rem rgb(0 0 0 / 40%);
+    pointer-events: none;
+  }
+
+  .hover-card > :global(strong),
+  .hover-card > :global(span) {
+    display: block;
+  }
+
+  .hover-card > :global(strong) {
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  .hover-card > :global(span) {
+    margin-top: 0.12rem;
+    color: var(--muted);
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .hover-card :global(dl) {
+    display: grid;
+    gap: 0.36rem;
+    margin: 0.65rem 0 0;
+  }
+
+  .hover-card :global(dl > div) {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 0.55rem;
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .hover-card :global(dt) {
+    color: var(--muted);
+    font-weight: 650;
+  }
+
+  .hover-card :global(dd) {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .pca-legend {
+    display: flex;
+    gap: 0.6rem 0.95rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    color: var(--muted);
+    font-size: 0.63rem;
+    font-weight: 720;
+    letter-spacing: 0.035em;
+  }
+
+  .pca-legend span {
+    display: inline-flex;
+    gap: 0.34rem;
+    align-items: center;
+  }
+
+  .pca-legend i {
+    width: 0.52rem;
+    height: 0.52rem;
+    background: var(--legend-color);
+    border-radius: 50%;
+  }
+
+  .webgl-fallback {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    max-width: 24rem;
+    margin: 0;
+    padding: 1rem;
+    color: var(--muted);
+    text-align: center;
+    transform: translate(-50%, -50%);
+  }
+
+  @media (max-width: 640px) {
+    .tea-pca-explorer {
+      margin-block: 1.25rem 1.75rem;
+      border-radius: 0.7rem;
+    }
+
+    .pca-stage {
+      height: 430px;
+    }
+
+    .tea-annotation {
+      max-width: 8.5rem;
+    }
+
+    .tea-annotation strong {
+      font-size: 0.58rem;
+    }
+  }
+</style>

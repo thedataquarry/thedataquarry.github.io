@@ -1,0 +1,328 @@
+---
+slug: 'hyperdimensional-computing-3'
+title: 'Hyperdimensional Computing (3): From representation to online learning'
+description: 'An HDC-based tea recommender built using preference prototypes, online updates, associative recall and explainable scoring.'
+publishDate: 2026-08-15
+draft: false
+tags:
+  - hdc
+  - hyperdimensional-computing
+  - hypervector
+  - vector-search
+---
+
+import { GithubCard } from 'astro-pure/advanced'
+import { Aside } from 'astro-pure/user'
+
+import TeaPcaExplorer from './TeaPcaExplorer.astro'
+import TeaPreferenceExplorer from './TeaPreferenceExplorer.astro'
+
+Welcome to part three of this series on hyperdimensional computing! In the [first post](/blog/hyperdimensional-computing-1), we explored the algebra of HDC and how binding and bundling let us represent structured data in a distributed fashion using hypervectors. In the [second post](/blog/hyperdimensional-computing-2), we put that algebra to work by building an **encoder** for a tea dataset that maps each tea's aroma, taste, class, oxidation, roast and elevation into a distributed, 10,000-dimensional representation.
+
+So far, we've spent our time designing a domain-aware, **fixed** representation: which fields matter, how each one should be encoded and how strongly it should contribute to defining a "tea hypervector". Once built, the encoder lets us transform queries into the same hypervector space, so we can run associative search queries to find teas that are similar to a given example.
+
+The next logical step is to see whether we can use that same encoder to build a system that _learns_. If you read my [prelude post](https://thedataquarry.com/blog/how-a-taiwanese-oolong-changed-the-way-i-look-at-tea/), you'll recall that I've been tasting many teas over the last few months and accumulating new tasting experiences over time. Can a handful of tasting experiences help me inform my encoder about my preferences? And can that preference _evolve continuously_ as new evidence arrives, without needing to retrain the encoder?
+
+That's what this post is all about. The same fixed representations we designed into the HDC encoder will become an **associative memory** that learns from my tasting experience, one tea at a time. 😄
+
+## View the tea hypervectors in 3D PCA space
+
+Let's look at the high-dimensional space our fixed encoder has already produced.
+Because it's not possible to visualize 10,000-dimensional space directly, the view below projects all 166 tea hypervectors onto three PCA axes (based on the first three principal components of the hypervector space). The points are colored by tea class.
+
+<TeaPcaExplorer />
+
+The separation between the main classes of tea, even in this dimensionally reduced space, looks reasonable: the oolongs clearly cluster between the greens and blacks, while the white teas form a distinct cluster in the middle. The extreme ends point to a meaningful distinction: the _Matcha_ green tea is the farthest from the _Assam breakfast_ black tea because the former has no oxidation, while Assam black teas have a high level of oxidation. Combined with their distinct flavour characteristics, this oxidation difference helps explain why they are so far apart even in this 3D space.
+
+<Aside>
+  The 3D space above is a projection of the 10,000 tea hypervector space onto three principal
+  components. It should only be taken as a visual aid. All numerical operations we perform are done
+  in the very high 10,000-dimensional space.
+</Aside>
+
+This means that our hypervectors are modeling reality fairly well!
+
+## Bundle tea hypervectors to a preference
+
+At this point, the shared hypervector space has no notion of how to represent my taste in tea. I like Ali Shan oolong tea a lot, so we can select its record from the catalogue and use its encoded hypervector to ask a simple question: “Which teas resemble this Ali Shan?” Associative search answers by finding the catalogue hypervectors most similar to it.[^3]
+
+A personal tea recommender has to answer a harder question: "_Based on the teas I tend to enjoy, which tea should I try next?_" That's more than a search problem, as it needs to consider my tasting history and learn the pattern of what I like and dislike. In HDC, this involves two steps:
+
+- The system needs to summarize my tea preference records as a single hypervector representation.
+- It needs to use that summary to decide which teas best match my preference.
+
+This sort of summarized representation has a name in the HDC literature: it's called a **class prototype**.[^1] A prototype is a single hypervector that combines several examples of the same class into one representation that lives in the same space. In this case, we aren't training a general classifier that can predict tea classes like `oolong` or `black`. We're treating teas that I liked or disliked (or am neutral to) as the categories we want to predict, so a more apt name for such an evolving representation is a **preference prototype**.
+
+Let's see in the next section how we can build a preference prototype from my tasting history.
+
+## What does "learning" mean?
+
+The preference prototype is fundamentally different from the encoder. It's built as a **summary of tea hypervectors** generated from the same underlying encoder. The table below shows how the preferences can be specified in a simple CSV file:
+
+| Sequence | Tea ID          | Title              | Verdict    | Strength |
+| -------: | --------------- | ------------------ | ---------- | -------: |
+|        1 | `9278958096`    | Ali Shan - Roasted | `liked`    |        2 |
+|        5 | `6663025655917` | Sencha Yume Kaori  | `disliked` |        2 |
+|       13 | `9378918288`    | Da Yu Ling         | `neutral`  |        0 |
+
+The table above shows an example of how I indicate my preference for each tea that I've tasted over time, along with my verdicts (whether I liked, disliked or felt neutral about each tea) and the strength of that verdict. A strength of 2 means I _really_ liked it, while a strength of 1 means I liked it, but not as strongly. The same applies to disliked teas (I _really_ dislike the grassy, vegetal taste of Japanese sencha teas).
+
+Let's next look at how to compute a preference prototype from this tasting history.
+
+### A form of experiential memory
+
+The prototype serves one purpose: once built, it gives us a combined view of my tasting history. It becomes a _preference_ prototype when I include my likes and dislikes. Once I update the representation with new examples, it becomes an **experiential memory**.
+
+This aligns well with what you see in HDC-based classification systems, where class prototypes play this same role: they're learned, distributed patterns stored in an associative memory, ready to be compared with the next encoded query.[^2]
+
+For the tea recommender, `liked` and `disliked` take the place of class labels. Each verdict (based on my own preferences as a taster) updates the memory that the next iteration of the prototype will use, while the encoder itself stays fixed. This is what we mean by **learning** in this post: experience updates the system's state without rewriting its underlying representation.
+
+<Aside type='tip' title='Building a memory from experience is like learning'>
+  When you think about it, associative memory is analogous to how humans learn. We don't need to
+  retrain on the entire world every time we have a new experience. Instead, we update our memory
+  based on those new experiences, and use that updated representation in our minds to inform our
+  future decisions.
+</Aside>
+
+### Build a prototype from a tasting history
+
+The preferences are supplied in a CSV, as shown in the snippet below. The `notes` column is optional and isn't used downstream in the prototype or during learning. It's there only to provide context for the tasting experience and help me remember why I liked or disliked a particular tea.
+
+```csv title="tastings.csv"
+sequence,tea_id,title,verdict,strength,notes
+1,9278958096,Ali Shan - Roasted,liked,2,"honey, caramel, floral"
+2,9378918800,Ali Shan,liked,2,"orchids, floral"
+3,9029052432,Anji Bai Cha,liked,1,"nutty, citrus, light"
+4,7677875880045,Tie Guan Yin,liked,2,"floral, smooth"
+5,6663025655917,Sencha Yume Kaori,disliked,2,"too vegetal"
+```
+
+Each CSV row enters the preference learner as a tea hypervector $\mathbf{h}_i$ produced by the encoder. Before we add it to either prototype, we normalize it to unit length:
+
+$$
+\mathbf{x}_i = \frac{\mathbf{h}_i}{\lVert \mathbf{h}_i \rVert}
+$$
+
+Recall from the [last post](/blog/hyperdimensional-computing-2) that a tea hypervector is stored as an **unnormalized** bundle of its encoded fields. Why do we normalize it here when designing the prototype? The reason is simple: a record with more populated fields can have a larger norm, so adding the raw hypervectors would let that record exert more influence simply because it's more complete. Normalization preserves the _direction_ of the tea hypervector, while giving every tea in our prototype the same baseline magnitude. The `strength` column in our tasting history can then be used as a positive/negative biasing control over how strongly the tasting should matter.
+
+For every liked tea, we multiply its unit hypervector by its strength $w_i$ and bundle it into a positive running sum $\mathbf{S}^+$:
+
+$$
+\mathbf{S}^+
+=
+w_1\mathbf{x}_1
+\oplus
+w_2\mathbf{x}_2
+\oplus
+\cdots
+\oplus
+w_n\mathbf{x}_n
+$$
+
+The first four rows in our table therefore cast $2 + 2 + 1 + 2 = 7$ positive votes. The fifth row casts two votes into a separate negative sum because I disliked _Sencha Yume Kaori_:
+
+$$
+\begin{aligned}
+\mathbf{S}^+_5
+&=
+2\mathbf{x}_1
+\oplus
+2\mathbf{x}_2
+\oplus
+\mathbf{x}_3
+\oplus
+2\mathbf{x}_4 \\
+\mathbf{S}^-_5
+&=
+2\mathbf{x}_5
+\end{aligned}
+$$
+
+When we use either sum as a preference prototype, we normalize it once more:
+
+$$
+\mathbf{p}^+ = \frac{\mathbf{S}^+}{\lVert \mathbf{S}^+ \rVert},
+\qquad
+\mathbf{p}^- = \frac{\mathbf{S}^-}{\lVert \mathbf{S}^- \rVert}
+$$
+
+Notice that we didn't combine the positive and negative preferences into a single prototype by subtracting $\mathbf{S}^-$ from $\mathbf{S}^+$. Keeping them separate preserves two distinct directions in hypervector space. The positive direction moves the prototype toward teas I tend to like, and the negative direction toward teas I tend to avoid. We'll see how they work together in the next section, when we use them to rank the retrieved results.
+
+The algebra above looks something like this in code:
+
+```python title="src/recommender/prototype.py"
+def update(self, event: TastingEvent, vector: torch.Tensor) -> None:
+    self._tried_ids.add(event.tea_id)
+
+    if event.verdict is Verdict.NEUTRAL:
+        return
+
+    contribution = event.strength * _unit(vector)
+    if event.verdict is Verdict.LIKED:
+        self._positive_sum += contribution
+    else:
+        self._negative_sum += contribution
+```
+
+If a tea is marked as `neutral`, we don't update either sum, but we do retain its ID so that it won't be recommended again.
+
+### What makes this online learning?
+
+With prototype-based learning, the system learns _continuously_ as new examples arrive. Rather than collect a large set of examples and periodically retrain a separate model, we update the prototype's memory as new likes and dislikes arrive. If I try a new tea and like it, that's just one weighted addition to the existing prototype:
+
+$$
+\mathbf{S}^+_{t+1}
+=
+\mathbf{S}^+_t
+\oplus
+w_{t+1}\mathbf{x}_{t+1}
+$$
+
+When I dislike a tea, the same update is applied to the negative prototype $\mathbf{S}^-$. The preference representation changes after every example I mark as "liked" or "disliked", so the system can continually update its memory of my preferences over time. There's no loss function to optimize, large batches of training examples to prepare or a separate model to retrain.
+
+In the demo shown below, the positive sum $\mathbf{S}^+_t$ already carries the bundled hypervector representation of every earlier liked tea. Each update therefore needs only that sum and the newly added tea record that's being encoded into the same space.
+
+The HDC literature describes this as **incremental**, or **online**, learning. Our demo shows the updates at checkpoints of 5, 10 and 15 tastings, but in a real setting, nothing prevents the system from updating the prototype after every single tasting. The algebra is the same, and the prototype is always ready to be updated and queried through simple HDC algebra.
+
+## Define the recommendation rules
+
+Once we have the two preference prototypes, recommending a tea becomes a ranking problem. For each tea in the catalogue, we:
+
+- skip it if I've already tasted it;
+- reward similarity to the positive prototype;
+- subtract a smaller penalty for similarity to the negative prototype;
+- sort the remaining teas by their final scores.
+
+The penalty is controlled by $\lambda$, the **negative-prototype penalty weight**. This demo uses $\lambda=0.25$[^4], so negative similarity counts one quarter as strongly as positive similarity:
+
+$$
+\operatorname{score}(j)
+=
+\mathbf{x}_j \cdot \mathbf{p}^+
+{}-
+\lambda\left(\mathbf{x}_j \cdot \mathbf{p}^-\right)
+$$
+
+Because the candidate and both prototypes are unit-normalized, the dot products are cosine similarities. If we don't have any disliked teas yet, we omit the negative term. The highest-scoring catalogue records become our recommendations.
+
+This retrieval step is a form of **associative recall**. The prototypes are distributed summaries rather than representations of any one tea, and we use them to recover exact tea records that best match what we've learned through experience.
+
+## Watch the prototype evolve
+
+The explorer below projects all 166 catalogue hypervectors and the prototype states into a three-dimensional PCA space. The checkpoint buttons follow the movement of the positive prototype (cyan double tetrahedron) after 5, 10 and 15 tea tastings; the line connects successive states of the same running memory. The negative prototype appears as the `AVOID SIGNAL`. PCA is only helping us see the movement: every recommendation is still scored in the original 10,000-dimensional space.
+
+<TeaPreferenceExplorer />
+
+In my first 5 tea tastings, the memory contained four likes and one dislike. The 7 positive verdicts were mostly in oolong territory, giving the prototype a strong oolong preference. Meanwhile, _Sencha Yume Kaori_ (green) established my first negative tasting, marked as an "avoid signal" in the figure above. The top three recommendations are all oolongs: _Shan Lin Shi_, _Takachiho Koshoun_ and _Hong Xiang_.
+
+At 10 tastings, five more than before, the updated prototype now contains strong votes for _Yunnan Dian Hong_ (black) and _Long Jing Xi Hu_ (green), teaching it about my newfound tastes. Meanwhile, a disliked _Da Hong Pao_ updates the negative signal. The overall accumulated oolong tea preference still leads the ranking: _Shan Lin Shi_ and _Takachiho Koshoun_, both oolongs, are the top two recommendations.
+
+After 15 tastings, it gets interesting. By this point, I'd tasted quite a few black teas along with oolongs. _Qimen_ and _Jin Jun Mei_ add more positive black-tea votes. The final vote weights in the tasting history CSV sum to 14 positive and 4 negative, and two black teas now lead the recommendation list: _Darjeeling Namring « Tippy Muscatel » 2nd Flush_ and _Da Xue Shan Hong Cha_. _Shan Lin Shi_, an oolong, still has the highest positive similarity of the three, but its stronger similarity to the avoid signal pushes it into third place.
+
+Through this evolution, my original oolong tea preference pattern hasn't disappeared: oolongs are still contenders in the top 5 recommendations even as black teas enter the positive history. The prototype memory has just refined its representation enough for new preferences to emerge. As I taste more green, white, yellow and black teas and add to this list, who knows what new teas I might discover? 😄
+
+## Prototypes are transparent and explainable
+
+The prototype isn't an opaque, mashed-up summary like a neural network's dense embedding. It's a normalized bundled sum that supports the same HDC algebra. We can easily expand the final recommendation score back into the tasted examples that formed it:
+
+$$
+\operatorname{score}(j)
+=
+\frac{\sum_{i \in \mathcal{L}} w_i(\mathbf{x}_j \cdot \mathbf{x}_i)}{\lVert \mathbf{S}^+ \rVert}
+-
+\lambda
+\frac{\sum_{i \in \mathcal{D}} w_i(\mathbf{x}_j \cdot \mathbf{x}_i)}{\lVert \mathbf{S}^- \rVert}
+$$
+
+Here, $\mathcal{L}$ and $\mathcal{D}$ are the liked and disliked tastings. Each dot product measures how much candidate $j$ resembles one earlier tea, so every new entry in the tasted list has a visible effect on the final recommendation score. A liked tea can boost a candidate, while a similar disliked tea can subtract from it. We can go one level deeper and decompose those tea hypervectors into the encoded fields from [part two](/blog/hyperdimensional-computing-2), but the main point is already visible: we can trace a recommendation back through the individual records within the memories that produced it.
+
+Let's look a little deeper at the results for _Shan Lin Shi_, which is an oolong tea in the top 3 at all three stages of the prototype evolution:
+
+- The eight liked teas contribute $+0.8220$. The largest individual pulls come from _Tie Guan Yin_ ($+0.1455$), _Ali Shan_ ($+0.1313$) and _Ali Shan - Roasted_ ($+0.1303$), all of which are oolongs.
+- The three disliked teas generate negative contributions that sum to $-0.1743$ when $\lambda=0.25$: _Sencha Yume Kaori_, a grassy and vegetal green tea, contributes $-0.0737$. Meanwhile, _Da Hong Pao_, an earthy and mineral oolong, contributes $-0.0478$. _Muzha Tie Guan Yin_, a smoky, charcoal-roasted oolong, contributes $-0.0528$.
+
+$$
+\begin{aligned}
+\operatorname{penalty}(\text{Shan Lin Shi})
+&=
+\underbrace{0.0737}_{\text{Sencha Yume Kaori}} \\
+&\quad+
+\underbrace{0.0478}_{\text{Da Hong Pao}} \\
+&\quad+
+\underbrace{0.0528}_{\text{Muzha Tie Guan Yin}} \\
+&= 0.1743
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\operatorname{score}(\text{Shan Lin Shi})
+&=
+\underbrace{0.8220}_{\text{eight liked teas}}
+-
+\underbrace{0.1743}_{\text{three disliked teas}} \\
+&= 0.6477
+\end{aligned}
+$$
+
+These numbers explain why _Shan Lin Shi_ obtains strong support from the positive tasting history, while the negative examples subtract just enough to move the two black teas ahead of it after 15 tastings.
+
+After only 15 examples of my preferences, the system has learned enough of a pattern to produce a useful ranking that we can trace back to the individual experiences that formed it. Each new tasting became useful as soon as it arrived, without needing to wait to assemble a large dataset or retrain a model.
+
+## HDC learning vs. deep learning
+
+The HDC prototype we built learned quickly because the encoder had already supplied a useful geometry for the tea data. That strong inductive bias also sets a ceiling: the prototype can refine my preference within that space, but it can't discover a better representation for itself.
+
+- **The learner can't rewrite the encoder.** The semantics of sensory phrases were initially encoded with pretrained Nomic text embeddings, but the fields, vocabularies and weights in the HDC encoder are fixed. If we omit price or brewing style, verdicts can't add them later. The same applies when a field is represented poorly, so encoder design matters a lot.
+- **The preference rule is linear.** The final score is equivalent to $\mathbf{x}\cdot(\mathbf{p}^+-\lambda\mathbf{p}^-)$. One direction for likes and another for dislikes may blur separate or conditional preferences, such as enjoying heavy roast in black tea but disliking it in oolong. Multiple prototypes or explicitly encoded interactions could help, but we'd have to design them.
+- **The memory has no confidence or forgetting policy.** After normalization, a prototype based on one example has the same length as one supported by many consistent examples. The implementation tracks vote totals but doesn't use them to express uncertainty, and every vote remains until we add an explicit correction, decay or recency bias.
+
+That said, there's plenty of room to build better HDC learning systems with the right design principles. We could keep multiple positive prototypes for different taste modes, decay older tastings, reduce confidence when evidence is sparse, tune $\lambda$ and the encoder's field weights from feedback, encode useful field interactions or diversify the final ranking. Those heuristics would preserve the lightweight update loop while making the memory more responsive. They can push a fixed representation further, even though they don't remove its underlying ceiling.
+
+Hopefully, this post has made it clear how prototype-based learning fundamentally differs from end-to-end deep learning:
+
+| Prototype learner used here                                               | End-to-end deep learning                                            |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Keeps the representation fixed during preference learning                 | Can reshape the representation for the task                         |
+| Uses one linear direction per verdict                                     | Can learn complex, nonlinear interactions                           |
+| Updates with one encode-and-add operation                                 | Updates model parameters through optimization                       |
+| Can respond to a few examples because useful structure was supplied first | Typically needs more representative data and computation            |
+| Decomposes exactly into encoded fields and prior examples                 | Learned internal features are often more difficult to trace through |
+
+In many cases, the benefit of HDC encoders and prototypes is clear: we get a continuous (online) learning system that can learn from a limited number of examples, while preserving the explainability of the underlying representation. The tradeoff is that the system can't discover a better representation for itself, and it may need more careful design to handle complex interactions.
+
+## Conclusions
+
+We've seen how the same operations that let us encode structured data into hypervectors also let us build associative memories and learn from experience. The algebra of HDC may be simple, but it can be composed in many ways.
+
+What I found most fascinating throughout this journey was how HDC brings three useful capabilities together:
+
+- **Associative search:** retrieve nearby records even when none of them exactly match the query.
+- **Online learning:** continuously incorporate a small number of new examples, without retraining the model or the representation.
+- **Explainability:** apply the same simple algebra used during encoding to inspect and interpret the scores, both during associative search and when learning from new examples.
+
+Together, these capabilities make HDC a hugely interesting foundation for agentic search and retrieval. An agent can search what it knows, preserve a compact memory of feedback and show how that experience changed the next result. Although these ideas aren't exclusive to HDC (plenty of real-world RAG systems exist that can do similar things), the appeal of HDC lies in the _simplicity of the representation_ and the composability of its primitives.
+
+These ideas open several interesting avenues in other domains. In healthcare, patient-specific memories that gauge disease risk could update with new measurements in a sample-efficient manner. In such a high-stakes setting, being able to inspect which observations changed a prediction would be just as valuable as updating the memory quickly.
+
+In robotics, this opens up fascinating experiments in online learning that update a representation of state while a robot operates on an edge device with little compute. These ideas aren't just conceptual. Prior work on incremental biosignal classification[^2] and lightweight robot learning[^5] shows that sophisticated encoders can support this style of learning in compute-constrained environments.
+
+This series began with a few refreshing sips of _Ali Shan_ oolong tea and a few questions. It gradually led to a much larger one: how much information can we store in a useful representation? It turns out, a lot. And there's an ocean of possibilities out there in high-dimensional vector spaces! 🚀
+
+## Code
+
+Check out the source repository for the tea encoder and recommender project, and give it a star:
+
+<GithubCard repo='https://github.com/prrao87/tea-hypervectors' />
+
+---
+
+[^1]: Kleyko et al., ["Classification and Recall With Binary Hyperdimensional Computing: Tradeoffs in Choice of Density and Mapping Characteristics"](https://doi.org/10.1109/TNNLS.2018.2814400), _IEEE Transactions on Neural Networks and Learning Systems_, 2018. The paper describes a class prototype or centroid as a single hypervector formed by bundling a class's encoded exemplars; in MAP, the prototype can be their element-wise sum.
+
+[^2]: Rahimi et al., ["Efficient Biosignal Processing Using Hyperdimensional Computing: Network Templates for Combined Learning and Classification of ExG Signals"](https://doi.org/10.1109/JPROC.2018.2871163), _Proceedings of the IEEE_, 2019. The paper demonstrates one-shot, incremental and online HDC learning on several biosignal-classification workloads. Its data-efficiency measurements belong to those experiments and should not be presented as measurements of this tea recommender.
+
+[^3]: In an application, selecting the tea could be a simple keyword or full-text search over the catalogue. Once the reader chooses the intended record, the app uses its ID to retrieve the stored hypervector and runs an associative search against the other tea hypervectors. The text lookup resolves to an exact tea record; associative search takes over from there and finds similar records. In this code demo, the search CLI begins at this second step and accepts a tea ID directly.
+
+[^4]: The value $0.25$ is a hand-chosen heuristic, not a learned or mathematically fixed parameter. Because $\mathbf{p}^-$ is normalized, even a few dislikes produce a unit-length avoid direction; the smaller coefficient keeps that sparse evidence corrective rather than dominant. A production system would tune the $\lambda$ value against later tasting outcomes.
+
+[^5]: Kwon et al., ["Brain-Inspired Hyperdimensional Computing in the Wild: Lightweight Symbolic Learning for Sensorimotor Controls of Wheeled Robots"](https://doi.org/10.1109/ICRA57147.2024.10610176), _IEEE International Conference on Robotics and Automation_, 2024. The paper demonstrates HDC-based learning from demonstrations and reinforcement learning for sensorimotor control on wheeled robots.
