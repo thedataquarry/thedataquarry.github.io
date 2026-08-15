@@ -1,8 +1,8 @@
 ---
 slug: 'hyperdimensional-computing-3'
 title: 'Hyperdimensional Computing (3): From representation to online learning'
-description: 'How a preference prototype turns encoded tea hypervectors into an associative memory that learns one tasting at a time.'
-publishDate: 2026-08-16
+description: 'An HDC-based tea recommender built using preference prototypes, online updates, associative recall and explainable scoring.'
+publishDate: 2026-08-15
 draft: false
 tags:
   - hdc
@@ -213,13 +213,13 @@ The explorer below projects all 166 catalogue hypervectors and the prototype sta
 
 <TeaPreferenceExplorer />
 
-In my first 5 tea tastings, the memory contains four likes and one dislike. The 7 positive votes are mostly in oolong territory, giving the prototype a strong oolong preference. Meanwhile, _Sencha Yume Kaori_ (green) establishes the first negative signal, marked as an "avoid signal" in the figure above. The top three recommendations are all oolongs: _Shan Lin Shi_, _Takachiho Koshoun_ and _Hong Xiang_.
+In my first 5 tea tastings, the memory contained four likes and one dislike. The 7 positive verdicts were mostly in oolong territory, giving the prototype a strong oolong preference. Meanwhile, _Sencha Yume Kaori_ (green) established my first negative tasting, marked as an "avoid signal" in the figure above. The top three recommendations are all oolongs: _Shan Lin Shi_, _Takachiho Koshoun_ and _Hong Xiang_.
 
 At 10 tastings, five more than before, the updated prototype now contains strong votes for _Yunnan Dian Hong_ (black) and _Long Jing Xi Hu_ (green), teaching it about my newfound tastes. Meanwhile, a disliked _Da Hong Pao_ updates the negative signal. The overall accumulated oolong tea preference still leads the ranking: _Shan Lin Shi_ and _Takachiho Koshoun_, both oolongs, are the top two recommendations.
 
 After 15 tastings, it gets interesting. By this point, I'd tasted quite a few black teas along with oolongs. _Qimen_ and _Jin Jun Mei_ add more positive black-tea votes. The final vote weights in the tasting history CSV sum to 14 positive and 4 negative, and two black teas now lead the recommendation list: _Darjeeling Namring « Tippy Muscatel » 2nd Flush_ and _Da Xue Shan Hong Cha_. _Shan Lin Shi_, an oolong, still has the highest positive similarity of the three, but its stronger similarity to the avoid signal pushes it into third place.
 
-Through this evolution, my original oolong tea preference pattern hasn't disappeared: oolongs are still contenders in the top 5 recommendations even as black teas enter the positive history. The prototype memory has just refined its representation enough for new preferences to emerge.
+Through this evolution, my original oolong tea preference pattern hasn't disappeared: oolongs are still contenders in the top 5 recommendations even as black teas enter the positive history. The prototype memory has just refined its representation enough for new preferences to emerge. As I taste more green, white, yellow and black teas and add to this list, who knows what new teas I might discover? 😄
 
 ## Prototypes are transparent and explainable
 
@@ -269,9 +269,9 @@ These numbers explain why _Shan Lin Shi_ obtains strong support from the positiv
 
 After only 15 examples of my preferences, the system has learned enough of a pattern to produce a useful ranking that we can trace back to the individual experiences that formed it. Each new tasting became useful as soon as it arrived, without needing to wait to assemble a large dataset or retrain a model.
 
-## Limitations of prototype-based learning
+## HDC learning vs. deep learning
 
-The prototype we built learned quickly because the encoder had already supplied a useful geometry for the tea data. That strong inductive bias also sets a ceiling: the prototype can refine my preference within that space, but it can't discover a better representation for itself.
+The HDC prototype we built learned quickly because the encoder had already supplied a useful geometry for the tea data. That strong inductive bias also sets a ceiling: the prototype can refine my preference within that space, but it can't discover a better representation for itself.
 
 - **The learner can't rewrite the encoder.** The semantics of sensory phrases were initially encoded with pretrained Nomic text embeddings, but the fields, vocabularies and weights in the HDC encoder are fixed. If we omit price or brewing style, verdicts can't add them later. The same applies when a field is represented poorly, so encoder design matters a lot.
 - **The preference rule is linear.** The final score is equivalent to $\mathbf{x}\cdot(\mathbf{p}^+-\lambda\mathbf{p}^-)$. One direction for likes and another for dislikes may blur separate or conditional preferences, such as enjoying heavy roast in black tea but disliking it in oolong. Multiple prototypes or explicitly encoded interactions could help, but we'd have to design them.
@@ -303,7 +303,7 @@ What I found most fascinating throughout this journey was how HDC brings three u
 
 Together, these capabilities make HDC a hugely interesting foundation for agentic search and retrieval. An agent can search what it knows, preserve a compact memory of feedback and show how that experience changed the next result. Although these ideas aren't exclusive to HDC (plenty of real-world RAG systems exist that can do similar things), the appeal of HDC lies in the _simplicity of the representation_ and the composability of its primitives.
 
-Although this series was about tea, these ideas open several paths in other domains. In healthcare, patient-specific memories that gauge disease risk could update with new measurements in a sample-efficient manner. In such a high-stakes setting, being able to inspect which observations changed a prediction would be just as valuable as updating the memory quickly.
+These ideas open several interesting avenues in other domains. In healthcare, patient-specific memories that gauge disease risk could update with new measurements in a sample-efficient manner. In such a high-stakes setting, being able to inspect which observations changed a prediction would be just as valuable as updating the memory quickly.
 
 In robotics, this opens up fascinating experiments in online learning that update a representation of state while a robot operates on an edge device with little compute. These ideas aren't just conceptual. Prior work on incremental biosignal classification[^2] and lightweight robot learning[^5] shows that sophisticated encoders can support this style of learning in compute-constrained environments.
 

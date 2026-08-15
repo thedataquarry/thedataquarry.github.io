@@ -20,7 +20,7 @@ const initialCheckpoint = artifact.checkpoints[artifact.checkpoints.length - 1]
   </header>
 
   <div class='checkpoint-bar' aria-label='Preference-memory checkpoint'>
-    <span>Memory after</span>
+    <span>Click to see the memory after</span>
     {
       artifact.checkpoints.map((checkpoint) => (
         <button
@@ -47,7 +47,7 @@ const initialCheckpoint = artifact.checkpoints[artifact.checkpoints.length - 1]
     <div class='prototype-annotation prototype-annotation--negative' data-negative-annotation>
       <span>Avoid signal</span><i aria-hidden='true'></i>
     </div>
-    <p class='interaction-hint'>Drag to rotate · Right-drag to pan · Scroll to zoom</p>
+    <p class='interaction-hint'>Pan, zoom and rotate · Hover for descriptions</p>
     <p class='webgl-fallback' data-fallback hidden>
       This interactive view needs WebGL, which is unavailable in this browser.
     </p>
