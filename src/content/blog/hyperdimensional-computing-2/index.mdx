@@ -340,11 +340,11 @@ The main limitation of relying on an off-the-shelf text embedding model is that 
 
 We now have a fixed encoder for representing teas, but the system is static. It doesn't yet learn as new data comes along. That's where a **prototype**[^4] comes in: in the HDC literature, a prototype is a hypervector formed by bundling several real-world "training" examples so that it remains similar to what they share.
 
-In the next post, I'll show how I built a "tea recommender" using a small training dataset of 10–15 teas that I've tried and use it to build a "preference prototype". The teas I liked will help build a positive preference, while the teas I was neutral towards (or disliked) will build a negative one. As new records are added to the training set, the prototype can be _updated with the same simple algebra_ as in the encoder. The data efficiency of HDC is quite remarkable, so we can build a useful preference prototype with very few examples.
+In the [next post](/blog/hyperdimensional-computing-3), I'll show how I built a "tea recommender" using a small training dataset of 10–15 teas that I've tried and use it to build a "preference prototype". The teas I liked will help build a positive preference, while the teas I was neutral towards (or disliked) will build a negative one. As new records are added to the training set, the prototype can be _updated with the same simple algebra_ as in the encoder. The data efficiency of HDC is quite remarkable, so we can build a useful preference prototype with very few examples.
 
 The learning we'll be doing is _online_, i.e., the system can continuously learn as new examples come in. It's fundamentally different from what we do in deep learning, where the model is retrained offline through a separate training run when we obtain new data.
 
-Hopefully, reading this post made you want to build your own encoder. See you in the next post! 🍵
+Hopefully, reading this post made you want to build your own encoder. See you in the [next post](/blog/hyperdimensional-computing-3)! 🍵
 
 ## Code
 
