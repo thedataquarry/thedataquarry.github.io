@@ -21,7 +21,7 @@ My prior knowledge of tea involved only the very broad categories: green, black,
 
 Recently, I've also been discussing some ideas around hyperdimensional computing (HDC) with my friend and colleague [David Hughes](https://www.hyperdimensionalcomputing.ai/me/). David's been doing some amazing work in this space for while now, and we each presented our perspectives on HDC at the recently concluded GraphCon[^1] in Seattle.
 
-So how does _tea_ have any connection to a topic like HDC? It turns out that we can describe any tea using rich and varied metadata: tasting notes and aromas in words, elevation of its growing location as numbers, and oxidation and roasting in levels. This makes it possible to encode each tea and its features as very high-dimensional vectors (10,000 dimensions or more) so that we can find similar teas in this high-dimensional space using HDC algebra. This is going to be explored in detail in future posts.
+So how does _tea_ have any connection to a topic like HDC? It turns out that we can describe any tea using rich and varied metadata: tasting notes and aromas in words, elevation of its growing location as numbers, and oxidation and roasting in levels. This makes it possible to encode each tea and its features as very high-dimensional vectors (10,000 dimensions or more) so that we can find similar teas in this high-dimensional space using HDC algebra. This is going to be explored in detail in the [next post](/blog/hyperdimensional-computing-1).
 
 Going down this road, the insights I've gained are truly fascinating, so strap in and join me in this journey! 🚀
 
@@ -71,7 +71,7 @@ Why does knowing the composition matter? The aroma, flavour and mouthfeel of a t
 
 **Oxidation transforms the polyphenols.** Once the leaf is picked from the bush, the enzymes get going, and the catechins get stitched into bigger molecules that grow larger and darker at every stage: _theaflavins_ first (bright orange and brisk, and often more abundant in an oolong than in a fully oxidized black tea), then _thearubigins_ (red-brown, and the source of a black tea's body and colour), and finally _theabrownins_, the near-black pigments microbes produce to create dark (e.g., Pu'er) tea.
 
-**Aroma is where things get genuinely wild.** Hundreds of volatile compounds have been identified in tea, and many of them recur in different proportions to produce a unique aroma for every tea: linalool (floral, citrusy), geraniol (rose), cis-3-hexenal (fresh-cut grass), and the pyrazines and furans that roasting creates through Maillard reactions[^2]. Most of the volatile compounds are released during the first brew, so the second and third infusions are more about taste and mouthfeel than aroma.
+**Aroma is where things get genuinely wild.** Hundreds of volatile compounds have been identified in tea, and many of them recur in different proportions to produce a unique aroma for every tea: linalool (floral, citrusy), geraniol (rose), cis-3-hexenal (fresh-cut grass), and the pyrazines and furans that roasting creates through Maillard reactions[^2]. Each batch of tea leaves can survive multiple brews, though most of the volatile compounds are released during the first brew (the second and third infusions are more about taste and mouthfeel than aroma).
 
 ## How elevation affects flavour profile
 
@@ -89,14 +89,13 @@ Because elevation significantly affects a tea's flavour profile, it can serve as
 
 Let's summarize how both processing and elevation affect tea:
 - The colour of tea comes from **processing**: the level of oxidation, and how the leaves are heated and handled after plucking.
-- The flavour and mouthfeel of tea is affected by **elevation**: different elevations produce different balances of polyphenols and amino acids, which directly affect how they are perceived on the palate.
-
+- The flavour and mouthfeel of tea is affected by **elevation** and **cultivar**: the "cultivated variant", also known as cultivar, decides the genetic makeup of the tea plant, influencing its growth characteristics and chemical composition. Additionally, different elevations produce different balances of polyphenols and amino acids, which directly affect how they are perceived on the palate. 
 
 ## From chemistry to a tea dataset
 
 All this studying gave me this key insight: with a sufficiently rich vocabulary around tasting notes, aroma and metadata like elevation, I could encode teas as _hypervectors_ in a very high-dimensional space (we'll explore that more in the upcoming HDC series[^3]). Each tea would be a point in high-dimensional vector space, and the distance between points would correspond to how similar they are.
 
-The high-dimensional vectors that hyperdimensional computing (HDC) creates are unlike traditional text/image embeddings that you may be used to from RAG. HDC vectors (known as "hypervectors") are _extremely_ high-dimensional (typically   10,000 dimensions or more), and they're generated with custom encoders. Importantly, the encoder can compose multiple types of data (text, numbers, categorical variables, etc.), allowing us to perform elegant vector arithmetic.
+The high-dimensional vectors that hyperdimensional computing (HDC) creates are unlike traditional text/image embeddings that you may be used to from RAG. HDC vectors (known as "hypervectors") are _extremely_ high-dimensional (typically 10,000 dimensions or more), and they're generated with custom encoders. Importantly, the encoder can compose multiple types of data (text, numbers, categorical variables, etc.), allowing us to perform elegant vector arithmetic.
 
 A tea dataset would be a perfect experiment to design an encoder that combines multiple kinds of information: aroma and taste (text), elevation (integers), and roast/oxidation (categorical variables).
 To design the encoder, we'd need detailed descriptions of what aromas and flavours emerge as it's brewed, and the elevation of the tea-growing region.
@@ -156,7 +155,7 @@ I ended up with a dataset of **166 teas** suitable for encoding into hypervector
 
 [Lance](https://lance.org/) is an open-source, columnar lakehouse format built for multimodal AI data. A Lance dataset consists of tables, where each feature (elevation, region, country etc.) is a column in a particular table. The main benefit of using Lance is that you get fast search, versioning, and vector/full-text search indexes and multimodal blobs living alongside the metadata rather than in a separate system. For this tea dataset, that means one table holds the tea text, the scalar metadata, the images of tea leaves as raw bytes, and a full-text search index over `description`.
 
-It's also very simple to use LanceDB to scan and query the dataset straight off the Hub, with no separate download step:
+It's also very simple to use LanceDB to scan and query the dataset straight off Hugging Face Hub, with no separate download step:
 
 ```python
 import lancedb
@@ -213,7 +212,7 @@ Next, it's time for the fun part. Every one of the 166 teas in the dataset gets 
 </Steps>
 
 We'll look at all that, and more, in the upcoming series on HDC.
-In the meantime, go buy some loose-leaf tea, keep sipping away 🍵, and see you in the next post!
+In the meantime, go buy some loose-leaf tea, keep sipping away 🍵, and see you in the [next post](/blog/hyperdimensional-computing-1)!
 
 ---
 
