@@ -2,10 +2,10 @@
 
 ## Blog writing
 
-- Before planning, drafting, revising, or reviewing blog content, read `src/content/blog/EDITORIAL_CONSTITUTION.md` in full.
+- Before planning, drafting, revising, or reviewing blog content, read the repository-root `EDITORIAL_CONSTITUTION.md` in full. Resolve this path relative to this `AGENTS.md`, never relative to the current working directory or a blog post directory.
 - Follow the user's current request first. Use a writing or editing skill only when the current request explicitly names it or directly asks for it, and only for the scope assigned to it.
 - Do not infer, automatically invoke, or default to any global or repository-local writing skill based on its description, availability, trigger rules, or prior use.
-- For editorial decisions not governed by the user's request or an explicitly requested skill, `src/content/blog/EDITORIAL_CONSTITUTION.md` is authoritative.
+- For editorial decisions not governed by the user's request or an explicitly requested skill, the repository-root `EDITORIAL_CONSTITUTION.md` is authoritative.
 - If the Constitution is missing or unreadable, stop before doing editorial work and tell the user. Do not substitute generic writing guidance or a skill.
 
 Blog posts live in `src/content/blog/<slug>/index.mdx`, with post-specific images and components beside the MDX file.
