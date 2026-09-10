@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Human-agent learning flows</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&amp;family=Geist:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style id="synergy-flow-styles">
+      .synergy-flow {
+        margin: 1.5rem 0;
+        container-type: inline-size;
+      }
+      .synergy-flow svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .synergy-flow svg > rect[rx] {
+        filter: drop-shadow(0 2px 3px rgba(45, 49, 66, 0.12));
+      }
+      .synergy-flow .synergy-flow-compact {
+        display: none;
+      }
+      @container (max-width: 520px) {
+        .synergy-flow .synergy-flow-wide {
+          display: none;
+        }
+        .synergy-flow .synergy-flow-compact {
+          display: block;
+          width: min(100%, 360px);
+          margin-inline: auto;
+        }
+      }
+    </style>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px 16px;
+        background: #f5f5f5;
+        color: #2d3142;
+        font-family: Geist, system-ui, sans-serif;
+      }
+      main {
+        max-width: 784px;
+        margin: auto;
+      }
+      h1 {
+        font:
+          400 40px 'Instrument Serif',
+          Georgia,
+          serif;
+        margin: 0 0 40px;
+      }
+      h2 {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 40px 0 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Human-agent learning flows</h1>
+      <h2>From a question to a better question</h2>
+      <!-- flow:inquiry:start -->
+      <figure class="synergy-flow">
+        <svg
+          class="synergy-flow-wide"
+          viewBox="0 0 752 272"
+          role="img"
+          aria-labelledby="synergy-inquiry-wide-title synergy-inquiry-wide-desc"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title id="synergy-inquiry-wide-title">From a question to a better question</title>
+          <desc id="synergy-inquiry-wide-desc">
+            Question leads to hypothesis, action, observation, refinement, and a better question
+            that starts the next pass.
+          </desc>
+          <defs>
+            <marker
+              id="synergy-inquiry-wide-arrow"
+              markerWidth="12"
+              markerHeight="12"
+              viewBox="0 0 8 8"
+              refX="8"
+              refY="4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 Z" fill="#4f5d75" />
+            </marker>
+            <marker
+              id="synergy-inquiry-wide-arrow-accent"
+              markerWidth="12"
+              markerHeight="12"
+              viewBox="0 0 8 8"
+              refX="8"
+              refY="4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 Z" fill="#eb6c36" />
+            </marker>
+            <marker
+              id="synergy-inquiry-wide-arrow-link"
+              markerWidth="12"
+              markerHeight="12"
+              viewBox="0 0 8 8"
+              refX="8"
+              refY="4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 Z" fill="#2e5aa8" />
+            </marker>
+          </defs>
+          <rect width="752" height="272" fill="#f5f5f5" />
+          <g fill="none" stroke="#4f5d75" stroke-width="1.2">
+            <path d="M 224 68 L 288 68" marker-end="url(#synergy-inquiry-wide-arrow)" />
+            <path d="M 464 68 L 528 68" marker-end="url(#synergy-inquiry-wide-arrow)" />
+            <path d="M 616 104 L 616 168" marker-end="url(#synergy-inquiry-wide-arrow)" />
+            <path d="M 528 204 L 464 204" marker-end="url(#synergy-inquiry-wide-arrow)" />
+            <path d="M 288 204 L 224 204" marker-end="url(#synergy-inquiry-wide-arrow)" />
+            <path
+              d="M 48 204 L 32 204 Q 24 204 24 196 L 24 76 Q 24 68 32 68 L 48 68"
+              marker-end="url(#synergy-inquiry-wide-arrow)"
+            />
+          </g>
+          <rect
+            x="48"
+            y="32"
+            width="176"
+            height="72"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="136" y="68">Question</tspan>
+          </text>
+          <rect
+            x="288"
+            y="32"
+            width="176"
+            height="72"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="376" y="68">Hypothesis</tspan>
+          </text>
+          <rect
+            x="528"
+            y="32"
+            width="176"
+            height="72"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="616" y="68">Action</tspan>
+          </text>
+          <rect
+            x="528"
+            y="168"
+            width="176"
+            height="72"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="616" y="204">Observation</tspan>
+          </text>
+          <rect
+            x="288"
+            y="168"
+            width="176"
+            height="72"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="376" y="204">Refinement</tspan>
+          </text>
+          <rect
+            x="48"
+            y="168"
+            width="176"
+            height="72"
+            rx="8"
+            fill="#fff2ec"
+            stroke="#eb6c36"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="136" y="204">Better question</tspan>
+          </text>
+        </svg>
+        <svg
+          class="synergy-flow-compact"
+          viewBox="0 0 320 592"
+          role="img"
+          aria-labelledby="synergy-inquiry-compact-title synergy-inquiry-compact-desc"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title id="synergy-inquiry-compact-title">From a question to a better question</title>
+          <desc id="synergy-inquiry-compact-desc">
+            Question leads to hypothesis, action, observation, refinement, and a better question
+            that starts the next pass.
+          </desc>
+          <defs>
+            <marker
+              id="synergy-inquiry-compact-arrow"
+              markerWidth="12"
+              markerHeight="12"
+              viewBox="0 0 8 8"
+              refX="8"
+              refY="4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 Z" fill="#4f5d75" />
+            </marker>
+            <marker
+              id="synergy-inquiry-compact-arrow-accent"
+              markerWidth="12"
+              markerHeight="12"
+              viewBox="0 0 8 8"
+              refX="8"
+              refY="4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 Z" fill="#eb6c36" />
+            </marker>
+            <marker
+              id="synergy-inquiry-compact-arrow-link"
+              markerWidth="12"
+              markerHeight="12"
+              viewBox="0 0 8 8"
+              refX="8"
+              refY="4"
+              orient="auto"
+              markerUnits="userSpaceOnUse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 Z" fill="#2e5aa8" />
+            </marker>
+          </defs>
+          <rect width="320" height="592" fill="#f5f5f5" />
+          <g fill="none" stroke="#4f5d75" stroke-width="1.2">
+            <path d="M 176 80 L 176 112" marker-end="url(#synergy-inquiry-compact-arrow)" />
+            <path d="M 176 176 L 176 208" marker-end="url(#synergy-inquiry-compact-arrow)" />
+            <path d="M 176 272 L 176 304" marker-end="url(#synergy-inquiry-compact-arrow)" />
+            <path d="M 176 368 L 176 400" marker-end="url(#synergy-inquiry-compact-arrow)" />
+            <path d="M 176 464 L 176 496" marker-end="url(#synergy-inquiry-compact-arrow)" />
+            <path
+              d="M 64 528 L 40 528 Q 32 528 32 520 L 32 56 Q 32 48 40 48 L 64 48"
+              marker-end="url(#synergy-inquiry-compact-arrow)"
+            />
+          </g>
+          <rect
+            x="64"
+            y="16"
+            width="224"
+            height="64"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="176" y="48">Question</tspan>
+          </text>
+          <rect
+            x="64"
+            y="112"
+            width="224"
+            height="64"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="176" y="144">Hypothesis</tspan>
+          </text>
+          <rect
+            x="64"
+            y="208"
+            width="224"
+            height="64"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="176" y="240">Action</tspan>
+          </text>
+          <rect
+            x="64"
+            y="304"
+            width="224"
+            height="64"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="176" y="336">Observation</tspan>
+          </text>
+          <rect
+            x="64"
+            y="400"
+            width="224"
+            height="64"
+            rx="8"
+            fill="#ffffff"
+            stroke="#2d3142"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="176" y="432">Refinement</tspan>
+          </text>
+          <rect
+            x="64"
+            y="496"
+            width="224"
+            height="64"
+            rx="8"
+            fill="#fff2ec"
+            stroke="#eb6c36"
+            stroke-width="1.2"
+          />
+          <text
+            fill="#2d3142"
+            font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+            font-size="20"
+            font-weight="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan x="176" y="528">Better question</tspan>
+          </text>
+        </svg>
+      </figure>
+      <!-- flow:inquiry:end -->
+    </main>
+  </body>
+</html>
