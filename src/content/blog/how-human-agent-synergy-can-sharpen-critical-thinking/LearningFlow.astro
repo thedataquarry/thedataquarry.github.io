@@ -1,0 +1,19 @@
+---
+import diagrams from './flow-diagrams.html?raw'
+
+interface Props {
+  kind: 'inquiry'
+}
+
+const { kind } = Astro.props
+// The standalone gallery is the source for both responsive versions of each figure.
+const styles = diagrams.match(/<style id="synergy-flow-styles">([\s\S]*?)<\/style>/)?.[1]
+const figure = diagrams
+  .split(`<!-- flow:${kind}:start -->`)[1]
+  ?.split(`<!-- flow:${kind}:end -->`)[0]
+
+if (!styles || !figure) throw new Error(`Missing learning flow: ${kind}`)
+---
+
+<style is:inline set:html={styles}></style>
+<Fragment set:html={figure} />
