@@ -4,6 +4,7 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 
 const headings = [
+  { depth: 2, slug: 'hdc', text: 'Hyperdimensional Computing' },
   { depth: 2, slug: 'talks', text: 'Talks' },
   { depth: 2, slug: 'projects', text: 'Projects' },
 ]
@@ -20,10 +21,77 @@ const headings = [
   </p>
 
 
+  <h2 id='hdc'>Hyperdimensional Computing</h2>
+  <p>
+    I'm a founding AI engineer and researcher at
+    <a href='https://hyperdimensionalcomputing.ai/'>Hyperdimensional Computing Labs</a>, where we
+    study how graph and vector representations can be combined through hyperdimensional computing
+    (HDC) to give agents better context. Most of my research code lives in the
+    <a href='https://github.com/hyperdimensionalcomputingai'>HDC Labs GitHub organization</a>.
+  </p>
+  <ProjectSection
+    class='my-2'
+    project={[
+      {
+        name: 'HDC Labs',
+        description: 'Research, explainers and experiments on hyperdimensional computing, vector symbolic architectures and neuro-symbolic retrieval for agents.',
+        links: [
+          { type: 'site', href: 'https://hyperdimensionalcomputing.ai/' },
+          { type: 'doc', href: 'https://hyperdimensionalcomputing.ai/blog' }
+        ]
+      },
+      {
+        name: 'Graph to hypervectors',
+        description: 'Turn graph data into hypervectors and query them via composable HDC operations.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/graph-to-hypervectors' }
+        ]
+      },
+      {
+        name: 'HDCER',
+        description: 'Temporal hypothesis graphs and hyperdimensional learning for inspectable entity resolution.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/hdcer' }
+        ]
+      },
+      {
+        name: 'Bundling capacity',
+        description: 'Experiments on how many facts a bundle can hold, how it handles missing values, and what we can still recover from it.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/bundling-capacity' },
+          { type: 'doc', href: 'https://hyperdimensionalcomputing.ai/blog/testing-the-limits-of-bundling-capacity-1' }
+        ]
+      },
+      {
+        name: 'MAP bundling recoverability',
+        description: 'Experiments to understand what we can recover from a bundled MAP hypervector.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/map-bundling-recoverability' }
+        ]
+      },
+      {
+        name: 'Tea hypervectors',
+        description: 'An HDC encoder and online-learning tea recommender, built for my blog series on hyperdimensional computing 🍵',
+        links: [
+          { type: 'github', href: 'https://github.com/prrao87/tea-hypervectors' },
+          { type: 'doc', href: '/blog/hyperdimensional-computing-1' }
+        ]
+      }
+    ]}
+  />
+
   <h2 id='talks'>Talks & podcasts</h2>
   <ProjectSection
     class='my-2'
     project={[
+      {
+        name: 'GraphCon 2026',
+        description: 'Associative search and vector-graph integration: how hyperdimensional computing brings graphs and high-dimensional vector spaces together, so that agents can search by association over structured data.',
+        links: [
+          { type: 'site', href: 'https://www.youtube.com/watch?v=vxR0CuD9YOw' },
+          { type: 'doc', href: 'https://prrao87.github.io/slidev-talks/graphcon-2026/#/1' }
+        ]
+      },
       {
         name: 'Practical AI Podcast - Sep 2024',
         description: 'Seems like we are hearing a lot about GraphRAG these days, but there are lots of questions: what is it, is it hype, what is practical? One of our all time favorite podcast friends, Prashanth Rao, joins us to dig into this topic beyond the hype. Prashanth gives us a bit of background and practical use cases for GraphRAG and graph data.',

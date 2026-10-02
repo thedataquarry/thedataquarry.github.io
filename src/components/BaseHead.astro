@@ -12,6 +12,54 @@ const { articleDate, description, ogImage, title } = Astro.props
 const siteTitle = `${title} ${config.titleDelimiter} ${config.title}`
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 const socialImageURL = new URL(ogImage ? ogImage : '/images/social-card.png', Astro.site).href
+
+// Structured data (JSON-LD) identifying the author across their sites, so search engines
+// can connect this blog with the author's HDC Labs profile and other accounts.
+const personId = new URL('/about#person', Astro.site).href
+const person = {
+  '@type': 'Person',
+  '@id': personId,
+  name: config.author,
+  url: new URL('/about', Astro.site).href,
+  jobTitle: 'Founding AI Engineer & Researcher',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'Hyperdimensional Computing Labs',
+    url: 'https://hyperdimensionalcomputing.ai/'
+  },
+  sameAs: [
+    'https://hyperdimensionalcomputing.ai/people#prashanth-rao',
+    'https://github.com/prrao87',
+    'https://www.linkedin.com/in/prrao87/',
+    'https://x.com/tech_optimist'
+  ]
+}
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    person,
+    {
+      '@type': 'WebSite',
+      '@id': new URL('/#website', Astro.site).href,
+      name: config.title,
+      url: Astro.site?.href,
+      author: { '@id': personId }
+    },
+    ...(articleDate
+      ? [
+          {
+            '@type': 'BlogPosting',
+            headline: title,
+            description,
+            url: canonicalURL.href,
+            image: socialImageURL,
+            datePublished: articleDate,
+            author: { '@id': personId }
+          }
+        ]
+      : [])
+  ]
+}
 ---
 
 <meta charset='utf-8' />
@@ -71,6 +119,9 @@ const socialImageURL = new URL(ogImage ? ogImage : '/images/social-card.png', As
 <meta content={title} property='twitter:title' />
 <meta content={description} property='twitter:description' />
 <meta content={socialImageURL} property='twitter:image' />
+
+{/* Structured data */}
+<script type='application/ld+json' set:html={JSON.stringify(structuredData)} />
 
 {/* Sitemap */}
 <link href='/sitemap-index.xml' rel='sitemap' />

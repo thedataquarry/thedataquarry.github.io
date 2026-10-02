@@ -73,7 +73,7 @@ This tasting history, along with the encoder, can be used to compute a preferenc
 
 In the HDC literature, class prototypes are stored in an **associative memory**: a collection of learned hypervectors that can be compared with a new encoded query. Each prototype summarizes examples from one class, and similarity to those prototypes determines which stored pattern the query recalls.[^2]
 
-Our tea recommender adapts this idea, with `liked` and `disliked` taking the place of class labels. Each tasting updates the corresponding preference prototype, so the associative memory changes as new experiences arrive while the encoder stays fixed. Instead of using the memory to classify one new query, we use the updated prototypes to rank the catalogue and recall teas that match what the system has learned.
+Our tea recommender adapts this idea, with `liked` and `disliked` taking the place of class labels. Each tasting updates the corresponding preference prototype, so the associative memory changes as new experiences arrive while the encoder stays fixed. Instead of using the memory to classify one new query, we use the updated prototypes to rank the catalogue and recall teas that match what the system has learned. If you're curious how associative recall in the HDC literature maps onto modern vector search, I wrote about it in [What do cleanup and crosstalk mean in HDC?](https://hyperdimensionalcomputing.ai/blog/what-do-cleanup-and-crosstalk-mean-in-hdc)
 
 <Aside type='tip' title='What the memory contains'>
   The positive and negative preference prototypes are the learned patterns stored in this
@@ -297,6 +297,8 @@ What I found most fascinating throughout this journey was how HDC brings three u
 - **Explainability:** apply the same simple algebra used during encoding to inspect and interpret the scores, both during associative search and when learning from new examples.
 
 Together, these capabilities make HDC a hugely interesting foundation for agentic search and retrieval. An agent can search what it knows, preserve a compact memory of feedback and show how that experience changed the next result. Although these ideas aren't exclusive to HDC (plenty of real-world RAG systems exist that can do similar things), the appeal of HDC lies in the _simplicity of the representation_ and the composability of its primitives.
+
+This is the direction I'm now exploring full-time at [Hyperdimensional Computing Labs](https://hyperdimensionalcomputing.ai/), where we combine graph and vector representations so that agents can retrieve better context than either one provides on its own. If you'd like to see what that looks like with graph data, [graph-to-hypervectors](https://github.com/hyperdimensionalcomputingai/graph-to-hypervectors) turns a graph into hypervectors that you can query with the same composable algebra from this series. I also covered these ideas in my [GraphCon 2026 talk](https://www.youtube.com/watch?v=vxR0CuD9YOw) on associative search and vector-graph integration.
 
 These ideas open several interesting avenues in other domains. In healthcare, patient-specific memories that gauge disease risk could update with new measurements in a sample-efficient manner. In such a high-stakes setting, being able to inspect which observations changed a prediction would be just as valuable as updating the memory quickly.
 
