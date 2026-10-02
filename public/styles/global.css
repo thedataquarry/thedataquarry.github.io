@@ -223,6 +223,14 @@ body::-webkit-scrollbar {
   background: transparent;
 }
 
+/* Hide the sidebar (TOC) scrollbar; it still scrolls with the wheel or trackpad */
+#sidebar {
+  scrollbar-width: none;
+}
+#sidebar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Add this as a separate top-level rule */
 :where(.prose code:not(pre code)) {
   &::before,

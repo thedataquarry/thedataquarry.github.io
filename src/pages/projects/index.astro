@@ -4,6 +4,7 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 
 const headings = [
+  { depth: 2, slug: 'hdc', text: 'Hyperdimensional Computing' },
   { depth: 2, slug: 'talks', text: 'Talks' },
   { depth: 2, slug: 'projects', text: 'Projects' },
 ]
@@ -20,10 +21,76 @@ const headings = [
   </p>
 
 
+  <h2 id='hdc'>Hyperdimensional Computing</h2>
+  <p>
+    I'm a founding AI engineer and researcher at
+    <a href='https://hyperdimensionalcomputing.ai/'>Hyperdimensional Computing Labs</a>, where we
+    study how graph and vector representations can be combined through hyperdimensional computing
+    (HDC) to give agents better context. Most of my research code lives in the
+    <a href='https://github.com/hyperdimensionalcomputingai'>HDC Labs GitHub organization</a>.
+  </p>
+  <ProjectSection
+    class='my-2'
+    project={[
+      {
+        name: 'Intro to HDC',
+        description: 'Multimodal knowledge graphs and hyperdimensional computing with lance-graph and LanceDB.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/intro-to-hdc' }
+        ]
+      },
+      {
+        name: 'Graph to hypervectors',
+        description: 'Turn graph data into hypervectors and query them via composable HDC operations.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/graph-to-hypervectors' }
+        ]
+      },
+      {
+        name: 'HRR vs. MAP similarity',
+        description: 'A reproducible comparison of how HRR and MAP preserve the same symbolic similarity structure in HDC.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/hrr-map-similarity' }
+        ]
+      },
+      {
+        name: 'Bundling capacity',
+        description: 'Experiments on bundling in HDC: adding more and more facts to a bundle, handling missing values and more.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/bundling-capacity' },
+          { type: 'doc', href: 'https://hyperdimensionalcomputing.ai/blog/testing-the-limits-of-bundling-capacity-1' }
+        ]
+      },
+      {
+        name: 'Telecom incident triage',
+        description: 'A demo showing the benefits of using HDC in a telecom incident scenario.',
+        links: [
+          { type: 'github', href: 'https://github.com/hyperdimensionalcomputingai/telecom-incident-triage' }
+        ]
+      },
+      {
+        name: 'Tea hypervectors',
+        description: 'An HDC encoder and online-learning tea recommender, built for my blog series on hyperdimensional computing 🍵',
+        links: [
+          { type: 'github', href: 'https://github.com/prrao87/tea-hypervectors' },
+          { type: 'doc', href: '/blog/hyperdimensional-computing-1' }
+        ]
+      }
+    ]}
+  />
+
   <h2 id='talks'>Talks & podcasts</h2>
   <ProjectSection
     class='my-2'
     project={[
+      {
+        name: 'GraphCon 2026',
+        description: 'Associative search and hypervector-graph integration: how hyperdimensional computing brings graphs and high-dimensional vector spaces together, so that agents can search by association over structured data.',
+        links: [
+          { type: 'site', href: 'https://www.youtube.com/watch?v=vxR0CuD9YOw' },
+          { type: 'doc', href: 'https://prrao87.github.io/slidev-talks/graphcon-2026/#/1' }
+        ]
+      },
       {
         name: 'Practical AI Podcast - Sep 2024',
         description: 'Seems like we are hearing a lot about GraphRAG these days, but there are lots of questions: what is it, is it hype, what is practical? One of our all time favorite podcast friends, Prashanth Rao, joins us to dig into this topic beyond the hype. Prashanth gives us a bit of background and practical use cases for GraphRAG and graph data.',

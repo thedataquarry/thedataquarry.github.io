@@ -61,6 +61,8 @@ During storage (in this case, using LanceDB), we _could_ normalize the sums back
 
 During retrieval, however, cosine similarity performs a form of normalization: it divides the dot product by both L2 norms to calculate a similarity score. This keeps overall vector length from dominating the ranking while preserving each field's relative influence and allowing us to decompose the bundle later.
 
+A natural question is how many fields a bundle can hold before the signal from any one of them becomes too faint to recover. With only a handful of tea fields, we're far from that limit, but I ran some experiments to find where it lies in [Testing the limits of bundling capacity](https://hyperdimensionalcomputing.ai/blog/testing-the-limits-of-bundling-capacity-1), using a 50-item questionnaire.
+
 ## What goes into a "tea hypervector"?
 
 The first stage in encoder design involves us explicitly deciding which fields matter to the downstream retrieval task. We'll encode six fields: `aroma`, `taste`, `class`, `oxidation`, `roast` and `elevation_meters`.
