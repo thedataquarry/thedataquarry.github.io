@@ -1,0 +1,223 @@
+---
+slug: 'celebrating-one-year-of-ladybug'
+title: 'Celebrating one year of LadybugDB 🐞'
+description: "A year on from the end of Kuzu and the beginning of Ladybug, and a brief look at where we are today."
+publishDate: 2026-10-10
+draft: false
+tags:
+  - ladybug
+  - kuzu
+  - graph
+---
+import Figure from '@/components/Figure.astro';
+import { Aside } from 'astro-pure/user';
+import ImgLadybugKuzu from './ladybug-kuzu.png';
+
+<Figure src={ImgLadybugKuzu} alt="A ladybug whose spots form a graph, resting on a lily pad atop a stone engraved with Kuzu, beside a lake of lily pads connected like a graph" caption="Ladybug, built on Kuzu's foundations, heading out onto the (graph) lake." />
+
+As many know, I was part of the team that built Kuzu (the much-loved, MIT-licensed embedded graph database), and I still have a particular fondness for Kuzu and what it stood for. On October 10, 2025, the LadybugDB project repo was publicly announced shortly after Kuzu was archived. As a fan of open source and its philosophy, I was excited to see the project continue under a new name.
+
+Kuzu was a graph database that had some unusually strong ideas about how an embedded graph database should work: it uses a strongly typed property-graph model with columnar, sparse data structures, and a powerful query processor designed specifically for fast multi-hop graph traversals. Ladybug has inherited that architecture, and under the stewardship of [Arun Sharma](https://github.com/adsharma), it's been evolving in interesting ways!
+
+Today, we can clearly see that it didn't simply maintain Kuzu in its original form. It's increasingly been introducing new ideas around the **graph lakehouse**, and it's made significant strides on that front over the past year. This post throws light on some of the architectural ideas that have emerged, based on my own observations and conversations with the Ladybug team.
+
+## From preservation to evolution
+
+Ladybug deliberately preserves much of Kuzu's spirit: it keeps the database small and nimble, retains the property-graph model, and continues treating a strongly typed storage layer as a core feature rather than a limitation. The biggest change observable from the outside is that Ladybug moved toward a much more open, bazaar-style development model under the MIT licence. _Lots_ more open source contributors have played a role in shaping the project.
+
+Along the way, there have been numerous interesting developments in the architecture and the query processor. Taken at face value, the commits that went into Ladybug in the last year might look like a series of unrelated changes: new indexes, different relationship-storage options, Arrow integration, GraphLake, faster writes, new scan operators, better join enumeration and increasingly sophisticated cardinality estimation. But they start to look coherent when considered together.
+
+However, the larger theme emerges once you connect the dots: Ladybug has been systematically making the original Kuzu architecture **less prescriptive about storage and more intelligent about execution**.
+
+In the next few sections, I want to look at a few larger architectural ideas that have emerged in Ladybug, and then use [an unofficial LDBC benchmark](https://github.com/prrao87/graph-benchmark-ldbc) I've maintained since the Kuzu days to see where those ideas show up in practice.
+
+## 1. Configurable indexes and storage
+
+In Kuzu, every node table had to declare a primary key, and the engine automatically built a hash index on it. This comes from the early days of Kuzu when the hash index was the simplest data structure to implement, while giving the engine what it needed: a fast way to map a key (the `Person` whose `ID` is `933`) to the node's position in storage, both for loading relationships and for looking up individual nodes.
+
+The catch was that the hash index greatly increased storage requirements. On a million-row `User` table, about 35 MB of a 50 MB database file was hash index, while the same table in DuckDB took up 13 MB ([#97](https://github.com/LadybugDB/ladybug/issues/97)). For a graph the size of Wikidata, this made Kuzu prohibitively expensive to store compared to systems like DuckDB, even for workloads that rarely looked up a node by its exact ID.
+
+Over several releases, Ladybug has turned this built-in, always-on hash index into a choice. The default hash index in Ladybug can be disabled ([#455](https://github.com/LadybugDB/ladybug/pull/455)), and indexes are now regular database objects that you create, drop and inspect yourself ([#479](https://github.com/LadybugDB/ladybug/pull/479), [#616](https://github.com/LadybugDB/ladybug/pull/616), [#631](https://github.com/LadybugDB/ladybug/pull/631)).
+
+```cypher
+// Create a node table: a hash index is built on its primary key by default
+CREATE NODE TABLE User(name STRING, age INT64, PRIMARY KEY(name));
+// List the indexes in the database
+CALL SHOW_INDEXES() RETURN table_name, index_name, index_type, property_names;
+// ┌────────────┬────────────┬────────────┬────────────────┐
+// │ table_name │ index_name │ index_type │ property_names │
+// ├────────────┼────────────┼────────────┼────────────────┤
+// │ User       │ _PK        │ HASH       │ [name]         │
+// └────────────┴────────────┴────────────┴────────────────┘
+```
+
+If you choose to disable the hash index, you can turn the default off for any node tables you create afterwards:
+
+```cypher
+// Turn off the default hash index for node tables created from here on
+CALL enable_default_hash_index=false;
+// This table's primary key gets no index, so it won't appear in SHOW_INDEXES
+CREATE NODE TABLE Product(sku STRING, PRIMARY KEY(sku));
+```
+
+### Why add ART indexes?
+
+Once indexes became something you can choose in Ladybug, it made sense to offer more than one kind. Adaptive Radix Tree (ART) indexes are a more compact alternative to hash indexes, and they support both exact-key lookups and range queries. Ladybug added ART indexes in May 2026 ([#492](https://github.com/LadybugDB/ladybug/pull/492)), and soon after extended them to properties other than the primary key ([#582](https://github.com/LadybugDB/ladybug/pull/582)). These were long-awaited features in Kuzu itself that never got added due to time and resource constraints.
+
+If you've used DuckDB, you've already used an ART index: it's what enforces every `PRIMARY KEY` and `UNIQUE` constraint there, and Ladybug's implementation follows DuckDB's design closely.
+
+<Aside title="Hash index vs. ART index">
+A **hash index** runs each key through a hash function to jump straight to a slot. Exact-match lookups are very fast, but hashing scrambles the order of the keys, so the index can't help with a filter like `p.ID > 1000`. It also reserves spare slots to keep collisions rare, which is where much of its size comes from.
+
+An **ART index** is a _trie_ that walks down a tree one byte of the key at a time. Keys stay in sorted order, so the same index serves exact matches _and_ range filters. Each node in the tree also grows only as large as it needs to, which keeps the index compact. If you're coming from Neo4j, think of it as similar to a range index.
+</Aside>
+
+```cypher
+// Build an ART index on a non-primary-key property that queries filter on
+CREATE ART INDEX person_first_name FOR (p:Person) ON (p.firstName);
+```
+
+The trade-off is that an ART lookup takes several steps down the tree rather than a single jump, which can add up for long string keys. For integer IDs, it barely shows. Here's a quick test I ran on Ladybug 0.21.1 with 2 million synthetic `User` nodes, reopening each database in a fresh process before querying it:
+
+| Index on `User.id` | Open time | Point lookup | Database size |
+| --- | ---: | ---: | ---: |
+| Hash | ~12 ms | ~0.3 ms | 112 MB |
+| ART | ~12 ms | ~0.2 ms | 64 MB |
+| None | ~12 ms | ~2 ms (full scan) | 35 MB |
+
+Both indexes are about 10× faster than a full scan, and both are stored on disk and read only as queries need them, so nothing gets rebuilt when your application opens the database. ART also uses less than half the space of the hash index. At 2 million nodes, that's a difference of tens of MB, but for large graphs the size of Wikidata (> 100M nodes), the hash index alone would run to several gigabytes, so not building one you don't need makes a big difference.
+
+The key point is that in Ladybug, **indexing is now a decision you make based on your workload**. DuckDB works the same way: most analytical filters are served by scanning columnar data, and ART indexes are reserved for selective lookups and constraints.
+
+The same theme of letting the workload decide extends beyond indexes. Relationships are still stored in CSR (compressed sparse row) format, just as in Kuzu, but that data no longer has to sit in Ladybug's own storage format. As we'll see next, Ladybug can now traverse relationships that live in Arrow or Parquet files, and once the engine is comfortable working with different representations of a graph, the next question is how to read them efficiently.
+
+## 2. Answering queries from the CSR
+
+Just like Kuzu, Ladybug stores relationships in CSR format, a compact way of laying out adjacency lists (no changes there). All the neighbour lists are packed together in one large array, and a separate array of offsets records where each node's list begins and ends. This layout makes traversals fast, because finding a node's neighbours is a single contiguous read.
+
+Kuzu used the CSR to traverse, but many query plans still materialized every matching tuple as an intermediate result, pushing it through joins and only then aggregating it or converting it to the output format. Over the past year, Ladybug has increasingly **answered queries from the CSR itself**, without materializing those intermediate tuples at all.
+
+### Counting without materializing
+
+The simplest case is counting relationships. The CSR already knows how many relationships it holds, so Ladybug now answers the query below from that metadata, rather than scanning every relationship and aggregating ([#90](https://github.com/LadybugDB/ladybug/pull/90)). Degree queries, such as finding the most-followed users, are answered from the CSR offsets in the same way ([#512](https://github.com/LadybugDB/ladybug/pull/512)).
+
+```cypher
+// Answered from metadata via a COUNT_REL_TABLE operator, without a scan
+MATCH ()-[r:knows]->() RETURN count(*);
+```
+
+Things get more interesting with multi-hop patterns. To count the paths below, a conventional plan materializes every path as a tuple, hash-joining each hop to the next, only to aggregate them all away into a single number.
+
+```cypher
+// Counted via a COUNT_EXTEND_CHAIN operator, without materializing any paths
+MATCH (a:Person)-[:knows]->(b:Person)-[:knows]->(c:Person)
+RETURN count(*);
+```
+
+Instead, Ladybug now passes a running count per node from one hop to the next, so it never builds the paths at all ([#918](https://github.com/LadybugDB/ladybug/pull/918), [#1080](https://github.com/LadybugDB/ladybug/pull/1080)). On a 7-hop chain over the LDBC SF1 graph, counting about 179 million paths dropped from 5.6 seconds to 0.11 seconds. The number of paths in a graph grows exponentially with each hop, but the number of nodes doesn't, so multi-hop aggregations that used to exhaust memory on large graphs now run in memory proportional to the graph itself.
+
+### Reading and writing the Icebug format
+
+The same thinking applies when Ladybug exchanges relationships with other tools: the CSR structure can cross the boundary intact, rather than being flattened into rows and rebuilt on the other side. This is the idea behind the [Icebug format](https://github.com/Ladybug-Memory/icebug-format), an open CSR-based graph format with two flavours: **icebug-disk**, stored as ordinary Parquet files, and **icebug-memory**, stored as Arrow tables for zero-copy access within a process.
+
+Ladybug can mount relationship tables directly on icebug-disk files ([#476](https://github.com/LadybugDB/ladybug/pull/476)), locally or on object storage, without importing them first:
+
+```cypher
+// Traverse relationships stored as Parquet CSR files, without importing them
+CREATE REL TABLE follows(FROM user TO user, since INT32)
+WITH (storage = 's3://bucket/graph', format = 'icebug-disk');
+```
+
+It can also scan relationship tables held in Arrow ([#460](https://github.com/LadybugDB/ladybug/pull/460)), and going the other way, write query results directly into Arrow CSR buffers, skipping its usual row-by-row conversion ([#463](https://github.com/LadybugDB/ladybug/pull/463)). A later change cut the peak memory of one large export from 45 GB to 16 GB ([#626](https://github.com/LadybugDB/ladybug/pull/626)). Because both flavours are just CSR in standard columnar formats, any tool that reads Parquet or Arrow, including Icebug's graph algorithms, can work with the same data that Ladybug queries.
+
+If you've worked with analytical databases, this playbook will sound familiar. Column stores answer an unfiltered `COUNT(*)` from metadata, delay assembling full rows until the last possible moment (late materialization), and hand results to other tools as Arrow without copying them. Ladybug applies the same ideas to graph structure. **The CSR is to a graph engine what the columnar layout is to an analytical database, and the fastest queries are the ones that stay on it for as long as possible.** The next section looks at how the query planner applies this principle once queries start filtering and traversing, rather than just counting.
+
+## 3. An ever-improving query planner that understands graph shapes
+
+Some exciting gains have recently come into Ladybug's query planner (the part of the database that decides which part of a pattern to match first and how to join the pieces together). If you've used `EXPLAIN` or `PROFILE` in other databases, you've likely inspected its output.
+
+In Ladybug 0.21 and later, query plans can read **orders of magnitude** less data than the older plans did. Most of these innovations boil down to three ideas, explained below.
+
+### Estimating fan-out, not just selectivity
+
+Planners traditionally reason about _selectivity_: how many rows survive a filter. A filter that picks out exactly one `Person` looks like the perfect place to start a query. But in a graph, what happens after the filter matters just as much. If that person knows 900 people, who in turn wrote 300,000 comments, the "one row" was really the entrance to a very large neighbourhood.
+
+Ladybug's planner now collects degree statistics from the CSR, such as the average number of neighbours per node for each relationship table, and uses them to estimate how much each hop _fans out_ ([#574](https://github.com/LadybugDB/ladybug/pull/574), [#1046](https://github.com/LadybugDB/ladybug/pull/1046)). The statistics are gathered automatically the first time the planner needs them. In one of the LDBC queries from [#1046](https://github.com/LadybugDB/ladybug/pull/1046), a pattern anchored on a single person fanned out from 920 rows to over 300,000 within two hops, while the other end of the same pattern was a filter matching just 36 tags. With fan-out in its cost model, the planner can now see that starting from the tags is far cheaper.
+
+### Staying on the frontier
+
+Once the first hop has narrowed the search, the planner should keep traversing from the nodes it has found. Consider this query, which finds the people who liked a particular person's comments:
+
+```cypher
+// Start from one person, follow their comments, then find who liked them
+MATCH (p:Person)<-[:commentHasCreator]-(c:Comment)<-[:likeComment]-(p2:Person)
+WHERE p.firstName = 'Rafael' AND p.lastName = 'Alonso'
+RETURN COUNT(DISTINCT p2.ID) AS num_persons;
+```
+
+Previously, the planner could only traverse one hop from its starting node. Every later hop became a hash join against a full scan of the relationship table, so this query read all 1.4 million `likeComment` relationships in the graph to find the likes on just 7,530 comments. Ladybug now plans patterns like this as a chain of extends, where each hop reads only the CSR neighbour lists of the nodes found by the previous hop ([#859](https://github.com/LadybugDB/ladybug/pull/859)).
+
+When a join can't be avoided, Ladybug lets the smaller side prune the larger one. This technique, known as _sideways information passing_, was already part of Kuzu: the small side of a join records the node IDs it contains in a bitmask, and the scan on the large side skips anything that's not in the mask. Kuzu applied these masks to node scans only. Ladybug extends them to relationship scans ([#961](https://github.com/LadybugDB/ladybug/pull/961)), so in one of its examples, a scan that used to emit 1.4 million relationships now emits exactly the 3,229 it needs.
+
+### Aggregating early
+
+The last idea targets a common pattern: several independent `OPTIONAL MATCH` branches, each feeding a `COUNT(DISTINCT ...)`. A standard plan joins all the branches first and counts at the end, so the branches multiply against each other. In one LDBC query, four branches produced 656,000 intermediate rows from a single starting row, just to compute four counts. Because `COUNT(DISTINCT ...)` ignores duplicates, Ladybug can safely count each branch as soon as it's joined, and that query now carries about 300 rows from one stage to the next ([#1044](https://github.com/LadybugDB/ladybug/pull/1044)).
+
+Each of these changes reduces the amount of data a query has to touch, rather than making individual operators faster. As we'll see next, the queries in my benchmark that improved the most are the ones with exactly these shapes.
+
+## Does any of this show up in practice?
+
+Since the Kuzu days, I've maintained a [30-query benchmark](https://github.com/prrao87/graph-benchmark-ldbc) on the LDBC Social Network Benchmark dataset at scale factor 1 (about 3.2 million nodes and 17.3 million relationships). The queries are my own, so these aren't official LDBC results. When Ladybug 0.21.1 came out, I reran the suite and compared it against my earlier runs of Kuzu 0.11.3 (Kuzu's final release) and Neo4j 2025.12.1 ([PR #22](https://github.com/prrao87/graph-benchmark-ldbc/pull/22)).
+
+The table shows mean latency in milliseconds. Ratios in parentheses are Neo4j's mean divided by each engine's mean, so higher is better, and bold marks the queries where Ladybug was fastest of the three.
+
+| Query | Neo4j 2025.12.1 (ms) | Kuzu 0.11.3 (ms) | Ladybug 0.21.1 (ms) |
+| --- | ---: | ---: | ---: |
+| Q1 | 4.098 | 1.716 (2.39x) | **1.171 (3.50x)** |
+| Q2 | 5.082 | 1.313 (3.87x) | **1.179 (4.31x)** |
+| Q3 | 2.018 | 1.023 (1.97x) | **0.748 (2.70x)** |
+| Q4 | 3.141 | 0.855 (3.67x) | **0.382 (8.22x)** |
+| Q5 | 4.244 | 3.419 (1.24x) | 3.879 (1.09x) |
+| Q6 | 3.145 | 0.705 (4.46x) | 0.715 (4.40x) |
+| Q7 | 1.508 | 27.588 (0.05x) | 23.600 (0.06x) |
+| Q8 | 11.720 | 2.651 (4.42x) | 3.412 (3.44x) |
+| Q9 | 1.782 | 1.712 (1.04x) | **1.281 (1.39x)** |
+| Q10 | 3.514 | 1.511 (2.33x) | 1.614 (2.18x) |
+| Q11 | 10.935 | 7.735 (1.41x) | **4.014 (2.72x)** |
+| Q12 | 3.888 | 17.120 (0.23x) | 7.708 (0.50x) |
+| Q13 | 8.398 | 42.157 (0.20x) | **5.559 (1.51x)** |
+| Q14 | 1.288 | 1.464 (0.88x) | **0.883 (1.46x)** |
+| Q15 | 2.603 | 2.299 (1.13x) | **1.130 (2.30x)** |
+| Q16 | 1.418 | 1.735 (0.82x) | **0.975 (1.45x)** |
+| Q17 | 3.119 | 2.553 (1.22x) | **1.681 (1.86x)** |
+| Q18 | 2.739 | 1.441 (1.90x) | **1.183 (2.31x)** |
+| Q19 | 5.189 | 13.232 (0.39x) | **3.169 (1.64x)** |
+| Q20 | 393.291 | 13.666 (28.78x) | 14.118 (27.86x) |
+| Q21 | 1.336 | 0.445 (3.00x) | 0.494 (2.70x) |
+| Q22 | 2.618 | 21.507 (0.12x) | 7.134 (0.37x) |
+| Q23 | 3.081 | 1.151 (2.68x) | **0.726 (4.24x)** |
+| Q24 | 1.291 | 1.191 (1.08x) | **0.780 (1.66x)** |
+| Q25 | 2.579 | 1.388 (1.86x) | **1.154 (2.24x)** |
+| Q26 | 1.222 | 3.280 (0.37x) | **1.112 (1.10x)** |
+| Q27 | 2.518 | 14.305 (0.18x) | 3.492 (0.72x) |
+| Q28 | 3.033 | 1.457 (2.08x) | 1.778 (1.71x) |
+| Q29 | 2.359 | 0.965 (2.45x) | **0.874 (2.70x)** |
+| Q30 | 1055.151 | 153.493 (6.87x) | **88.728 (11.89x)** |
+
+Overall, Ladybug 0.21.1 is faster than Kuzu on 23 of the 30 queries and faster than Neo4j's community edition on 26, and it's the fastest of the three on 19. The dataset and codebase can be reproduced from the [benchmark repo](https://github.com/prrao87/graph-benchmark-ldbc) if you want to test on your own machine with the latest version of Neo4j's community edition or Ladybug.
+
+More interesting to me than the raw numbers is _which_ queries moved. Q13 is the exact ["Rafael" query from section 3](#staying-on-the-frontier). On Kuzu, it took 42 ms. On Ladybug, which now follows the extend chain instead of joining against every `likeComment` relationship, it takes **only 5.6 ms**. Q12, Q19, Q22 and Q27 combine a selective filter with a large join, the shape that the fan-out estimates and relationship-scan semi-masks target, and each got two to four times faster than on Kuzu. **These are material improvements at the core of the query processor**.
+
+Neo4j is still faster on a handful of queries, most notably Q7, where both Kuzu and Ladybug are more than an order of magnitude behind. Because there are always tradeoffs in software engineering, no two versions move every query in the same direction: compared to 0.21.0, 0.21.1 is faster on 17 queries and slower on 13. However, Ladybug's planner is evolving quickly, so I fully expect more of these numbers to keep moving in a better direction in future releases.
+
+## More than just a fork
+
+A year ago, calling LadybugDB a "fork of Kuzu" was simply descriptive. Today, that's still technically true, but it's more accurate to call LadybugDB its own project, one that kept Kuzu's core convictions: a strongly typed property graph model, Cypher, columnar storage and CSR-based relationship storage.
+
+What Ladybug has concretely shown, while improving performance, is **flexibility in its design assumptions**. Indexes are now a workload decision, the CSR can live in open formats like Parquet and Arrow, queries increasingly work on the CSR directly, and the planner reasons about the shape of the graph it's traversing. The benchmark shows the result: the queries that improved most are the ones those changes target.
+
+I also really love how the project is being maintained. Ladybug is still (very much like Kuzu) being developed out in the open under the MIT licence, with contributions from a diverse community of developers. Coding agents play a big part, too. With today's AI coding agents, many new OSS contributors can point their agents at the codebase and continuously scan it for performance gaps, and the pace of development has been remarkable.
+
+That said, agents don't review and merge their own PRs, and they do add a significant maintenance burden over time. Arun [has tirelessly been reviewing and approving](https://github.com/adsharma) a steady stream of contributions throughout the last year, and the project owes a lot to his stewardship. Hats off! 🤠
+
+I'm really happy that the graph community still has a permissively licensed, embedded graph database that's _really_ fast, and it's increasingly well integrated with the rest of the lakehouse ecosystem. If you're curious where this is heading, Arun lays out the [GraphLake vision](https://blog.ladybugdb.com/post/graph-lake-v2/) really well: much like DuckLake does for tables, GraphLake pairs Iceberg tables with icebug-disk graphs, and keeps the catalog in a database you can query, rather than in metadata files on object storage. I'm excited to see what graph lakehouses turn into over the coming months, and if you want to follow along (or contribute!), come say hi on the Ladybug [Discord](https://discord.gg/4f93zHyNQE).
