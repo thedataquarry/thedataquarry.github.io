@@ -15,11 +15,11 @@ import ImgLadybugKuzu from './ladybug-kuzu.png';
 
 <Figure src={ImgLadybugKuzu} alt="A ladybug whose spots form a graph, resting on a lily pad atop a stone engraved with Kuzu, beside a lake of lily pads connected like a graph" caption="Ladybug, built on Kuzu's foundations, heading out onto the (graph) lake." />
 
-As many know, I was part of the team that built Kuzu (the much-loved, MIT-licensed embedded graph database), and I still have a particular fondness for Kuzu and what it stood for. On October 10, 2025, the LadybugDB project repo was publicly announced shortly after Kuzu was archived. As a fan of open source and its philosophy, I was excited to see the project continue under a new name.
+As many know, I was part of the team that built [Kuzu](https://github.com/kuzudb/kuzu) (the much-loved, MIT-licensed embedded graph database). On October 10, 2025, the LadybugDB project repo was publicly announced shortly after Kuzu was archived. As a fan of open source and its philosophy, I was excited to see the project continue under a new name.
 
 Kuzu was a graph database that had some unusually strong ideas about how an embedded graph database should work: it uses a strongly typed property-graph model with columnar, sparse data structures, and a powerful query processor designed specifically for fast multi-hop graph traversals. Ladybug has inherited that architecture, and under the stewardship of [Arun Sharma](https://github.com/adsharma), it's been evolving in interesting ways!
 
-Today, we can clearly see that it didn't simply maintain Kuzu in its original form. It's increasingly been introducing new ideas around the **graph lakehouse**, and it's made significant strides on that front over the past year. This post throws light on some of the architectural ideas that have emerged, based on my own observations and conversations with the Ladybug team.
+We can clearly see that Ladybug has increasingly been introducing new ideas around the **graph lakehouse**, and it's made significant strides on that front over the past year. This post throws light on some of the architectural ideas that have emerged, based on my own observations and conversations with the Ladybug maintainers.
 
 ## From preservation to evolution
 
@@ -27,7 +27,7 @@ Ladybug deliberately preserves much of Kuzu's spirit: it keeps the database smal
 
 Along the way, there have been numerous interesting developments in the architecture and the query processor. Taken at face value, the commits that went into Ladybug in the last year might look like a series of unrelated changes: new indexes, different relationship-storage options, Arrow integration, GraphLake, faster writes, new scan operators, better join enumeration and increasingly sophisticated cardinality estimation. But they start to look coherent when considered together.
 
-However, the larger theme emerges once you connect the dots: Ladybug has been systematically making the original Kuzu architecture **less prescriptive about storage and more intelligent about execution**.
+The larger theme emerges once you connect the dots: Ladybug has been systematically making the original Kuzu architecture **less prescriptive about storage and more intelligent about execution**.
 
 In the next few sections, I want to look at a few larger architectural ideas that have emerged in Ladybug, and then use [an unofficial LDBC benchmark](https://github.com/prrao87/graph-benchmark-ldbc) I've maintained since the Kuzu days to see where those ideas show up in practice.
 
@@ -62,7 +62,7 @@ CREATE NODE TABLE Product(sku STRING, PRIMARY KEY(sku));
 
 ### Why add ART indexes?
 
-Once indexes became something you can choose in Ladybug, it made sense to offer more than one kind. Adaptive Radix Tree (ART) indexes are a more compact alternative to hash indexes, and they support both exact-key lookups and range queries. Ladybug added ART indexes in May 2026 ([#492](https://github.com/LadybugDB/ladybug/pull/492)), and soon after extended them to properties other than the primary key ([#582](https://github.com/LadybugDB/ladybug/pull/582)). These were long-awaited features in Kuzu itself that never got added due to time and resource constraints.
+Adaptive Radix Tree (ART) indexes are a more compact alternative to hash indexes, and they support both exact-key lookups and range queries. Ladybug added ART indexes in May 2026 ([#492](https://github.com/LadybugDB/ladybug/pull/492)), and soon after extended them to properties other than the primary key ([#582](https://github.com/LadybugDB/ladybug/pull/582)). These were long-awaited features in Kuzu itself that never got added due to time and resource constraints.
 
 If you've used DuckDB, you've already used an ART index: it's what enforces every `PRIMARY KEY` and `UNIQUE` constraint there, and Ladybug's implementation follows DuckDB's design closely.
 
@@ -85,7 +85,7 @@ The trade-off is that an ART lookup takes several steps down the tree rather tha
 | ART | ~12 ms | ~0.2 ms | 64 MB |
 | None | ~12 ms | ~2 ms (full scan) | 35 MB |
 
-Both indexes are about 10× faster than a full scan, and both are stored on disk and read only as queries need them, so nothing gets rebuilt when your application opens the database. ART also uses less than half the space of the hash index. At 2 million nodes, that's a difference of tens of MB, but for large graphs the size of Wikidata (> 100M nodes), the hash index alone would run to several gigabytes, so not building one you don't need makes a big difference.
+Both indexes are about 10× faster than a full scan, and both are stored on disk and read only as queries need them, so nothing gets rebuilt when your application opens the database. ART uses less than half the space of the hash index. At 2 million nodes, that's a difference of tens of MB, but for large graphs the size of Wikidata (> 100M nodes), the hash index alone would run to several GB, so not building one you don't need makes a big difference.
 
 The key point is that in Ladybug, **indexing is now a decision you make based on your workload**. DuckDB works the same way: most analytical filters are served by scanning columnar data, and ART indexes are reserved for selective lookups and constraints.
 
@@ -93,9 +93,9 @@ The same theme of letting the workload decide extends beyond indexes. Relationsh
 
 ## 2. Answering queries from the CSR
 
-Just like Kuzu, Ladybug stores relationships in CSR format, a compact way of laying out adjacency lists (no changes there). All the neighbour lists are packed together in one large array, and a separate array of offsets records where each node's list begins and ends. This layout makes traversals fast, because finding a node's neighbours is a single contiguous read.
+Ladybug (like Kuzu) stores relationships in CSR format, a compact way of laying out adjacency lists. All the neighbour lists are packed together in one large array, and a separate array of offsets records where each node's list begins and ends. This layout makes traversals fast, because finding a node's neighbours is a single contiguous read.
 
-Kuzu used the CSR to traverse, but many query plans still materialized every matching tuple as an intermediate result, pushing it through joins and only then aggregating it or converting it to the output format. Over the past year, Ladybug has increasingly **answered queries from the CSR itself**, without materializing those intermediate tuples at all.
+Kuzu used the CSR to traverse, but many query plans still materialized every matching tuple as an intermediate result, pushing it through joins and only then aggregating it or converting it to the output format. Over the past year, Ladybug has increasingly answered queries from the CSR itself, **without materializing intermediate tuples** at all.
 
 ### Counting without materializing
 
@@ -118,7 +118,9 @@ Instead, Ladybug now passes a running count per node from one hop to the next, s
 
 ### Reading and writing the Icebug format
 
-The same thinking applies when Ladybug exchanges relationships with other tools: the CSR structure can cross the boundary intact, rather than being flattened into rows and rebuilt on the other side. This is the idea behind the [Icebug format](https://github.com/Ladybug-Memory/icebug-format), an open CSR-based graph format with two flavours: **icebug-disk**, stored as ordinary Parquet files, and **icebug-memory**, stored as Arrow tables for zero-copy access within a process.
+Perhaps the most significant change is that Ladybug has decoupled the CSR from the specifics of its own storage layer. It can traverse a CSR whether it lives in Ladybug's native storage, in Parquet files or in Arrow tables, so relationships can move between Ladybug and other tools intact, rather than being flattened into rows and rebuilt on the other side.
+
+The open format that makes this possible is the [Icebug format](https://github.com/Ladybug-Memory/icebug-format), which comes in two flavours: **icebug-disk**, stored as ordinary Parquet files, and **icebug-memory**, stored as Arrow tables for zero-copy access within a process.
 
 Ladybug can mount relationship tables directly on icebug-disk files ([#476](https://github.com/LadybugDB/ladybug/pull/476)), locally or on object storage, without importing them first:
 
@@ -128,9 +130,11 @@ CREATE REL TABLE follows(FROM user TO user, since INT32)
 WITH (storage = 's3://bucket/graph', format = 'icebug-disk');
 ```
 
-It can also scan relationship tables held in Arrow ([#460](https://github.com/LadybugDB/ladybug/pull/460)), and going the other way, write query results directly into Arrow CSR buffers, skipping its usual row-by-row conversion ([#463](https://github.com/LadybugDB/ladybug/pull/463)). A later change cut the peak memory of one large export from 45 GB to 16 GB ([#626](https://github.com/LadybugDB/ladybug/pull/626)). Because both flavours are just CSR in standard columnar formats, any tool that reads Parquet or Arrow, including Icebug's graph algorithms, can work with the same data that Ladybug queries.
+It can also scan relationship tables held in Arrow ([#460](https://github.com/LadybugDB/ladybug/pull/460)), and going the other way, write query results directly into Arrow CSR buffers, skipping its usual row-by-row conversion ([#463](https://github.com/LadybugDB/ladybug/pull/463)). A later change cut the peak memory of one large export from 45 GB to 16 GB ([#626](https://github.com/LadybugDB/ladybug/pull/626)). And since both flavours are plain CSR in standard columnar formats, any tool that reads Parquet or Arrow, including Icebug's graph algorithms, can work on the same data that Ladybug queries.
 
-If you've worked with analytical databases, this playbook will sound familiar. Column stores answer an unfiltered `COUNT(*)` from metadata, delay assembling full rows until the last possible moment (late materialization), and hand results to other tools as Arrow without copying them. Ladybug applies the same ideas to graph structure. **The CSR is to a graph engine what the columnar layout is to an analytical database, and the fastest queries are the ones that stay on it for as long as possible.** The next section looks at how the query planner applies this principle once queries start filtering and traversing, rather than just counting.
+If you've worked with analytical databases, this playbook will sound familiar. Column stores answer an unfiltered `COUNT(*)` from metadata, delay assembling full rows until the last possible moment (late materialization), and hand results to other tools as Arrow without copying them. Ladybug applies the same ideas to graph structure.
+
+**The CSR is to a graph engine what the columnar layout is to an analytical database**, and the fastest queries are the ones that stay on it for as long as possible. The next section looks at how the query planner applies this principle once queries start filtering and traversing, rather than just counting.
 
 ## 3. An ever-improving query planner that understands graph shapes
 
@@ -163,7 +167,7 @@ When a join can't be avoided, Ladybug lets the smaller side prune the larger one
 
 The last idea targets a common pattern: several independent `OPTIONAL MATCH` branches, each feeding a `COUNT(DISTINCT ...)`. A standard plan joins all the branches first and counts at the end, so the branches multiply against each other. In one LDBC query, four branches produced 656,000 intermediate rows from a single starting row, just to compute four counts. Because `COUNT(DISTINCT ...)` ignores duplicates, Ladybug can safely count each branch as soon as it's joined, and that query now carries about 300 rows from one stage to the next ([#1044](https://github.com/LadybugDB/ladybug/pull/1044)).
 
-Each of these changes reduces the amount of data a query has to touch, rather than making individual operators faster. As we'll see next, the queries in my benchmark that improved the most are the ones with exactly these shapes.
+Each of these changes reduces the amount of data a query has to touch, rather than making individual operators faster.
 
 ## Does any of this show up in practice?
 
@@ -206,18 +210,20 @@ The table shows mean latency in milliseconds. Ratios in parentheses are Neo4j's 
 
 Overall, Ladybug 0.21.1 is faster than Kuzu on 23 of the 30 queries and faster than Neo4j's community edition on 26, and it's the fastest of the three on 19. The dataset and codebase can be reproduced from the [benchmark repo](https://github.com/prrao87/graph-benchmark-ldbc) if you want to test on your own machine with the latest version of Neo4j's community edition or Ladybug.
 
-More interesting to me than the raw numbers is _which_ queries moved. Q13 is the exact ["Rafael" query from section 3](#staying-on-the-frontier). On Kuzu, it took 42 ms. On Ladybug, which now follows the extend chain instead of joining against every `likeComment` relationship, it takes **only 5.6 ms**. Q12, Q19, Q22 and Q27 combine a selective filter with a large join, the shape that the fan-out estimates and relationship-scan semi-masks target, and each got two to four times faster than on Kuzu. **These are material improvements at the core of the query processor**.
+More interesting to me than the raw numbers is _which queries moved_. Q13 is the exact ["Rafael" query from section 3](#staying-on-the-frontier). On Kuzu, it took 42 ms. On Ladybug, which now follows the extend chain instead of joining against every `likeComment` relationship, it takes **only 5.6 ms**. Q12, Q19, Q22 and Q27 combine a selective filter with a large join, the shape that the fan-out estimates and relationship-scan semi-masks target, and each got 2-4⨉ faster than on Kuzu. **These are material improvements at the core of the query processor**.
 
 Neo4j is still faster on a handful of queries, most notably Q7, where both Kuzu and Ladybug are more than an order of magnitude behind. Because there are always tradeoffs in software engineering, no two versions move every query in the same direction: compared to 0.21.0, 0.21.1 is faster on 17 queries and slower on 13. However, Ladybug's planner is evolving quickly, so I fully expect more of these numbers to keep moving in a better direction in future releases.
 
 ## More than just a fork
 
-A year ago, calling LadybugDB a "fork of Kuzu" was simply descriptive. Today, that's still technically true, but it's more accurate to call LadybugDB its own project, one that kept Kuzu's core convictions: a strongly typed property graph model, Cypher, columnar storage and CSR-based relationship storage.
+A year ago, calling LadybugDB a "fork of Kuzu" was simply descriptive. Today, that's still technically true, but it's more accurate to call LadybugDB its own project, one that kept Kuzu's core convictions but evolved its design.
 
-What Ladybug has concretely shown, while improving performance, is **flexibility in its design assumptions**. Indexes are now a workload decision, the CSR can live in open formats like Parquet and Arrow, queries increasingly work on the CSR directly, and the planner reasons about the shape of the graph it's traversing. The benchmark shows the result: the queries that improved most are the ones those changes target.
+What Ladybug has concretely shown, while improving performance, is **flexibility in its design assumptions**. Indexes are now a workload decision, the CSR can live in open formats like Parquet and Arrow without being tied to Ladybug's storage layer, queries increasingly work on the CSR directly, and the planner reasons about the shape of the graph it's traversing. The benchmark shows the result: the queries that improved most are the ones those changes target.
 
 I also really love how the project is being maintained. Ladybug is still (very much like Kuzu) being developed out in the open under the MIT licence, with contributions from a diverse community of developers. Coding agents play a big part, too. With today's AI coding agents, many new OSS contributors can point their agents at the codebase and continuously scan it for performance gaps, and the pace of development has been remarkable.
 
 That said, agents don't review and merge their own PRs, and they do add a significant maintenance burden over time. Arun [has tirelessly been reviewing and approving](https://github.com/adsharma) a steady stream of contributions throughout the last year, and the project owes a lot to his stewardship. Hats off! 🤠
 
-I'm really happy that the graph community still has a permissively licensed, embedded graph database that's _really_ fast, and it's increasingly well integrated with the rest of the lakehouse ecosystem. If you're curious where this is heading, Arun lays out the [GraphLake vision](https://blog.ladybugdb.com/post/graph-lake-v2/) really well: much like DuckLake does for tables, GraphLake pairs Iceberg tables with icebug-disk graphs, and keeps the catalog in a database you can query, rather than in metadata files on object storage. I'm excited to see what graph lakehouses turn into over the coming months, and if you want to follow along (or contribute!), come say hi on the Ladybug [Discord](https://discord.gg/4f93zHyNQE).
+I'm really happy that the graph community still has a permissively licensed, embedded graph database that's _really_ fast, and it's increasingly well integrated with the rest of the lakehouse ecosystem. If you're curious where this is heading, Arun lays out the [GraphLake vision](https://blog.ladybugdb.com/post/graph-lake-v2/) really well: much like DuckLake does for tables, GraphLake pairs Iceberg tables with icebug-disk graphs, and keeps the catalog in a database you can query, rather than in metadata files on object storage.
+
+It's exciting to imagine what graph lakehouses may become over the coming months, and if you want to follow along (or contribute!), come say hi on the Ladybug [Discord](https://discord.gg/4f93zHyNQE).
