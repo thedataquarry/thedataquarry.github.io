@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="600" viewBox="0 0 720 600" role="img" aria-labelledby="csr-layout-title csr-layout-desc">
+<title id="csr-layout-title">CSR adjacency storage</title>
+<desc id="csr-layout-desc">Maya knows Nina and Omar, Nina knows Pedro, and Omar knows Pedro. These edges become offsets [0, 2, 3, 4, 4] and neighbours [Nina, Omar, Pedro, Pedro]. Maya's slice is neighbours[0..2] = [Nina, Omar]; Pedro has an empty slice.</desc>
+<defs><marker id="csr-layout-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0.8 L9.2 5 L0 9.2 z" fill="#5b6475"/></marker></defs>
+<rect width="720" height="600" rx="16" fill="#faf9f6"/>
+<g font-family="'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#2d3142">
+<path d="M130.6 123.1 L206.7 86.2" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#csr-layout-arrow)"/>
+<path d="M130.6 152.9 L206.7 189.8" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#csr-layout-arrow)"/>
+<path d="M270.6 84.9 L346.7 121.8" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#csr-layout-arrow)"/>
+<path d="M270.6 191.1 L346.7 154.2" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#csr-layout-arrow)"/>
+<circle cx="100" cy="138" r="34" fill="#e6eef8" stroke="#6f8fbf" stroke-width="1.5"/>
+<text x="100" y="144" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3142">Maya</text>
+<circle cx="240" cy="70" r="34" fill="#e7f1e8" stroke="#78a37e" stroke-width="1.5"/>
+<text x="240" y="76" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3142">Nina</text>
+<circle cx="240" cy="206" r="34" fill="#f6eedc" stroke="#b8915a" stroke-width="1.5"/>
+<text x="240" y="212" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3142">Omar</text>
+<circle cx="380" cy="138" r="34" fill="#eeedf1" stroke="#8d8298" stroke-width="1.5"/>
+<text x="380" y="144" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3142">Pedro</text>
+<rect x="470" y="50" width="218" height="176" rx="10" fill="#f1f0ec" stroke="#cbc8bf" stroke-width="1.25"/>
+<text x="490" y="80" font-size="12" font-weight="600" text-anchor="start" fill="#5b6475" letter-spacing="1.4">KNOWS EDGES</text>
+<text x="490" y="114" font-size="16" font-weight="400" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Maya → Nina</text>
+<text x="490" y="142" font-size="16" font-weight="400" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Maya → Omar</text>
+<text x="490" y="170" font-size="16" font-weight="400" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Nina → Pedro</text>
+<text x="490" y="198" font-size="16" font-weight="400" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Omar → Pedro</text>
+<text x="40" y="286" font-size="14" font-weight="400" text-anchor="start" fill="#8a91a0">source node</text>
+<text x="236" y="286" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">Maya</text>
+<text x="326" y="286" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">Nina</text>
+<text x="416" y="286" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">Omar</text>
+<text x="506" y="286" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">Pedro</text>
+<text x="596" y="286" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">end</text>
+<text x="40" y="333" font-size="18" font-weight="600" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">offsets</text>
+<rect x="196.0" y="300" width="80" height="50" rx="10" fill="#e6eef8" stroke="#6f8fbf" stroke-width="1.25"/>
+<text x="236" y="332" font-size="21" font-weight="600" text-anchor="middle" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">0</text>
+<rect x="286.0" y="300" width="80" height="50" rx="10" fill="#e7f1e8" stroke="#78a37e" stroke-width="1.25"/>
+<text x="326" y="332" font-size="21" font-weight="600" text-anchor="middle" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">2</text>
+<rect x="376.0" y="300" width="80" height="50" rx="10" fill="#f6eedc" stroke="#b8915a" stroke-width="1.25"/>
+<text x="416" y="332" font-size="21" font-weight="600" text-anchor="middle" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">3</text>
+<rect x="466.0" y="300" width="80" height="50" rx="10" fill="#eeedf1" stroke="#8d8298" stroke-width="1.25"/>
+<text x="506" y="332" font-size="21" font-weight="600" text-anchor="middle" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">4</text>
+<rect x="556.0" y="300" width="80" height="50" rx="10" fill="#f1f0ec" stroke="#cbc8bf" stroke-width="1.25"/>
+<text x="596" y="332" font-size="21" font-weight="600" text-anchor="middle" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">4</text>
+<text x="40" y="400" font-size="14" font-weight="400" text-anchor="start" fill="#8a91a0">position</text>
+<text x="236" y="400" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">0</text>
+<text x="326" y="400" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">1</text>
+<text x="416" y="400" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">2</text>
+<text x="506" y="400" font-size="15" font-weight="500" text-anchor="middle" fill="#5b6475">3</text>
+<text x="40" y="447" font-size="18" font-weight="600" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">neighbours</text>
+<rect x="196.0" y="414" width="80" height="50" rx="10" fill="#e6eef8" stroke="#6f8fbf" stroke-width="1.25"/>
+<text x="236" y="446" font-size="17" font-weight="600" text-anchor="middle" fill="#2d3142">Nina</text>
+<rect x="286.0" y="414" width="80" height="50" rx="10" fill="#e6eef8" stroke="#6f8fbf" stroke-width="1.25"/>
+<text x="326" y="446" font-size="17" font-weight="600" text-anchor="middle" fill="#2d3142">Omar</text>
+<rect x="376.0" y="414" width="80" height="50" rx="10" fill="#e7f1e8" stroke="#78a37e" stroke-width="1.25"/>
+<text x="416" y="446" font-size="17" font-weight="600" text-anchor="middle" fill="#2d3142">Pedro</text>
+<rect x="466.0" y="414" width="80" height="50" rx="10" fill="#f6eedc" stroke="#b8915a" stroke-width="1.25"/>
+<text x="506" y="446" font-size="17" font-weight="600" text-anchor="middle" fill="#2d3142">Pedro</text>
+<path d="M200.0 472 V478 H362.0 V472" fill="none" stroke="#6f8fbf" stroke-width="1.5"/>
+<text x="281.0" y="496" font-size="13" font-weight="600" text-anchor="middle" fill="#6f8fbf">Maya</text>
+<path d="M380.0 472 V478 H452.0 V472" fill="none" stroke="#78a37e" stroke-width="1.5"/>
+<text x="416.0" y="496" font-size="13" font-weight="600" text-anchor="middle" fill="#78a37e">Nina</text>
+<path d="M470.0 472 V478 H542.0 V472" fill="none" stroke="#b8915a" stroke-width="1.5"/>
+<text x="506.0" y="496" font-size="13" font-weight="600" text-anchor="middle" fill="#b8915a">Omar</text>
+<text x="596" y="447" font-size="13" font-weight="400" text-anchor="middle" fill="#8a91a0">Pedro: empty</text>
+<rect x="40" y="520" width="640" height="56" rx="10" fill="#e6eef8" stroke="#6f8fbf" stroke-width="1.25"/>
+<text x="60" y="554" font-size="16" font-weight="600" text-anchor="start" fill="#2d3142">Maya:</text>
+<text x="120" y="554" font-size="17" font-weight="400" text-anchor="start" fill="#2d3142" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">neighbours[offsets 0 .. 2] = [Nina, Omar]</text>
+</g>
+</svg>

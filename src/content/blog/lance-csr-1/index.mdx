@@ -1,0 +1,217 @@
+---
+slug: 'lance-csr-1'
+title: 'Fast graph queries on Lance (1): Introducing lance-csr'
+description: "Lance-csr is a fast graph query engine that adds a CSR adjacency index on Lance datasets, with Apache DataFusion at its core."
+publishDate: 2026-11-01
+draft: false
+tags:
+  - rust
+  - graphs
+  - datafusion
+  - lance
+  - lancedb
+  - cypher
+---
+import { GithubCard } from 'astro-pure/advanced'
+import Figure from '@/components/Figure.astro'
+import Diagram1 from './query-plan.svg'
+import Diagram2 from './datafusion-stages.svg'
+import Diagram3 from './query-layers.svg'
+import Diagram4 from './join-hop.svg'
+import Diagram5 from './csr-layout.svg'
+import Diagram7 from './engine-stack.svg'
+
+Graph query processors are built to handle "multi-hop" questions (i.e., queries that involve traversing multiple relationships along a path). The issue is that in the real world, data often exists elsewhere, other than in a graph database. Your data may be in a relational database, document database, or a data lake, so to get better performance on expensive joins, you'd typically create new views or move the data into a graph database. Both of these require maintaining a second copy of the data.
+
+Having worked at many enterprises, if I had to put my finger on one reason why graph databases are not more widely used, it would be that _nobody likes maintaining multiple copies of the same data_. Not only do commercial graph databases cost an arm and a leg from a licensing perspective; the data they carry can also drift from the source of truth, requiring constant synchronization. This means that in practice, you have to choose between a graph database and whatever other system you already have, which is a hard choice to make.
+
+## The rise of open lakehouse formats
+
+More and more data now lives in open lakehouse formats[^lakehouse-formats], where one copy on disk or object storage serves many different query engines. This leaves developers with an awkward choice: keep a second copy of the data in a graph database, or express graph queries as long chains of relational joins and accept that deep traversals will be slow.
+
+Late last year, a new project, [lance-graph](/blog/towards-multimodal-kg-with-lance-graph), was released.[^lance-graph-fork] To my knowledge, it was the first Cypher query engine built with Apache DataFusion that could run graph queries directly over Lance tables. However, the project became dormant due to a lack of incentive from the Lance community to maintain it, and the engine's performance on multi-hop queries was limited by its join-based execution model. This left us with a question: could we build a graph engine that runs directly on Lance tables, but also supports fast multi-hop traversal?
+
+I now work with [David Hughes](https://hyperdimensionalcomputing.ai/people/) at [HDC Labs](https://hdclabs.ai), where we're combining cutting-edge techniques in high-dimensional vector representations with graph query processing. We wanted to know whether they could also be fast: could an engine assembled from reusable parts traverse multi-hop paths as quickly as a dedicated graph database, without the data ever leaving Lance?
+
+This post introduces the result of our work: we'll explore [lance-csr](https://github.com/hyperdimensionalcomputingai/lance-csr), a fork of lance-graph that adds a compressed sparse row (CSR) adjacency index, along with a set of custom, graph-aware DataFusion operators that are built specifically to aid multi-hop traversal. The next post will go into more detail on how those operators work and how they interact with DataFusion's optimizer and executor. Let's dig in!
+
+## Towards deconstructed databases
+
+For decades, a database was a single product built by a single team. Storage, indexing, the query language, the planner and the executor were designed together, tightly integrated, and shipped together, and you couldn't get one piece without the rest. This tight coupling helped maximize performance, but it also meant that every new database had to rebuild the same machinery from the ground up.[^2]
+
+Over the past few years, the monolith has been coming apart. Julien Le Dem (one of the original designers of Parquet and Arrow) coined the term *deconstructed database*[^1] in 2019 to describe systems assembled from modular, open components: a file format, an in-memory representation, and a query engine on top, each of which could be maintained by a different community, all in open source.
+
+I've touched on this trend [before](/blog/embedded-db-3) in the context of LanceDB, and explored it further in a [post on DataFusion](/blog/datafusion-and-the-rise-of-deconstructed-data-systems). What interests me is the progression of how the community has moved through the layers of a database:
+
+- **Data in memory (Apache Arrow):** A shared columnar representation gives libraries and query operators a common way to exchange data. Each component can work with Arrow batches without needing its own representation and a conversion step at every boundary.
+- **Data on disk (Parquet and/or Lance):** Open storage formats let multiple engines read the same files on disk or object storage. They make different tradeoffs, with Parquet widely used for analytical scans and Lance designed for multimodal data and fast random access, but both let the stored data outlive any particular query engine.
+- **Query execution (Apache DataFusion):** Reuse extends to the machinery that processes the data: planning, optimization and execution. A system can add its own query language, operators and indexes while drawing on an existing engine for the operations it shares with other systems.
+
+Together, these layers let us choose how to represent, store and query data without reinventing them all from scratch. For a graph engine like lance-csr, this gives us ample room to focus on efficient graph patterns and traversal while reusing the common machinery that every system needs. This is why DataFusion is so important.
+
+## DataFusion: a query engine you can embed
+
+[Apache DataFusion](https://datafusion.apache.org/) is an extensible query engine written in Rust 🦀 that you embed as a library inside your own system. It doesn't store data, instead sitting on top of an open format like Parquet or Lance. It provides everything needed to build a query engine with an appropriate frontend: it parses the query, works out an efficient plan for it, and executes that plan over [Arrow](https://arrow.apache.org/) data, in parallel across all your CPU cores.
+
+The best way to picture DataFusion is as **a collection of primitives** that function as building blocks for a query engine. The scan primitive reads a table. The filter primitive drops rows based on a predicate. A join combines two inputs on a key. An aggregate groups and counts, and a sort orders the output. Importantly, it's **columnar-first**, where each primitive consumes and produces streams of Arrow record batches, so that they can be composed together into a pipeline (called a *query plan*) of any shape.
+
+Consider a SQL query like this one:
+
+```sql
+SELECT city, count(*) AS n
+FROM person
+WHERE age > 30
+GROUP BY city
+ORDER BY n DESC
+```
+
+This turns into a stack of primitives, called *operators*, with data flowing from the scan at the bottom to the sort at the top:
+
+<Figure src={Diagram1} alt="Data flows upward through scan, filter, aggregate and sort operators." />
+
+DataFusion also provides optimizers that rewrite the plan to make it faster (for example, by pushing the filter down into the scan, and reading only the two columns the query needs) before running it.
+
+While much of the work around DataFusion centres on SQL query engines, the frontend doesn't _have_ to be SQL. We can use any other query language by building a parser and translating its output into a logical plan that DataFusion can optimize and execute. In lance-graph, and in our fork [lance-csr](https://github.com/hyperdimensionalcomputingai/lance-csr), that language is Cypher: the frontend turns graph patterns into operators that enter the same planning and execution pipeline.
+
+The [planning lifecycle](https://datafusion.apache.org/library-user-guide/query-optimizer.html) separates the query's meaning from the operators that execute it. Logical optimization rewrites the requested work; physical planning and optimization decide how to run it:
+
+<Figure src={Diagram2} alt="DataFusion turns a logical plan into optimized physical operators, then executes them." />
+
+### Separating query semantics from query machinery
+
+What makes DataFusion's design so compelling is that it cleanly separates two concerns that monolithic databases tend to blur together:
+
+<Figure src={Diagram3} alt="Your system defines query semantics, while DataFusion supplies planning and execution machinery." />
+
+The top layer is what makes a system distinct, providing application-specific functionality. It belongs to whoever builds that system and is outside of DataFusion's concerns. For example, a time-series database like [InfluxDB](https://www.influxdata.com/lp/influxdb-database) might care about windows and timestamps, while a graph database cares about Cypher, node labels, relationship types and the indexes that make traversal fast.
+
+The bottom layer is what every one of those systems needs regardless of its domain: filtering rows, joining tables, projecting columns, sorting, optimizing the plan, spreading the work across cores, and keeping memory in check. This machinery is hard to build well, because it takes careful tuning and a deep understanding of how to make it fast. DataFusion provides all of that machinery for free, so system builders can focus on the top layer that provides business value.[^2]
+
+In our case, lance-csr, which is a graph query engine, needs to understand graph patterns, but it doesn't need to reinvent its own hash join, its own sort, or its own multi-threaded scheduler (these can be inherited directly from DataFusion).
+
+### Extension points for the parts that differ
+
+The most beautiful thing about DataFusion is that it's designed from the ground up to be _extensible_. It does this by providing a set of extension points, or _traits_, in Rust, that a downstream system implements to plug its own logic into the pipeline. The table below lists a few of them.
+
+| Extension point | What it lets you add |
+| --- | --- |
+| `TableProvider` | A new data source, so your storage looks like an ordinary table to the planner |
+| User-defined functions | Scalar, aggregate or window functions that can be called inside a query |
+| User-defined plan nodes | Entirely new operators in the query plan, with their own execution logic |
+| `OptimizerRule` | Plan rewrites that use knowledge the built-in optimizer doesn't have |
+| `ExtensionPlanner` | The step that turns your custom plan nodes into executable operators |
+
+These custom pieces sit *inside* an ordinary DataFusion plan; they don't need to be built on top of it. A custom operator can have a built-in filter above it and a built-in scan below it, and DataFusion plans, optimizes and executes the whole thing as one. Everything slots in at the appropriate stage of the planning lifecycle, so that the query's meaning is independent of how it's executed.
+
+lance-csr uses every one of these extension points to add graph traversal to DataFusion, as we'll see later in this post.
+
+## Why joins fall short for multi-hop traversal
+
+The most expensive graph queries are about traversing multiple relationships. In Cypher, the pattern `(a:Person)-[:KNOWS]->(b:Person)` asks for every pair of people where `a` knows `b`. If nodes and relationships are stored as tables (as they are in LanceDB), each hop along a relationship becomes two joins: one that matches each `a` against the rows of the `KNOWS` table, and another that fetches the matching `b` rows from the `Person` table. A common choice in SQL query plans is a *hash join*, which builds a hash table from one input and probes it with keys from the other to find matching rows.
+
+<Figure src={Diagram4} alt="One graph hop uses two hash joins to connect source nodes, relationships and target nodes." />
+
+For a single hop, that's perfectly reasonable, and DataFusion's hash joins are fast. With this plan, though, a five-hop traversal becomes ten hash joins, repeatedly building lookup structures and passing intermediate rows between operators. Those intermediate results can grow quickly, especially through highly connected nodes. Each query has to match node IDs against the relationship table again to find connected nodes, even when those connections haven't changed.
+
+### Faster multi-hop traversal with CSR
+
+A CSR, short for **compressed sparse row**, is an index that stores edge connections ahead of time, so that queries can look up a node's neighbours directly instead of rediscovering them at query time through joins. For an unweighted adjacency index, a CSR needs just two arrays: `neighbours` holds the target of every edge, grouped by source node, and `offsets` holds, for each source node, the position in `neighbours` where its edges begin.
+
+Let's visualize this for a small graph of four people who know each other:
+
+<Figure src={Diagram5} alt="CSR stores neighbours in contiguous slices; offsets locate each node’s slice." />
+
+To find the people Maya knows, we read her offset (0) and the next person's offset (2), then slice `neighbours[0..2]` to get Nina and Omar. The final offset marks the end of the array. Pedro has no outgoing edges, so his start and end offsets are both 4. (In the actual index, `neighbours` holds integer node IDs rather than names, but the lookup works the same way.) There are no hash joins and no scan of the relationship table, and each node's neighbours sit next to each other in memory. A hop that took two hash joins becomes a lookup, and a multi-hop query simply repeats that lookup from each new frontier of nodes.
+
+For each hop:
+
+1. Start with the source rows, `Person (a)`.
+2. Look up each source node's neighbours in the CSR using `a.id`.
+3. Fetch the corresponding `b` rows from Lance by row address.
+
+The savings add up quickly as queries go deeper than one hop. In our benchmarks, which we'll cover in the next post, the CSR approach shows significant gains over join-based traversal for multi-hop queries on real-world graphs.
+
+## What about Kuzu and Ladybug?
+
+Using CSRs in graph query engines is not a new idea. It's been in the literature for years. [Kuzu](https://github.com/kuzudb/kuzu), an embedded graph database I used to work on, popularized this technique for real-world usage by storing relationship tables in an on-disk CSR. This was paired with a fast query processor built around factorized and worst-case optimal joins, so that multi-hop queries wouldn't drown in intermediate results.
+
+After Kuzu was archived in 2025, its fork [Ladybug](https://github.com/LadybugDB/ladybug) carried those ideas forward and has been pushing them toward a *graph lakehouse*, with relationships stored as CSR in open formats like Parquet and Arrow (I wrote about this in [a recent post](/blog/celebrating-one-year-of-ladybug)). LadybugDB continues to push the state of the art for fast multi-hop graph queries, and I continue to follow it closely!
+
+For our use case at HDC Labs (where I work currently), a lot of our high-dimensional "hypervectors" already live in Lance, a multimodal lakehouse format. Unlike LadybugDB, where vector search and full-text search are bolt-ons to a powerful graph processor, we wanted to approach this from the other direction: could we build a graph engine that runs directly on Lance tables, but also supports fast multi-hop traversal? lance-csr is our answer.
+
+## Why build on Lance?
+
+At [HDC Labs](https://hdclabs.ai), we work on hyperdimensional computing, which is an information processing paradigm that utilizes very high-dimensional vectors called hypervectors (typically 4K-10K dimensions). The data we encode as hypervectors is about as varied as data gets: nested records, images, text and other multimodal assets, hypervectors, and the structured metadata that ties them together. We want to run full-text search, vector search and graph traversal over all of it, and we want to do so on a *single copy of the data*. This matters because every extra copy is another system to keep in sync, and another place for the data to drift.
+
+[Lance](https://lance.org/) already covers pretty much all of that list. It's a columnar lakehouse format designed for AI data: it stores blobs, nested data and embeddings alongside ordinary columns, supports fast random access as well as scans, versions every write, and works on local disk or object storage. It also provides vector and full-text indexes, so the same tables serve both kinds of retrieval. (I've written about [how Lance enables the multimodal lakehouse](/blog/how-lance-enables-the-multimodal-lakehouse) in more detail before.) We use Lance for all of those parts of our stack today.
+
+The missing piece thus far was a fast graph query engine for multi-hop queries. The lance-graph project was a promising first step that demonstrated how Lance tables could be queried as a property graph in Cypher, with DataFusion doing the execution. It held up well in [benchmarks](/blog/towards-multimodal-kg-with-lance-graph#understanding-performance) against dedicated graph databases. But it plans every hop as joins, so deep traversals were where its performance fell off rapidly. We wanted to take the project forward by building an engine that kept lance-graph's architecture, including its single copy of the data in Lance, and specifically made multi-hop traversal fast.[^lance-graph-fork]
+
+## Introducing lance-csr
+
+This section introduces [lance-csr](https://github.com/hyperdimensionalcomputingai/lance-csr), an open-source graph query engine (supporting openCypher) for data stored as Lance or Arrow tables. It's written in Rust 🦀 and uses DataFusion for parsing, planning and execution. It ships as [both a Python package and a Rust crate](https://lance-csr.hdclabs.ai/getting-started/) and runs embedded inside your own process on a single machine, with no server to operate. Its defining feature is an in-memory CSR index, which turns each relationship hop from a pair of hash joins into an array lookup.
+
+### Where lance-csr sits in the pipeline
+
+The diagram below shows how a Cypher query flows through the DataFusion pipeline, and where lance-csr's additions sit relative to what DataFusion and Lance already provide.
+
+<Figure src={Diagram7} alt="lance-csr extends DataFusion with graph operators and indexes that point back to Lance datasets." />
+
+At the top, the graph frontend parses the Cypher query, checks it against the graph schema, and builds a graph-shaped plan. lance-csr adds a rewrite step here that reorders each pattern to start from its most selective node, so that traversals begin from fewer rows.
+
+In the middle, the graph plan is lowered into a DataFusion plan, one hop at a time. When a CSR exists for a hop, it becomes a custom CSR operator. Otherwise, it becomes a pair of ordinary hash joins. Everything around those operators (filters, projections, aggregates and sorts) is still built from DataFusion's existing primitives, and DataFusion's optimizer and executor handle all of it. lance-csr's additions fill in the gaps: graph operators as custom plan nodes, optimizer rules that push filters into those operators, a planner that turns them into executable code, and statistics that help DataFusion size its joins correctly when a hop does fall back to joins.
+
+At the bottom, the node and relationship tables stay in Lance, read through Lance's own `TableProvider`. The CSR adjacency and node indexes are built in memory from those same tables, and they point back into Lance by row address, so a hop can fetch the properties it needs directly from the dataset without ever holding a copy of them.
+
+## Try lance-csr
+
+You can install lance-csr with `uv add lance-csr`. The example below builds a tiny graph from two Arrow tables and walks up to two hops out from Maya, using the same four people as the CSR example above:
+
+```python
+import pyarrow as pa
+from lance_csr import CypherEngine, GraphConfig
+
+config = (
+    GraphConfig.builder()
+    .node_table("Person", "id")
+    .rel_table("KNOWS", "Person", "Person", "src", "dst")
+    .build()
+)
+datasets = {
+    "Person": pa.table({"id": [1, 2, 3, 4], "name": ["Maya", "Nina", "Omar", "Pedro"]}),
+    "KNOWS": pa.table({"src": [1, 1, 2, 3], "dst": [2, 3, 4, 4]}),
+}
+
+# use_csr=True builds the CSR adjacency when the engine is created
+engine = CypherEngine(config, datasets, use_csr=True)
+result = engine.execute(
+    "MATCH (a:Person {name: 'Maya'})-[:KNOWS*1..2]->(b:Person) "
+    "RETURN DISTINCT b.name AS friend ORDER BY friend"
+)
+print(result.to_pylist())
+# [{'friend': 'Nina'}, {'friend': 'Omar'}, {'friend': 'Pedro'}]
+```
+
+The engine can also read Lance datasets lazily from disk, pinned to a specific version. The [documentation](https://lance-csr.hdclabs.ai/) covers how to query Lance datasets, which query shapes the CSR accelerates, how the index stays current as data changes, and reproducible [benchmarks](https://lance-csr.hdclabs.ai/benchmarks/) against other graph engines.
+
+<GithubCard repo='https://github.com/hyperdimensionalcomputingai/lance-csr' />
+
+## Conclusions
+
+For our work on HDC and graphs, the storage decision starts with the data we need to keep together: multimodal assets, hypervectors, embeddings, metadata and relationships. Lance gives us a shared home for that data, with columnar scans for bulk processing and random access for fetching individual rows during traversal. Its versioned datasets and existing search indexes make it a useful foundation for exploring several ways of retrieving the same underlying information, without maintaining a separate property store for the graph.
+
+DataFusion lets us concentrate on what graph queries need: understanding patterns, following adjacency and deciding where a CSR operator can be used. Its extension points let those operators work alongside ordinary filters, joins and aggregates, using the same planning and execution machinery. Keeping the engine embedded also means we can use it directly from Python or Rust without operating another server.
+
+Being able to build this way is something worth celebrating. Arrow, DataFusion, Lance and lance-graph represent years of work by open-source contributors, and they gave us a substantial starting point. Publishing lance-csr lets us contribute our own graph operators, fixes and experiments back to that ecosystem for others to inspect, test and build on. I hope it also draws interest from the graph community and introduces us to workloads and ideas we wouldn't have encountered on our own.
+
+The next post will look inside the DataFusion operators: how CSR expansion executes, how optimizer rules push filters into a hop, and what `explain()` reveals with and without the index. In the meantime, try lance-csr on your own data. If you're interested in DataFusion, graphs and Lance, spread the word! 🚀
+
+---
+
+[^1]: How Apache Arrow Is Changing the Big Data Ecosystem, [thenewstack.io](https://thenewstack.io/how-apache-arrow-is-changing-the-big-data-ecosystem/)
+
+[^2]: Andrew Lamb et al., [Apache Arrow DataFusion: A Fast, Embeddable, Modular Analytic Query Engine](https://doi.org/10.1145/3626246.3653368), SIGMOD Companion 2024. The [freely available paper](https://andrew.nerdnetworks.org/pdf/SIGMOD-2024-lamb.pdf) describes the architecture and execution model in Section 5, built-in optimizations in Section 6, and extension APIs in Section 7.
+
+[^lakehouse-formats]: These formats cover different layers of storage. [Apache Parquet](https://parquet.apache.org/) is a columnar file format widely used for analytics. Table formats such as [Apache Iceberg](https://iceberg.apache.org/spec/) organize collections of data files into tables with schemas and snapshots. [Lance](https://lance.org/) combines columnar storage with dataset versioning and indexes for multimodal AI data. Open formats let compatible engines work with the same stored data.
+
+[^lance-graph-fork]: lance-csr inherits lance-graph’s Cypher parser, semantic analysis and join-based planner. Its existing CSR neighbour store was not connected to query planning. We forked the project to explore CSR-backed traversal, adding graph operators, planner support, optimizer rules and index refresh handling. The design keeps properties in Lance, with indexes pointing to row addresses, and integrates graph operators into ordinary DataFusion plans. Unsupported hops retain the join-based path; tests compare results with CSR enabled and disabled.

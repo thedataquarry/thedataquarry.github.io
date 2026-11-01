@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-labelledby="join-hop-title join-hop-desc">
+<title id="join-hop-title">One graph hop planned as hash joins</title>
+<desc id="join-hop-desc">Person a and KNOWS feed a hash join on a.id = src; its output joins Person b on dst = b.id to produce the b rows. Every hop repeats this pair of joins.</desc>
+<defs><marker id="join-hop-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0.8 L9.2 5 L0 9.2 z" fill="#5b6475"/></marker></defs>
+<rect width="720" height="360" rx="16" fill="#faf9f6"/>
+<g font-family="'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#2d3142">
+<text x="40" y="34" font-size="12" font-weight="600" text-anchor="start" fill="#5b6475" letter-spacing="1.4">LANCE TABLES</text>
+<text x="280" y="34" font-size="12" font-weight="600" text-anchor="start" fill="#5b6475" letter-spacing="1.4">DATAFUSION OPERATORS</text>
+<rect x="40" y="48" width="168" height="56" rx="10" fill="#e8f2ed" stroke="#8dbfa8" stroke-width="1.25"/>
+<text x="124.0" y="83" font-size="18" font-weight="600" text-anchor="middle" fill="#2d3142">Person (a)</text>
+<rect x="40" y="132" width="168" height="56" rx="10" fill="#e8f2ed" stroke="#8dbfa8" stroke-width="1.25"/>
+<text x="124.0" y="167" font-size="18" font-weight="600" text-anchor="middle" fill="#2d3142">KNOWS</text>
+<rect x="40" y="240" width="168" height="56" rx="10" fill="#e8f2ed" stroke="#8dbfa8" stroke-width="1.25"/>
+<text x="124.0" y="275" font-size="18" font-weight="600" text-anchor="middle" fill="#2d3142">Person (b)</text>
+<rect x="280" y="70" width="200" height="80" rx="10" fill="#e9eff7" stroke="#93abcd" stroke-width="1.25"/>
+<text x="380.0" y="103" font-size="18" font-weight="600" text-anchor="middle" fill="#2d3142">Hash join</text>
+<text x="380.0" y="129" font-size="15" font-weight="400" text-anchor="middle" fill="#5b6475" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">a.id = src</text>
+<rect x="280" y="228" width="200" height="80" rx="10" fill="#e9eff7" stroke="#93abcd" stroke-width="1.25"/>
+<text x="380.0" y="261" font-size="18" font-weight="600" text-anchor="middle" fill="#2d3142">Hash join</text>
+<text x="380.0" y="287" font-size="15" font-weight="400" text-anchor="middle" fill="#5b6475" font-family="'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">dst = b.id</text>
+<rect x="548" y="240" width="132" height="56" rx="10" fill="#f1f0ec" stroke="#cbc8bf" stroke-width="1.25"/>
+<text x="614.0" y="275" font-size="18" font-weight="600" text-anchor="middle" fill="#2d3142">b rows</text>
+<path d="M208 76 H244 V96 H277" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#join-hop-arrow)"/>
+<path d="M208 160 H244 V124 H277" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#join-hop-arrow)"/>
+<path d="M380.0 150 V225" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#join-hop-arrow)"/>
+<path d="M208 268 H277" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#join-hop-arrow)"/>
+<path d="M480 268 H545" fill="none" stroke="#5b6475" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#join-hop-arrow)"/>
+<text x="360" y="336" font-size="14" font-weight="400" text-anchor="middle" fill="#5b6475">Repeated for every hop: a five-hop query runs ten hash joins.</text>
+</g>
+</svg>
